@@ -262,12 +262,10 @@ It will also log the error with the error reason and the stack trace:
 ![PublicError log message](https://github.com/mistval/monochrome/blob/master/public_error_log.png)
 
 The arguments for PublicError's constructor are:
-1. {String} An error message to send to the user.
+1. {String} An error message to send to the user. (can be an empty string, in which case no message is sent)
 2. {Boolean} True if the message should be automatically deleted after a short period of time. False if it should not be deleted.
-3. {String} A brief description of the failure to print in the logs.
-4. {Error} The internal error, if there is one.
-
-Any and all arguments can be undefined.
+3. {String} A brief description of the failure to print in the logs. (can be an empty string, in which case no description is printed in the logs)
+4. {Error} The internal error, if there is one. (can be undefined, in which case no stack trace for the error is printed in the logs)
 ## Sample bot
 Add my bot [Kotoba](https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot) to your server to see an example of a bot running on monochrome.
 ## Help
