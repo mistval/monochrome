@@ -8,6 +8,7 @@ const HelpCommand = reload('./commands/help.js');
 const ErisUtils = reload('./util/eris_utils.js');
 
 const COMMAND_CATEGORY_NAME = 'enabled_commands';
+const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'disabled_commands_fail_silently';
 
 function handleCommandError(msg, err, config, logger) {
   const loggerTitle = 'COMMAND';
@@ -57,11 +58,23 @@ function createSettingsForCommands(userCommands) {
     .filter(setting => !!setting);
 }
 
+function createDisabledCommandsFailSilentlySetting() {
+  return {
+    userFacingName: DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME,
+    type: 'SETTING',
+    description: 'If this setting is true, then I will do nothing when a user tries to use a disabled command. If this setting is false, then when a user tries to use a disabled command I will tell them that it\'s disabled.',
+    valueType: 'BOOLEAN',
+    defaultDatabaseFacingValue: false,
+  };
+
+}
+
 function createSettingsCategoryForCommands(userCommands) {
   let children = createSettingsForCommands(userCommands);
   if (!children || children.length === 0) {
     return;
   }
+  children.push(createDisabledCommandsFailSilentlySetting());
   return {
     type: 'CATEGORY',
     userFacingName: COMMAND_CATEGORY_NAME,
@@ -86,6 +99,8 @@ class CommandManager {
     this.logger_ = logger;
     this.config_ = config;
     this.settingsGetter_ = settingsGetter;
+    this.disabledCommandsFailSilentySettingFullyQualifiedName_ =
+      COMMAND_CATEGORY_NAME + this.config_.settingsCategorySeparator + DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME;
   }
 
   /**
@@ -199,7 +214,7 @@ class CommandManager {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      commandToExecute.handle(bot, msg, suffix, extension, this.config_, this.settingsGetter_).then(result => {
+      commandToExecute.handle(bot, msg, suffix, extension, this.config_, this.settingsGetter_, this.disabledCommandsFailSilentySettingFullyQualifiedName_).then(result => {
         if (typeof result === typeof '') {
           throw new PublicError('', false, result);
         }

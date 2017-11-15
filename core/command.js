@@ -146,7 +146,7 @@ class Command {
   *    (Or if the error is a PublicError, or if it has a publicMessage property, the value of that property
   *    will be sent to the channel instead of the generic error message)
   */
-  handle(bot, msg, suffix, extension, config, settingsGetter) {
+  handle(bot, msg, suffix, extension, config, settingsGetter, disabledCommandsFailSilentlySettingName) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
       let publicErrorMessage = msg.author.username + ', that command has a ' + this.cooldown_.toString() + ' second cooldown.';
       throw new PublicError(publicErrorMessage, true, 'Not cooled down');
@@ -173,7 +173,8 @@ class Command {
 
     let requiredSettings = this.requiredSettings_;
     if (this.enabledSettingFullyQualifiedUserFacingName_) {
-      requiredSettings = requiredSettings.concat([this.enabledSettingFullyQualifiedUserFacingName_]);
+      requiredSettings.push(this.enabledSettingFullyQualifiedUserFacingName_);
+      requiredSettings.push(disabledCommandsFailSilentlySettingName);
     }
     return settingsGetter.getSettings(bot, msg, requiredSettings).then(settings => {
       if (!this.enabledSettingFullyQualifiedUserFacingName_ ||
@@ -181,8 +182,12 @@ class Command {
         settings[this.enabledSettingFullyQualifiedUserFacingName_] === undefined) {
         return this.invokeAction_(bot, msg, suffix, settings, extension);
       }
+      let publicErrorMessage = '';
+      if (!settings[disabledCommandsFailSilentlySettingName]) {
+        publicErrorMessage = 'That command is disabled in this channel.';
+      }
 
-      throw new PublicError('That command is disabled in this channel.', true, 'Command disabled');
+      throw new PublicError(publicErrorMessage, true, 'Command disabled');
     });
   }
 
