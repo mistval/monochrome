@@ -45,6 +45,7 @@ The demo version of monochrome comes with demo commands, message processors, set
 <li>Add your own settings hierarchy to monochrome/server_settings.js.</li>
 <li>Update monochrome/config.json with your desired configuration.</li>
 </ol>
+
 ## Advanced
 Here is a full explanation of the fields in monochrome/config.json:
 ```json
