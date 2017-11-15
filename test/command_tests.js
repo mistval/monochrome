@@ -6,6 +6,7 @@ const persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
 const MockLogger = require('./mock_objects/mock_logger.js');
 const SettingsManager = require('./../core/settings_manager.js');
+const strings = require('./../core/string_factory.js').command;
 
 const MsgNoPerms = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], []);
 const MsgIsServerAdminWithTag = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], ['Server Admin']);
@@ -243,34 +244,64 @@ const validCommandDatas = [
   },
 ];
 
+function errorStringMatches(error, errorString) {
+  if (error.publicMessage) {
+    return error.publicMessage === errorString;
+  }
+  return error.message === errorString;
+}
+
 describe('Command', function() {
   describe('constructor()', function() {
     it('should throw if there is no data', function() {
-      assert.throws(() => new Command());
-      assert.throws(() => new Command({}));
+      assert.throws(
+        () => new Command(),
+        err => errorStringMatches(err, strings.validation.noData));;
     });
     it('should throw if you don\'t provide any command aliases', function() {
-      assert.throws(() => new Command(commandDataNoAliases));
-      assert.throws(() => new Command(commandDataUndefinedAliases));
+      assert.throws(
+        () => new Command(commandDataNoAliases),
+        err => errorStringMatches(err, strings.validation.noAliases));
+      assert.throws(
+        () => new Command(commandDataUndefinedAliases),
+        err => errorStringMatches(err, strings.validation.noAliases));
     });
     it('should throw if you provide an invalid alias', function() {
-      assert.throws(() => new Command(commandDataBlankAlias));
-      assert.throws(() => new Command(commandDataNonStringAliases));
+      assert.throws(
+        () => new Command(commandDataBlankAlias),
+        err => errorStringMatches(err, strings.validation.invalidAlias));
+      assert.throws(
+        () => new Command(commandDataNonStringAliases),
+        err => errorStringMatches(err, strings.validation.invalidAlias));
     });
     it('should throw if you provide an invalid cooldown', function() {
-      assert.throws(() => new Command(commandDataNonNumberCooldown));
-      assert.throws(() => new Command(commandDataNegativeCooldown));
+      assert.throws(
+        () => new Command(commandDataNonNumberCooldown),
+        err => errorStringMatches(err, strings.validation.invalidCooldown));
+      assert.throws(
+        () => new Command(commandDataNegativeCooldown),
+        err => errorStringMatches(err, strings.validation.negativeCooldown));
     });
     it('should throw if provided an invalid action', function() {
-      assert.throws(() => new Command(commandDataNoAction));
-      assert.throws(() => new Command(commandDataInvalidAction));
+      assert.throws(
+        () => new Command(commandDataNoAction),
+        err => errorStringMatches(err, strings.validation.noAction));
+      assert.throws(
+        () => new Command(commandDataInvalidAction),
+        err => errorStringMatches(err, strings.validation.noAction));
     });
     it('should throw if canBeChannelRestricted is true but no/invalid uniqueId is provided', function() {
-      assert.throws(() => new Command(commandDataMissingUniqueId));
-      assert.throws(() => new Command(commandDataNonStringUniqueId));
+      assert.throws(
+        () => new Command(commandDataMissingUniqueId),
+        err => errorStringMatches(err, strings.validation.needsUniqueId));
+      assert.throws(
+        () => new Command(commandDataNonStringUniqueId),
+        err => errorStringMatches(err, strings.validation.needsUniqueId));
     });
     it('should throw if serverAdminOnly is invalid', function() {
-      assert.throws(() => new Command(commandDataInvalidServerAdminOnly));
+      assert.throws(
+        () => new Command(commandDataInvalidServerAdminOnly),
+        err => errorStringMatches(err, strings.validation.invalidServerAdminOnly));
     });
     it('should throw if botAdminOnly is invalid', function() {
       assert.throws(() => new Command(commandDataInvalidBotAdminOnly));
