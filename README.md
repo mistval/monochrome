@@ -33,6 +33,18 @@ module.exports = {
 };
 ```
 Save that as helloworld.js and drop it into the monochrome/commands directory. Start your bot and say bot!hello or bot!hi to get a response. (If your bot is already running, you can use the }reload command to reload commands).
+### Making it yours
+The demo version of monochrome comes with demo commands, message processors, settings, and configuration. While some of these are useful, such as the set avatar command, others are not, and you will wish to delete them. To make the bot yours, you should:
+
+<ol>
+<li>Delete unwanted commands from monochrome/commands. Simply delete the files for the commands you don't want.</li>
+<li>Delete unwanted message processors from monochrome/message_processors. Simply delete the files for the message processors you don't want.</li>
+<li>Delete the settings in monochrome/server_settings.js. You can leave the file empty, but you should not delete it.</li>
+<li>Write code for your own commands and add them to monochrome/commands.</li>
+<li>Write code for your own message processors and add them to monochrome/message_processors.</li>
+<li>Add your own settings hierarchy to monochrome/server_settings.js.</li>
+<li>Update monochrome/config.json with your desired configuration.</li>
+</ol>
 ## Advanced
 Here is a full explanation of the fields in monochrome/config.json:
 ```json
