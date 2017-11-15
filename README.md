@@ -250,7 +250,7 @@ Here is an example of throwing PublicError:
 ```js
 ...
 }).catch(err => {
-  throw new PublicError('Sorry, Jisho is not responding. Please try again later.', 'Error fetching from Jisho', err);
+  throw new PublicError('Sorry, Jisho is not responding. Please try again later.', false, 'Error fetching from Jisho', err);
 });
 ```
 When the command manager catches your PublicError, it will send the public message to the channel:
@@ -261,7 +261,13 @@ It will also log the error with the error reason and the stack trace:
 
 ![PublicError log message](https://github.com/mistval/monochrome/blob/master/public_error_log.png)
 
-All three arguments for PublicError's constructor are optional. Pass in undefined or null for any arguments you don't want to provide. The first argument can be an object with an embed.
+The arguments for PublicError's constructor are:
+1. {String} An error message to send to the user.
+2. {Boolean} True if the message should be automatically deleted after a short period of time. False if it should not be deleted.
+3. {String} A brief description of the failure to print in the logs.
+4. {Error} The internal error, if there is one.
+
+Any and all arguments can be undefined.
 ## Sample bot
 Add my bot [Kotoba](https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot) to your server to see an example of a bot running on monochrome.
 ## Help
