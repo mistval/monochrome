@@ -11,6 +11,8 @@ const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
 const USER_MENTION_REPLACE_REGEX = new RegExp('<@user>', 'g');
 const USER_NAME_REPLACE_REGEX = new RegExp('<user>', 'g');
 
+let RepeatingQueue;
+
 function validateConfiguration(config) {
   let errorMessage;
   if (!config.botToken) {
@@ -119,7 +121,7 @@ class Monochrome {
       throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
     }
     botExists = true;
-    this.configFilePath_ = configFilePath_;
+    this.configFilePath_ = configFilePath;
     this.commandsDirectoryPath_ = commandsDirectoryPath;
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
     this.settingsFilePath_ = settingsFilePath;
@@ -127,11 +129,17 @@ class Monochrome {
     this.botMentionString_ = '';
     persistence.init();
     this.config_ = reload(this.configFilePath_);
+    logger.initialize(__dirname + '/' + this.config_.logsDirectory, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_);
     this.bot_ = new Eris(this.config_.botToken);
-    logger.initialize(__dirname + '/' + this.config_.logsDirectory, this.config_.useANSIColorsInLogFiles);
-    reloadCore();
+    this.reloadCore_();
+  }
 
+  connect() {
+    if (this.connected_) {
+      return;
+    }
+    this.connected_ = true;
     this.bot_.on('ready', () => {
       logger.logSuccess(LOGGER_TITLE, 'Bot ready.');
       this.botMentionString_ = '<@' + this.bot_.user.id + '>';
@@ -147,19 +155,19 @@ class Monochrome {
         return;
       }
       try {
-        if (commandManager.processInput(this.bot_, msg)) {
+        if (this.commandManager_.processInput(this.bot_, msg)) {
           return;
         }
-        if (messageProcessorManager.processInput(this.bot_, msg, this.config_)) {
+        if (this.messageProcessorManager_.processInput(this.bot_, msg, this.config_)) {
           return;
         }
         if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-          msg.channel.createMessage(createDMOrMentionReply(this.config_.genericMentionReply, msg));
+          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
           logger.logInputReaction('MENTION', msg, '', true);
           return;
         }
         if (!msg.channel.guild && this.config_.genericDMReply) {
-          msg.channel.createMessage(createDMOrMentionReply(this.config_.genericDMReply, msg));
+          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
           logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
           return;
         }
@@ -229,15 +237,21 @@ class Monochrome {
     persistence.reload();
     navigationManager.reload();
 
-    RepeatingQueue = reload('./core/repeating_queue.js');
+    RepeatingQueue = reload('./repeating_queue.js');
     this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
-    this.settingsManager_ = new (reload('./core/settings_manager.js'))(logger, this.config_);
-    let settingsManagerCommands = settingsManager.collectCommands();
-    let settingsGetter = settingsManager.createSettingsGetter();
-    this.messageProcessorManager_ = new (reload('./core/message_processor_manager.js'))(logger);
-    this.commandManager_ = new (reload('./core/command_manager.js'))(this.reloadCore_, logger, this.config_, settingsGetter);
+    this.settingsManager_ = new (reload('./settings_manager.js'))(logger, this.config_);
+    let settingsManagerCommands = this.settingsManager_.collectCommands();
+    let settingsGetter = this.settingsManager_.createSettingsGetter();
+    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(logger);
+    this.commandManager_ = new (reload('./command_manager.js'))(this.reloadCore_, logger, this.config_, settingsGetter);
     this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands).then(() => {
-      this.settingsManager_.load(commandManager.collectSettingsCategories(), [this.settingsFilePath_], this.config_);
+      let settingsFilePaths = [];
+      if (this.settingsFilePath_) {
+        settingsFilePaths.push(this.settingsFilePath_);
+      }
+      this.settingsManager_.load(this.commandManager_.collectSettingsCategories(), settingsFilePaths, this.config_);
+    }).catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
   }
@@ -259,7 +273,7 @@ class Monochrome {
       }
       if (this.config_.statusRotation.length > 0) {
         if (this.config_.statusRotation.length > 1) {
-          this.rotateStatusesTimeoutHandle_ = setTimeout(rotateStatuses, this.config_.statusRotationIntervalInSeconds * 1000, this.config_);
+          this.rotateStatusesTimeoutHandle_ = setTimeout(this.rotateStatuses_, this.config_.statusRotationIntervalInSeconds * 1000, this.config_);
         }
 
         let nextStatus = this.statusQueue_.pop();
@@ -281,3 +295,5 @@ class Monochrome {
     }
   }
 }
+
+module.exports = Monochrome;
