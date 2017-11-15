@@ -1,5 +1,4 @@
 'use strict'
-
 const reload = require('require-reload')(require);
 const PublicError = reload('./../core/public_error.js');
 
