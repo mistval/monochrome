@@ -16,6 +16,8 @@ const MsgIsBotAndServerAdmin = new MockMessage('channel1', 'bot-admin-id', 'User
 const MsgDM = new MockMessage('channel1', 'not-bot-admin', 'Username');
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
+const ENABLED_COMMANDS_CATEGORY_NAME = 'enabled_commands';
+
 let enabledSettingsGetter = {
   getSettings: (bot, msg, fullyQualifiedUserFacingSettingNames) => {
     let settings = {
@@ -123,6 +125,13 @@ const commandDataInvalidOnlyInServer = {
   action(bot, msg, suffix) { },
 };
 
+const commandDataInvalidCanHandleExtension = {
+  canBeChannelRestricted: false,
+  commandAliases: ['alias1', 'alias2'],
+  canHandleExtension: 5,
+  action(bot, msg, suffix) { },
+};
+
 const validCommandDataWith1SecondCooldown = {
   canBeChannelRestricted: false,
   commandAliases: ['alias1', 'alias2'],
@@ -177,6 +186,12 @@ const invalidRequiredSettings2 = {
   commandAliases: 'alias1',
   canBeChannelRestricted: false,
   requiredSettings: [534545],
+  action(bot, msg, suffix) { this.invoked = true; },
+};
+
+const invalidAliasContainsSeparatorCharacter = {
+  commandAliases: 'al/ias1',
+  canBeChannelRestricted: false,
   action(bot, msg, suffix) { this.invoked = true; },
 };
 
@@ -246,110 +261,123 @@ const validCommandDatas = [
 
 function errorStringMatches(error, errorString) {
   if (error.logDescription) {
-    return error.logDescription === errorString;
+    return error.logDescription === errorString && !!errorString;
   }
-  return error.message === errorString;
+  return error.message === errorString && !!errorString;
 }
+
+const settingsCategorySeparator = (new MockConfig()).settingsCategorySeparator;
 
 describe('Command', function() {
   describe('constructor()', function() {
     it('should throw if there is no data', function() {
       assert.throws(
-        () => new Command(),
+        () => new Command(undefined, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.noData));;
     });
     it('should throw if you don\'t provide any command aliases', function() {
       assert.throws(
-        () => new Command(commandDataNoAliases),
+        () => new Command(commandDataNoAliases, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.noAliases));
       assert.throws(
-        () => new Command(commandDataUndefinedAliases),
+        () => new Command(commandDataUndefinedAliases, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.noAliases));
     });
     it('should throw if you provide an invalid alias', function() {
       assert.throws(
-        () => new Command(commandDataBlankAlias),
+        () => new Command(commandDataBlankAlias, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidAlias));
       assert.throws(
-        () => new Command(commandDataNonStringAliases),
+        () => new Command(commandDataNonStringAliases, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidAlias));
     });
     it('should throw if you provide an invalid cooldown', function() {
       assert.throws(
-        () => new Command(commandDataNonNumberCooldown),
+        () => new Command(commandDataNonNumberCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidCooldown));
       assert.throws(
-        () => new Command(commandDataNegativeCooldown),
+        () => new Command(commandDataNegativeCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.negativeCooldown));
     });
     it('should throw if provided an invalid action', function() {
       assert.throws(
-        () => new Command(commandDataNoAction),
+        () => new Command(commandDataNoAction, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.noAction));
       assert.throws(
-        () => new Command(commandDataInvalidAction),
+        () => new Command(commandDataInvalidAction, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.noAction));
     });
     it('should throw if canBeChannelRestricted is true but no/invalid uniqueId is provided', function() {
       assert.throws(
-        () => new Command(commandDataMissingUniqueId),
+        () => new Command(commandDataMissingUniqueId, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.needsUniqueId));
       assert.throws(
-        () => new Command(commandDataNonStringUniqueId),
+        () => new Command(commandDataNonStringUniqueId, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.needsUniqueId));
     });
     it('should throw if serverAdminOnly is invalid', function() {
       assert.throws(
-        () => new Command(commandDataInvalidServerAdminOnly),
+        () => new Command(commandDataInvalidServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidServerAdminOnly));
     });
     it('should throw if botAdminOnly is invalid', function() {
       assert.throws(
-        () => new Command(commandDataInvalidBotAdminOnly),
+        () => new Command(commandDataInvalidBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidBotAdminOnly));
     });
     it('should throw if canBeChannelRestricted is invalid', function() {
       assert.throws(
-        () => new Command(commandDataInvalidCanBeChannelRestricted),
+        () => new Command(commandDataInvalidCanBeChannelRestricted, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidCanBeChannelRestricted));
     });
     it('should throw if onlyInServer is invalid', function() {
       assert.throws(
-        () => new Command(commandDataInvalidOnlyInServer),
+        () => new Command(commandDataInvalidOnlyInServer, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidOnlyInServer));
     });
     it('should not throw on valid command data', function() {
       for (let validCommandData of validCommandDatas) {
-        new Command(validCommandData);
+        new Command(validCommandData, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       }
     });
     it('should convert one string to an array', function() {
       let alias = validCommandStringAlias.commandAliases;
-      let command = new Command(validCommandStringAlias);
+      let command = new Command(validCommandStringAlias, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.deepEqual(command.aliases, [alias]);
     });
     it('should accept valid requiredSettings values', function() {
-      let command = new Command(validRequiredSettings1);
-      command = new Command(validRequiredSettings2);
+      let command = new Command(validRequiredSettings1, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      command = new Command(validRequiredSettings2, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
     });
     it('should throw on invalid requiredSettings values', function() {
       assert.throws(
-        () => new Command(invalidRequiredSettings1),
+        () => new Command(invalidRequiredSettings1, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.invalidRequiredSettings));
       assert.throws(
-        () => new Command(invalidRequiredSettings2),
+        () => new Command(invalidRequiredSettings2, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
         err => errorStringMatches(err, strings.validation.nonStringSetting));
     });
+    it('should throw if canHandleExtension is invalid', function() {
+      assert.throws(
+        () => new Command(commandDataInvalidCanHandleExtension, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
+        err => errorStringMatches(err, strings.validation.invalidCanHandleExtension));
+    });
+    it('should throw if a command alias contains the command separator string', function() {
+      assert.throws(
+        () => new Command(invalidAliasContainsSeparatorCharacter, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
+        err => errorStringMatches(err, strings.validation.createCannotContainCategorySeparatorString(settingsCategorySeparator)));
+    });
     it('should correctly auto-set canBeChannelRestricted if it\'s undefined', function() {
-      let command1 = new Command(validCommandUndefinedCanBeChannelRestrictedAdminCommand);
-      let command2 = new Command(validCommandUndefinedCanBeChannelRestrictedUserCommand);
+      let command1 = new Command(validCommandUndefinedCanBeChannelRestrictedAdminCommand, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      let command2 = new Command(validCommandUndefinedCanBeChannelRestrictedUserCommand, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert(!command1.createEnabledSetting());
       assert(command2.createEnabledSetting());
     });
   });
   describe('handle()', function() {
     it('should not execute if not cooled down', function() {
-      let command = new Command(validCommandDataWith1SecondCooldown);
+      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      assert(command.getCooldown() === validCommandDataWith1SecondCooldown.cooldown);
       return command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(result1 => {
         return assert.throws(
           () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
@@ -357,7 +385,7 @@ describe('Command', function() {
       });
     });
     it('should execute if cooled down', function(done) {
-      let command = new Command(validCommandDataWith1SecondCooldown);
+      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(invoke1Result => {
         setTimeout(() => {
           command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(invoke2Result => {
@@ -372,55 +400,57 @@ describe('Command', function() {
       }).catch(done);
     });
     it('should not execute if user must be a bot admin but is not', function() {
-      let command = new Command(validCommandDataBotAdminOnly);
+      let command = new Command(validCommandDataBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
       assert.throws(
         () => command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
+      assert(command.getIsForBotAdminOnly());
     });
     it('should execute if user must be a bot admin and is', function() {
-      let command = new Command(validCommandDataBotAdminOnly);
+      let command = new Command(validCommandDataBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       return command.handle(null, MsgIsBotAdmin, '', '', config, enabledSettingsGetter).then(invoke1Result => {
         assert(invoke1Result === undefined && command.invoked);
       });
     });
     it('should not execute if must be in server but is not', function() {
-      let command = new Command(validCommandServerOnly);
+      let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgDM, '', '', config, enabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyInServerLog));
     });
     it('should execute if must be in server and is', function() {
-      let command = new Command(validCommandServerOnly);
+      let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       return command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(() => {
         assert(command.invoked);
       });
     });
     it('should not execute if user must be a server admin but is not', function() {
-      let command = new Command(validCommandDataServerAdminOnly);
+      let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.mustBeServerAdminLog));
     });
     it('should execute if user must be a server admin, is not, but its a DM', function() {
-      let command = new Command(validCommandDataServerAdminOnly);
+      let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       return command.handle(null, MsgDM, '', '', config, enabledSettingsGetter).then(() => {
         assert(command.invoked);
       });
     });
     it('should execute if user must be a server admin and is', function() {
-      let command = new Command(validCommandDataServerAdminOnly);
+      let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       return command.handle(null, MsgIsBotAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
+        assert(command.getIsForServerAdminOnly());
         assert(invokeResult === undefined && command.invoked);
-        command = new Command(validCommandDataServerAdminOnly);
+        command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
         return command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter).then(invokeResult => {
           assert(invokeResult === undefined && command.invoked);
-          command = new Command(validCommandDataServerAdminOnly);
+          command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
           return command.handle(null, MsgIsServerAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
             assert(invokeResult === undefined && command.invoked);
-            command = new Command(validCommandDataServerAdminOnly);
+            command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
             return command.handle(null, MsgIsBotAndServerAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
               assert(invokeResult === undefined && command.invoked);
             });
@@ -435,7 +465,7 @@ describe('Command', function() {
   describe('createEnabledSetting()', function() {
     it('should return a valid setting that the SettingsManager can load', function() {
       let logger = new MockLogger();
-      let command = new Command(validCommandServerOnly);
+      let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       let setting = command.createEnabledSetting();
       let settingsManager = new SettingsManager(logger, config);
       assert(logger.failed !== true);

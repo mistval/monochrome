@@ -3,6 +3,7 @@ class MockConfig {
     this.botAdminIds = botAdminIds;
     this.serverAdminRoleName = serverAdminRole;
     this.genericErrorMessage = 'Error';
+    this.settingsCategorySeparator = '/';
   }
 }
 

@@ -17,7 +17,10 @@ function sanitizeCommandData(commandData, settingsCategorySeparator) {
   for (let alias of commandData.commandAliases) {
     if (typeof alias !== typeof '' || alias === '') {
       throw new Error(strings.validation.invalidAlias);
+    } else if (settingsCategorySeparator && alias.indexOf(settingsCategorySeparator) !== -1) {
+      throw new Error(strings.validation.createCannotContainCategorySeparatorString(settingsCategorySeparator));
     }
+
     aliases.push(alias.toLowerCase());
   }
   commandData.commandAliases = aliases;
@@ -68,9 +71,6 @@ function sanitizeCommandData(commandData, settingsCategorySeparator) {
   if (commandData.requiredSettings.find(setting => typeof setting !== typeof '')) {
     throw new Error(strings.validation.nonStringSetting);
   }
-  if (settingsCategorySeparator && commandData.commandAliases.find(alias => alias.indexOf(settingsCategorySeparator) !== -1)) {
-    throw new Error(strings.validation.createCannotContainCategorySeparatorString(settingsCategorySeparator));
-  }
   return commandData;
 }
 
@@ -85,6 +85,12 @@ class Command {
   * @param {Object} commandData - The raw command loaded from a command file.
   */
   constructor(commandData, settingsCategorySeparator, enabledCommandsSettingsCategoryFullyQualifiedUserFacingName) {
+    if (!settingsCategorySeparator) {
+      throw new Error(strings.validation.noSettingsCategorySeparator);
+    }
+    if (!enabledCommandsSettingsCategoryFullyQualifiedUserFacingName) {
+      throw new Error(strings.validation.noEnabledCommandsCategoryName);
+    }
     commandData = sanitizeCommandData(commandData, settingsCategorySeparator);
     this.aliases = commandData.commandAliases;
     this.uniqueId = commandData.uniqueId;
