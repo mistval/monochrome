@@ -6,6 +6,7 @@ const ReloadCommand = reload('./commands/reload.js');
 const PublicError = reload('./public_error.js');
 const HelpCommand = reload('./commands/help.js');
 const ErisUtils = reload('./util/eris_utils.js');
+const strings = reload('./string_factory.js').commandManager;
 
 const COMMAND_CATEGORY_NAME = 'enabled_commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'disabled_commands_fail_silently';
@@ -118,7 +119,7 @@ class CommandManager {
           let commandData = reload(commandFile);
           commandDatasToLoad.push(commandData);
         } catch (e) {
-          this.logger_.logFailure(loggerTitle, 'Failed to load command from file: ' + commandFile, e);
+          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
           continue;
         }
       }
@@ -129,17 +130,17 @@ class CommandManager {
         try {
           command = new Command(commandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME);
         } catch (err) {
-          this.logger_.logFailure(loggerTitle, failureMessageStart + '.', err);
+          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId), err);
           continue;
         }
         if (commandData.uniqueId && this.commands_.find(cmd => cmd.uniqueId === commandData.uniqueId)) {
-          this.logger_.logFailure(loggerTitle, failureMessageStart + '. Error: uniqueId: ' + commandData.uniqueId + ' not unique');
+          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueUniqueIdMessage(commandData.uniqueId));
           continue;
         }
 
         let duplicateAlias = getDuplicateAlias(command, this.commands_);
         if (duplicateAlias) {
-          this.logger_.logFailure(loggerTitle, failureMessageStart + commandFile + '. Error: alias: ' + duplicateAlias + ' is not unique');
+          this.logger_.logFailure(loggerTitle, createNonUniqueAliasMessage(duplicateAlias));
           continue;
         }
 

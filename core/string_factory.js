@@ -50,3 +50,22 @@ module.exports.command = {
     },
   },
 };
+
+module.exports.commandManager = {
+  validation: {
+    createFailedToLoadCommandFromFileMessage(file) {
+      return 'Failed to load command from file: ' + file;
+    },
+    createFailedToLoadCommandWithUniqueIdMessage(uniqueId) {
+      return 'Failed to load command with uniqueId: ' + uniqueId + '.';
+    },
+    createNonUniqueUniqueIdMessage(uniqueId) {
+      return module.exports.commandManager.createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
+        ' Error: uniqueId: ' + uniqueId + ' not unique.';
+    },
+    createNonUniqueAliasMessage(uniqueId, duplicateAlias) {
+      return module.exports.commandManager.createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
+        ' Error: alias: ' + duplicateAlias + ' is not unique.';
+    },
+  },
+}
