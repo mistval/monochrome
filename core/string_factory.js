@@ -13,6 +13,7 @@ module.exports.command = {
     negativeCooldown: 'Cooldown is less than 0. Cannot reverse time.',
     needsUniqueId: 'Command has canBeChannelRestricted true (or undefined, defaulting to true), but does not have a uniqueId, or its uniqueId is not a string. Commands that can be channel restricted must have a uniqueId.',
     nonStringSetting: 'A required setting is not a string.',
+    invalidRequiredSettings: 'Invalid value for requiredSettings. It must be a string or an array of strings.',
     createCannotContainCategorySeparatorString(separator) {
       return `An alias contains the settings category separator (${separator}). It must not.`;
     },

@@ -62,6 +62,9 @@ function sanitizeCommandData(commandData, settingsCategorySeparator) {
   } else if (commandData.requiredSettings === undefined) {
     commandData.requiredSettings = [];
   }
+  if (!Array.isArray(commandData.requiredSettings)) {
+    throw new Error(strings.validation.invalidRequiredSettings);
+  }
   if (commandData.requiredSettings.find(setting => typeof setting !== typeof '')) {
     throw new Error(strings.validation.nonStringSetting);
   }

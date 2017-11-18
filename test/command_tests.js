@@ -245,8 +245,8 @@ const validCommandDatas = [
 ];
 
 function errorStringMatches(error, errorString) {
-  if (error.publicMessage) {
-    return error.publicMessage === errorString;
+  if (error.logDescription) {
+    return error.logDescription === errorString;
   }
   return error.message === errorString;
 }
@@ -304,13 +304,19 @@ describe('Command', function() {
         err => errorStringMatches(err, strings.validation.invalidServerAdminOnly));
     });
     it('should throw if botAdminOnly is invalid', function() {
-      assert.throws(() => new Command(commandDataInvalidBotAdminOnly));
+      assert.throws(
+        () => new Command(commandDataInvalidBotAdminOnly),
+        err => errorStringMatches(err, strings.validation.invalidBotAdminOnly));
     });
     it('should throw if canBeChannelRestricted is invalid', function() {
-      assert.throws(() => new Command(commandDataInvalidCanBeChannelRestricted));
+      assert.throws(
+        () => new Command(commandDataInvalidCanBeChannelRestricted),
+        err => errorStringMatches(err, strings.validation.invalidCanBeChannelRestricted));
     });
     it('should throw if onlyInServer is invalid', function() {
-      assert.throws(() => new Command(commandDataInvalidOnlyInServer));
+      assert.throws(
+        () => new Command(commandDataInvalidOnlyInServer),
+        err => errorStringMatches(err, strings.validation.invalidOnlyInServer));
     });
     it('should not throw on valid command data', function() {
       for (let validCommandData of validCommandDatas) {
@@ -327,8 +333,12 @@ describe('Command', function() {
       command = new Command(validRequiredSettings2);
     });
     it('should throw on invalid requiredSettings values', function() {
-      assert.throws(() => new Command(invalidRequiredSettings1));
-      assert.throws(() => new Command(invalidRequiredSettings2));
+      assert.throws(
+        () => new Command(invalidRequiredSettings1),
+        err => errorStringMatches(err, strings.validation.invalidRequiredSettings));
+      assert.throws(
+        () => new Command(invalidRequiredSettings2),
+        err => errorStringMatches(err, strings.validation.nonStringSetting));
     });
     it('should correctly auto-set canBeChannelRestricted if it\'s undefined', function() {
       let command1 = new Command(validCommandUndefinedCanBeChannelRestrictedAdminCommand);
@@ -341,7 +351,9 @@ describe('Command', function() {
     it('should not execute if not cooled down', function() {
       let command = new Command(validCommandDataWith1SecondCooldown);
       return command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(result1 => {
-        return assert.throws(() => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter));
+        return assert.throws(
+          () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+          err => errorStringMatches(err, strings.invokeFailure.notCooledDownLogDescription));
       });
     });
     it('should execute if cooled down', function(done) {
@@ -354,15 +366,19 @@ describe('Command', function() {
             } else {
               done('Failed to cool down');
             }
-          });
+          }).catch(done);
         },
         1500);
-      });
+      }).catch(done);
     });
     it('should not execute if user must be a bot admin but is not', function() {
       let command = new Command(validCommandDataBotAdminOnly);
-      assert.throws(() => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter));
-      assert.throws(() => command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter));
+      assert.throws(
+        () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+        err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
+      assert.throws(
+        () => command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter),
+        err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
     });
     it('should execute if user must be a bot admin and is', function() {
       let command = new Command(validCommandDataBotAdminOnly);
@@ -372,7 +388,9 @@ describe('Command', function() {
     });
     it('should not execute if must be in server but is not', function() {
       let command = new Command(validCommandServerOnly);
-      assert.throws(() => command.handle(null, MsgDM, '', '', config, enabledSettingsGetter));
+      assert.throws(
+        () => command.handle(null, MsgDM, '', '', config, enabledSettingsGetter),
+        err => errorStringMatches(err, strings.invokeFailure.onlyInServerLog));
     });
     it('should execute if must be in server and is', function() {
       let command = new Command(validCommandServerOnly);
@@ -382,7 +400,9 @@ describe('Command', function() {
     });
     it('should not execute if user must be a server admin but is not', function() {
       let command = new Command(validCommandDataServerAdminOnly);
-      assert.throws(() => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter));
+      assert.throws(
+        () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+        err => errorStringMatches(err, strings.invokeFailure.mustBeServerAdminLog));
     });
     it('should execute if user must be a server admin, is not, but its a DM', function() {
       let command = new Command(validCommandDataServerAdminOnly);
