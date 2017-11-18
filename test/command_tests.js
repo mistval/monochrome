@@ -18,17 +18,24 @@ const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
 const ENABLED_COMMANDS_CATEGORY_NAME = 'enabled_commands';
 
-let enabledSettingsGetter = {
-  getSettings: (bot, msg, fullyQualifiedUserFacingSettingNames) => {
-    let settings = {
-      serverSettings: {},
-    };
-    for (let fullyQualifiedUserFacingSettingName of fullyQualifiedUserFacingSettingNames) {
-      settings.serverSettings[fullyQualifiedUserFacingSettingName] = true;
+function createSettingsGetter(commandEnabled, otherSettings) {
+  return {
+    getSettings: (bot, msg, fullyQualifiedUserFacingSettingNames) => {
+      let settings = {};
+      for (let fullyQualifiedUserFacingSettingName of fullyQualifiedUserFacingSettingNames) {
+        settings[fullyQualifiedUserFacingSettingName] = commandEnabled;
+      }
+      otherSettings = otherSettings || {};
+      for (let otherSetting of Object.keys(otherSettings)) {
+        settings[otherSetting] = otherSettings[otherSetting];
+      }
+      return Promise.resolve(settings);
     }
-    return Promise.resolve(settings);
-  }
-};
+  };
+}
+
+let commandEnabledSettingsGetter = createSettingsGetter(true);
+let commandDisabledSettingsGetter = createSettingsGetter(false);
 
 if (!persistence.initialized_) {
   persistence.init({dir: './test/persistence'});
@@ -133,7 +140,8 @@ const commandDataInvalidCanHandleExtension = {
 };
 
 const validCommandDataWith1SecondCooldown = {
-  canBeChannelRestricted: false,
+  canBeChannelRestricted: true,
+  uniqueId: 'coolcool',
   commandAliases: ['alias1', 'alias2'],
   cooldown: 1,
   action(bot, msg, suffix) { this.invoked = true; },
@@ -270,6 +278,16 @@ const settingsCategorySeparator = (new MockConfig()).settingsCategorySeparator;
 
 describe('Command', function() {
   describe('constructor()', function() {
+    it('should throw if there\'s no settingsCategorySeparator', function() {
+      assert.throws(
+        () => new Command(validCommandStringAlias, undefined, ENABLED_COMMANDS_CATEGORY_NAME),
+        err => errorStringMatches(err, strings.validation.noSettingsCategorySeparator));
+    });
+    it('should throw if there\'s no settings category name', function() {
+      assert.throws(
+        () => new Command(validCommandStringAlias, settingsCategorySeparator),
+        err => errorStringMatches(err, strings.validation.noEnabledCommandsCategoryName));
+    });
     it('should throw if there is no data', function() {
       assert.throws(
         () => new Command(undefined, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME),
@@ -378,17 +396,17 @@ describe('Command', function() {
     it('should not execute if not cooled down', function() {
       let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert(command.getCooldown() === validCommandDataWith1SecondCooldown.cooldown);
-      return command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(result1 => {
+      return command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(result1 => {
         return assert.throws(
-          () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+          () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
           err => errorStringMatches(err, strings.invokeFailure.notCooledDownLogDescription));
       });
     });
     it('should execute if cooled down', function(done) {
       let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(invoke1Result => {
+      command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(invoke1Result => {
         setTimeout(() => {
-          command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(invoke2Result => {
+          command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(invoke2Result => {
             if (invoke1Result === undefined && typeof invoke2Result !== typeof '') {
               done();
             } else {
@@ -402,64 +420,72 @@ describe('Command', function() {
     it('should not execute if user must be a bot admin but is not', function() {
       let command = new Command(validCommandDataBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
-        () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+        () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
       assert.throws(
-        () => command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter),
+        () => command.handle(null, MsgIsServerAdminWithTag, '', '', config, commandEnabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
       assert(command.getIsForBotAdminOnly());
     });
     it('should execute if user must be a bot admin and is', function() {
       let command = new Command(validCommandDataBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      return command.handle(null, MsgIsBotAdmin, '', '', config, enabledSettingsGetter).then(invoke1Result => {
+      return command.handle(null, MsgIsBotAdmin, '', '', config, commandEnabledSettingsGetter).then(invoke1Result => {
         assert(invoke1Result === undefined && command.invoked);
       });
     });
     it('should not execute if must be in server but is not', function() {
       let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
-        () => command.handle(null, MsgDM, '', '', config, enabledSettingsGetter),
+        () => command.handle(null, MsgDM, '', '', config, commandEnabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.onlyInServerLog));
     });
     it('should execute if must be in server and is', function() {
       let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      return command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter).then(() => {
+      return command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(() => {
         assert(command.invoked);
       });
     });
     it('should not execute if user must be a server admin but is not', function() {
       let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
-        () => command.handle(null, MsgNoPerms, '', '', config, enabledSettingsGetter),
+        () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
         err => errorStringMatches(err, strings.invokeFailure.mustBeServerAdminLog));
     });
     it('should execute if user must be a server admin, is not, but its a DM', function() {
       let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      return command.handle(null, MsgDM, '', '', config, enabledSettingsGetter).then(() => {
+      return command.handle(null, MsgDM, '', '', config, commandEnabledSettingsGetter).then(() => {
         assert(command.invoked);
       });
     });
     it('should execute if user must be a server admin and is', function() {
       let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      return command.handle(null, MsgIsBotAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
+      return command.handle(null, MsgIsBotAdmin, '', '', config, commandEnabledSettingsGetter).then(invokeResult => {
         assert(command.getIsForServerAdminOnly());
         assert(invokeResult === undefined && command.invoked);
         command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-        return command.handle(null, MsgIsServerAdminWithTag, '', '', config, enabledSettingsGetter).then(invokeResult => {
+        return command.handle(null, MsgIsServerAdminWithTag, '', '', config, commandEnabledSettingsGetter).then(invokeResult => {
           assert(invokeResult === undefined && command.invoked);
           command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-          return command.handle(null, MsgIsServerAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
+          return command.handle(null, MsgIsServerAdmin, '', '', config, commandEnabledSettingsGetter).then(invokeResult => {
             assert(invokeResult === undefined && command.invoked);
             command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-            return command.handle(null, MsgIsBotAndServerAdmin, '', '', config, enabledSettingsGetter).then(invokeResult => {
+            return command.handle(null, MsgIsBotAndServerAdmin, '', '', config, commandEnabledSettingsGetter).then(invokeResult => {
               assert(invokeResult === undefined && command.invoked);
             });
           });
         });
       });
     });
-    it('should be able to be restricted and unrestricted, and allow or refuse to allow itself to be invoked accordingly', function() {
-      // TODO. Add test.
+    it('should throw if disabled', function() {
+      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      return command.handle(null, MsgNoPerms, '', '', config, commandDisabledSettingsGetter).then(() => {
+        throw new Error('Should have thrown but didnt');
+      }).catch(err => {
+        if (errorStringMatches(err, strings.invokeFailure.commandDisabledLog)) {
+          return;
+        }
+        throw err;
+      });
     });
   });
   describe('createEnabledSetting()', function() {
