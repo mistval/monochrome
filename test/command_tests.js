@@ -166,7 +166,11 @@ const validCommandServerOnly = {
   uniqueId: 'serverOnlyffff',
   commandAliases: ['alias1', 'alias2'],
   onlyInServer: true,
-  action(bot, msg, suffix) { this.invoked = true; },
+  action(bot, msg, suffix) {
+    debugger;
+    assert(this.getEnabledSettingFullyQualifiedUserFacingName() === ENABLED_COMMANDS_CATEGORY_NAME + config.settingsCategorySeparator + 'alias1');
+    this.invoked = true;
+  },
 };
 
 const validCommandCanBeRestricted = {
