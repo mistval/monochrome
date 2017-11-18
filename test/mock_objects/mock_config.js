@@ -4,6 +4,7 @@ class MockConfig {
     this.serverAdminRoleName = serverAdminRole;
     this.genericErrorMessage = 'Error';
     this.settingsCategorySeparator = '/';
+    this.commandsToGenerateHelpFor = [];
   }
 }
 

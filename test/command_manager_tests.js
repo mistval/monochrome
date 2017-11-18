@@ -3,6 +3,7 @@ const MockLogger = require('./mock_objects/mock_logger.js');
 const MockMessage = require('./mock_objects/mock_message.js');
 const assert = require('assert');
 const MockConfig = require('./mock_objects/mock_config.js');
+const strings = require('./../core/string_factory.js').commandManager;
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
@@ -43,6 +44,7 @@ describe('CommandManager', function() {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/duplicate_unique_ids', []).then(() => {
+        assert(logger.failureMessage === strings.validation.createNonUniqueUniqueIdMessage('not unique'));
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
         let invokeResult2 = commandManager.processInput(null, MsgHelpCommand, config);
         assert(logger.failed === true);
@@ -53,6 +55,7 @@ describe('CommandManager', function() {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/duplicate_aliases', []).then(() => {
+        assert(logger.failureMessage === strings.validation.createNonUniqueAliasMessage(undefined, 'duplicate'));
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
         let invokeResult2 = commandManager.processInput(null, MsgHelpCommand, config);
         assert(logger.failed === true);
@@ -63,6 +66,7 @@ describe('CommandManager', function() {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/nonexistent_directory', []).then(() => {
+        assert(logger.failureMessage === strings.validation.genericError);
         assert(logger.failed === true);
       });
     });
@@ -71,6 +75,7 @@ describe('CommandManager', function() {
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/valid_throws', []).then(() => {
         commandManager.processInput(null, MsgAboutCommand, config);
+        assert(logger.failureMessage === strings.commandExecutionFailure.createErrorDescription(MsgAboutCommand.content));
         assert(logger.failed === true);
       });
     });

@@ -51,21 +51,36 @@ module.exports.command = {
   },
 };
 
+function createFailedToLoadCommandWithUniqueIdMessage(uniqueId) {
+  if (uniqueId) {
+    return 'Failed to load command with uniqueId: ' + uniqueId + '.';
+  }
+  return 'Failed to load command';
+}
+
 module.exports.commandManager = {
   validation: {
+    genericError: 'Error loading commands.',
     createFailedToLoadCommandFromFileMessage(file) {
       return 'Failed to load command from file: ' + file;
     },
     createFailedToLoadCommandWithUniqueIdMessage(uniqueId) {
-      return 'Failed to load command with uniqueId: ' + uniqueId + '.';
+      return createFailedToLoadCommandWithUniqueIdMessage(uniqueId);
     },
     createNonUniqueUniqueIdMessage(uniqueId) {
-      return module.exports.commandManager.createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
+      return createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
         ' Error: uniqueId: ' + uniqueId + ' not unique.';
     },
     createNonUniqueAliasMessage(uniqueId, duplicateAlias) {
-      return module.exports.commandManager.createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
+      return createFailedToLoadCommandWithUniqueIdMessage(uniqueId) +
         ' Error: alias: ' + duplicateAlias + ' is not unique.';
     },
   },
+  commandExecutionFailure: {
+    missingPermissionsDiscordError: 'Missing Permissions',
+    genericErrorDescriptionLog: 'Exception or promise rejection',
+    createErrorDescription(commandText) {
+      return 'Command \'' + commandText + '\' threw an exception or returned a promise that rejected.'
+    },
+  }
 }

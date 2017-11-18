@@ -16,14 +16,14 @@ function handleCommandError(msg, err, config, logger) {
   let errDescription = err.logDescription;
   let publicMessage = err.publicMessage;
   let deletePublicMessage = err.deleteAutomatically;
-  if (!publicMessage && err.message.indexOf('Missing Permissions') !== -1 && config.missingPermissionsErrorMessage) {
+  if (!publicMessage && err.message.indexOf(strings.commandExecutionFailure.missingPermissionsDiscordError) !== -1 && config.missingPermissionsErrorMessage) {
     publicMessage = config.missingPermissionsErrorMessage;
     if (!errDescription) {
-      errDescription = 'Missing permissions';
+      errDescription = strings.commandExecutionFailure.missingPermissionsDiscordError;
     }
   }
   if (!errDescription) {
-    errDescription = 'Exception or promise rejection';
+    errDescription = strings.commandExecutionFailure.genericErrorDescriptionLog;
   }
   if (typeof publicMessage !== typeof '') {
     publicMessage = config.genericErrorMessage;
@@ -41,7 +41,7 @@ function handleCommandError(msg, err, config, logger) {
   }
   logger.logInputReaction(loggerTitle, msg, '', false, errDescription);
   if (internalErr) {
-    logger.logFailure(loggerTitle, 'Command \'' + msg.content + '\' threw an exception or returned a promise that rejected.', internalErr);
+    logger.logFailure(loggerTitle, strings.commandExecutionFailure.createErrorDescription(msg.content));
   }
 }
 
@@ -125,7 +125,6 @@ class CommandManager {
       }
 
       for (let commandData of commandDatasToLoad) {
-        const failureMessageStart = 'Failed to load command with uniqueId: ' + commandData.uniqueId;
         let command;
         try {
           command = new Command(commandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME);
@@ -140,7 +139,7 @@ class CommandManager {
 
         let duplicateAlias = getDuplicateAlias(command, this.commands_);
         if (duplicateAlias) {
-          this.logger_.logFailure(loggerTitle, createNonUniqueAliasMessage(duplicateAlias));
+          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueAliasMessage(commandData.uniqueId, duplicateAlias));
           continue;
         }
 
@@ -159,7 +158,7 @@ class CommandManager {
         this.commands_.push(reloadCommand);
       }
     }).catch(err => {
-      this.logger_.logFailure(loggerTitle, 'Error loading commands.', err);
+      this.logger_.logFailure(loggerTitle, strings.validation.genericError, err);
     });
   }
 
