@@ -10,6 +10,9 @@ const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
 const MsgAboutCommandExtension = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!aboutextension suffix');
 const MsgHelpCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!help');
+const MsgIsBotAdminReload = new MockMessage('channel1', 'bot-admin-id', 'Username', ['Server Admin'], [], '}reload');
+const MsgIsServerAdminReload = new MockMessage('channel1', 'user1', 'Username', [], [], '}reload', ['manageGuild']);
+const MsgNoPermsReload = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], '}reload');
 
 function createSettingsGetter(commandEnabled, otherSettings) {
   return {
@@ -28,6 +31,23 @@ function createSettingsGetter(commandEnabled, otherSettings) {
 }
 
 let enabledSettingsGetter = createSettingsGetter(true);
+
+function testReloadCommand(msg, callback) {
+  let logger = new MockLogger();
+  let reloaded = false;
+  let reloadLamba = () => {
+    reloaded = true;
+  };
+  let commandManager = new CommandManager(reloadLamba, logger, config, enabledSettingsGetter);
+  commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings', []).then(() => {
+    commandManager.processInput(null, msg, config);
+    setTimeout(
+      () => {
+        debugger;
+        callback(reloaded);
+      }, 100);
+  });
+}
 
 describe('CommandManager', function() {
   describe('Load', function() {
@@ -140,6 +160,30 @@ describe('CommandManager', function() {
         assert(categories.length === 0);
         let settingsManager = new SettingsManager(logger, config);
         settingsManager.load(categories, [], config);
+      });
+    });
+    it('Reload command works for bot admin', function(done) {
+      testReloadCommand(MsgIsBotAdminReload, reloaded => {
+        if (reloaded) {
+          return done();
+        }
+        done('Didn\'t reload');
+      });
+    });
+    it('Reload command doesnt work for server admin', function(done) {
+      testReloadCommand(MsgIsServerAdminReload, reloaded => {
+        if (!reloaded) {
+          return done();
+        }
+        done('Reloaded, but should not have');
+      });
+    });
+    it('Reload command doesnt work for regular user', function(done) {
+      testReloadCommand(MsgNoPermsReload, reloaded => {
+        if (!reloaded) {
+          return done();
+        }
+        done('Reloaded, but should not have');
       });
     });
   });
