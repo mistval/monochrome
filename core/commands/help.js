@@ -174,7 +174,7 @@ class Help {
     if (helpText) {
       return msg.channel.createMessage(helpText);
     } else {
-      throw new PublicError('No commands to show help for', false, strings.noCommandsForHelpLog);
+      throw PublicError.createWithCustomPublicMessage('There are no commands to show help for. Perhaps the server admins disabled all my commands in this channel.', true, strings.noCommandsForHelpLog);
     }
   }
 }

@@ -157,21 +157,21 @@ class Command {
   handle(bot, msg, suffix, extension, config, settingsGetter) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
       let publicErrorMessage = strings.invokeFailure.createNotCooledDownString(msg.author.username, this.cooldown_);
-      throw new PublicError(publicErrorMessage, true, strings.invokeFailure.notCooledDownLogDescription);
+      throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, strings.invokeFailure.notCooledDownLogDescription);
     }
     let isBotAdmin = config.botAdminIds.indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
-      throw new PublicError(strings.invokeFailure.onlyBotAdmin, true, strings.invokeFailure.onlyBotAdminLog);
+      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.onlyBotAdmin, true, strings.invokeFailure.onlyBotAdminLog);
     }
     if (this.onlyInServer_ && !msg.channel.guild) {
-      throw new PublicError(strings.invokeFailure.onlyInServer, true, strings.invokeFailure.onlyInServerLog);
+      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.onlyInServer, true, strings.invokeFailure.onlyInServerLog);
     }
     if (this.serverAdminOnly_ && !isBotAdmin) {
       let isServerAdmin = userIsServerAdmin(msg, config);
 
       if (!isServerAdmin) {
         let publicMessage = strings.invokeFailure.createMustBeServerAdminString(config.serverAdminRoleName);
-        throw new PublicError(publicMessage, true, strings.invokeFailure.mustBeServerAdminLog);
+        throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.mustBeServerAdminLog);
       }
     }
 
@@ -186,7 +186,7 @@ class Command {
         return this.invokeAction_(bot, msg, suffix, settings, extension);
       }
 
-      throw new PublicError(strings.invokeFailure.commandDisabled, true, strings.invokeFailure.commandDisabledLog);
+      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.commandDisabled, true, strings.invokeFailure.commandDisabledLog);
     });
   }
 

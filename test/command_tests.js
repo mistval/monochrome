@@ -403,7 +403,11 @@ describe('Command', function() {
       return command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(result1 => {
         return assert.throws(
           () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
-          err => errorStringMatches(err, strings.invokeFailure.notCooledDownLogDescription));
+          err => {
+            let logger = new MockLogger();
+            err.output(logger, '', config, MsgNoPerms, false);
+            return logger.failureMessage === strings.invokeFailure.notCooledDownLogDescription;
+          });
       });
     });
     it('should execute if cooled down', function(done) {
@@ -425,10 +429,18 @@ describe('Command', function() {
       let command = new Command(validCommandDataBotAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
-        err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
+        err => {
+          let logger = new MockLogger();
+          err.output(logger, '', config, MsgNoPerms, false);
+          return logger.failureMessage === strings.invokeFailure.onlyBotAdminLog;
+        });
       assert.throws(
         () => command.handle(null, MsgIsServerAdminWithTag, '', '', config, commandEnabledSettingsGetter),
-        err => errorStringMatches(err, strings.invokeFailure.onlyBotAdminLog));
+        err => {
+          let logger = new MockLogger();
+          err.output(logger, '', config, MsgNoPerms, false);
+          return logger.failureMessage === strings.invokeFailure.onlyBotAdminLog;
+        });
       assert(command.getIsForBotAdminOnly());
     });
     it('should execute if user must be a bot admin and is', function() {
@@ -441,7 +453,11 @@ describe('Command', function() {
       let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgDM, '', '', config, commandEnabledSettingsGetter),
-        err => errorStringMatches(err, strings.invokeFailure.onlyInServerLog));
+        err => {
+          let logger = new MockLogger();
+          err.output(logger, '', config, MsgNoPerms, false);
+          return logger.failureMessage === strings.invokeFailure.onlyInServerLog;
+        });
     });
     it('should execute if must be in server and is', function() {
       let command = new Command(validCommandServerOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
@@ -453,7 +469,11 @@ describe('Command', function() {
       let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       assert.throws(
         () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
-        err => errorStringMatches(err, strings.invokeFailure.mustBeServerAdminLog));
+        err => {
+          let logger = new MockLogger();
+          err.output(logger, '', config, MsgNoPerms, false);
+          return logger.failureMessage === strings.invokeFailure.mustBeServerAdminLog;
+        });
     });
     it('should execute if user must be a server admin, is not, but its a DM', function() {
       let command = new Command(validCommandDataServerAdminOnly, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
@@ -485,7 +505,9 @@ describe('Command', function() {
       return command.handle(null, MsgNoPerms, '', '', config, commandDisabledSettingsGetter).then(() => {
         throw new Error('Should have thrown but didnt');
       }).catch(err => {
-        if (errorStringMatches(err, strings.invokeFailure.commandDisabledLog)) {
+        let logger = new MockLogger();
+        err.output(logger, '', config, MsgNoPerms, false);
+        if (logger.failureMessage === strings.invokeFailure.commandDisabledLog) {
           return;
         }
         throw err;

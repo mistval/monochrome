@@ -1,3 +1,11 @@
+module.exports.publicError = {
+  missingPermissionsDiscordError: 'Missing Permissions',
+  genericErrorDescriptionLog: 'Error',
+  createErrorDescription(commandText) {
+    return 'Command \'' + commandText + '\' errored.'
+  },
+};
+
 module.exports.command = {
   validation: {
     noData: 'No command data',
@@ -76,13 +84,6 @@ module.exports.commandManager = {
         ' Error: alias: ' + duplicateAlias + ' is not unique.';
     },
   },
-  commandExecutionFailure: {
-    missingPermissionsDiscordError: 'Missing Permissions',
-    genericErrorDescriptionLog: 'Exception or promise rejection',
-    createErrorDescription(commandText) {
-      return 'Command \'' + commandText + '\' threw an exception or returned a promise that rejected.'
-    },
-  }
 };
 
 module.exports.help = {

@@ -64,13 +64,13 @@ class MessageProcessorManager {
         if (result && result.then) {
           result.then(innerResult => {
             if (typeof innerResult === typeof '') {
-              throw new PublicError('', false, innerResult);
+              throw PublicError.createWithGenericPublicMessage(false, innerResult);
             }
             this.logger_.logInputReaction(loggerTitle, msg, processor.name, true);
           }).catch(err => handleError(msg, err, this.logger_));
           return true;
         } else if (typeof result === typeof '') {
-          throw new PublicError('', false, result);
+          throw PublicError.createWithGenericPublicMessage(false, result);
         } else if (result === true) {
           this.logger_.logInputReaction(loggerTitle, msg, processor.name, true);
           return true;

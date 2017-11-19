@@ -19,7 +19,7 @@ module.exports = {
   usageExample: '}dumpheap outputfilename',
   action(bot, msg, suffix) {
     if (!heapDump) {
-      throw new PublicError('Module \'heapdump\' not found. Did you install dev dependencies?', false, 'No heapdump module');
+      throw PublicError.createWithCustomPublicMessage('Module \'heapdump\' not found. Did you install dev dependencies?', false, 'No heapdump module');
     }
     if (!suffix) {
       suffix = undefined;

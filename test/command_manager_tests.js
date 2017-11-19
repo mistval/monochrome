@@ -4,6 +4,7 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const assert = require('assert');
 const MockConfig = require('./mock_objects/mock_config.js');
 const strings = require('./../core/string_factory.js').commandManager;
+const publicErrorStrings = require('./../core/string_factory.js').publicError;
 const helpStrings = require('./../core/string_factory.js').help;
 const SettingsManager = require('./../core/settings_manager.js');
 
@@ -105,7 +106,7 @@ describe('CommandManager', function() {
         commandManager.processInput(null, MsgAboutCommand, config);
         setTimeout(
           () => {
-            assert(logger.failureMessage === strings.commandExecutionFailure.createErrorDescription(MsgAboutCommand.content));
+            assert(logger.failureMessage === publicErrorStrings.createErrorDescription(MsgAboutCommand.content));
             assert(logger.failed === true);
           }, 100);
       });
