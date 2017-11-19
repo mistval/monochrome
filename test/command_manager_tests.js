@@ -4,6 +4,7 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const assert = require('assert');
 const MockConfig = require('./mock_objects/mock_config.js');
 const strings = require('./../core/string_factory.js').commandManager;
+const SettingsManager = require('./../core/settings_manager.js');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
@@ -118,6 +119,27 @@ describe('CommandManager', function() {
               done('Validate invoked returned false');
             }
           }, 100);
+      });
+    });
+    it('Creates the correct number of settings categories and the settings manager is able to load them', function() {
+      let logger = new MockLogger();
+      let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard', []).then(() => {
+        let categories = commandManager.collectSettingsCategories();
+        assert(categories.length === 1);
+        assert(categories[0].children.length === 6);
+        let settingsManager = new SettingsManager(logger, config);
+        settingsManager.load(categories, [], config);
+      });
+    });
+    it('Returns empty array if no commands are allowed to be restricted', function() {
+      let logger = new MockLogger();
+      let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings', []).then(() => {
+        let categories = commandManager.collectSettingsCategories();
+        assert(categories.length === 0);
+        let settingsManager = new SettingsManager(logger, config);
+        settingsManager.load(categories, [], config);
       });
     });
   });
