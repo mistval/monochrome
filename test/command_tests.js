@@ -139,11 +139,11 @@ const commandDataInvalidCanHandleExtension = {
   action(bot, msg, suffix) { },
 };
 
-const validCommandDataWith1SecondCooldown = {
+const validCommandDataWithCooldown = {
   canBeChannelRestricted: true,
   uniqueId: 'coolcool',
   commandAliases: ['alias1', 'alias2'],
-  cooldown: 1,
+  cooldown: .2,
   action(bot, msg, suffix) { this.invoked = true; },
 };
 
@@ -398,8 +398,8 @@ describe('Command', function() {
   });
   describe('handle()', function() {
     it('should not execute if not cooled down', function() {
-      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
-      assert(command.getCooldown() === validCommandDataWith1SecondCooldown.cooldown);
+      let command = new Command(validCommandDataWithCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      assert(command.getCooldown() === validCommandDataWithCooldown.cooldown);
       return command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(result1 => {
         return assert.throws(
           () => command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter),
@@ -407,7 +407,7 @@ describe('Command', function() {
       });
     });
     it('should execute if cooled down', function(done) {
-      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      let command = new Command(validCommandDataWithCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(invoke1Result => {
         setTimeout(() => {
           command.handle(null, MsgNoPerms, '', '', config, commandEnabledSettingsGetter).then(invoke2Result => {
@@ -418,7 +418,7 @@ describe('Command', function() {
             }
           }).catch(done);
         },
-        1500);
+        300);
       }).catch(done);
     });
     it('should not execute if user must be a bot admin but is not', function() {
@@ -481,7 +481,7 @@ describe('Command', function() {
       });
     });
     it('should throw if disabled', function() {
-      let command = new Command(validCommandDataWith1SecondCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
+      let command = new Command(validCommandDataWithCooldown, settingsCategorySeparator, ENABLED_COMMANDS_CATEGORY_NAME);
       return command.handle(null, MsgNoPerms, '', '', config, commandDisabledSettingsGetter).then(() => {
         throw new Error('Should have thrown but didnt');
       }).catch(err => {
