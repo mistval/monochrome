@@ -60,7 +60,7 @@ describe('CommandManager', function() {
         assert(invokeResult === false);
       });
     });
-    it('Loads good commands even if it encounters a bad one', function() {
+    it('Loads good commands even if it encounters bad ones', function() {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/invalid_and_valid', []).then(() => {
