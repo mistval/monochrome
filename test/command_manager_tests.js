@@ -7,6 +7,7 @@ const strings = require('./../core/string_factory.js').commandManager;
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
+const MsgAboutCommandExtension = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!aboutextension suffix');
 const MsgHelpCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!help');
 
 function createSettingsGetter(commandEnabled, otherSettings) {
@@ -88,15 +89,34 @@ describe('CommandManager', function() {
           }, 100);
       });
     });
-    it('Converts string return values into failures and logs them', function() {
+    it('Converts string return values into failures and logs them', function(done) {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
-      return commandManager.load(__dirname + '/mock_commands/valid_returns_string', []).then(() => {
+      commandManager.load(__dirname + '/mock_commands/valid_returns_string', []).then(() => {
         commandManager.processInput(null, MsgAboutCommand, config);
         setTimeout(
           () => {
-            assert(logger.failureMessage === 'Fail');
-            assert(logger.failed === true);
+            if (logger.failureMessage === 'Fail' && logger.failed) {
+              done();
+            } else {
+              done('fail');
+            }
+          }, 100);
+      });
+    });
+    it('Invokes command with extension', function(done) {
+      let logger = new MockLogger();
+      let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
+      commandManager.load(__dirname + '/mock_commands/valid_has_extension', []).then(() => {
+        commandManager.processInput(null, MsgAboutCommandExtension, config);
+        setTimeout(
+          () => {
+            let command = require('./mock_commands/valid_has_extension/has_extension.js');
+            if (command.validateInvoked()) {
+              done();
+            } else {
+              done('Validate invoked returned false');
+            }
           }, 100);
       });
     });
