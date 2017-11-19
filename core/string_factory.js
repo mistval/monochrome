@@ -56,7 +56,7 @@ function createFailedToLoadCommandWithUniqueIdMessage(uniqueId) {
     return 'Failed to load command with uniqueId: ' + uniqueId + '.';
   }
   return 'Failed to load command';
-}
+};
 
 module.exports.commandManager = {
   validation: {
@@ -83,4 +83,8 @@ module.exports.commandManager = {
       return 'Command \'' + commandText + '\' threw an exception or returned a promise that rejected.'
     },
   }
-}
+};
+
+module.exports.help = {
+  noCommandsForHelpLog: 'No commands for help',
+};

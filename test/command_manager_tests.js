@@ -4,6 +4,7 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const assert = require('assert');
 const MockConfig = require('./mock_objects/mock_config.js');
 const strings = require('./../core/string_factory.js').commandManager;
+const helpStrings = require('./../core/string_factory.js').help;
 const SettingsManager = require('./../core/settings_manager.js');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
@@ -192,6 +193,24 @@ describe('CommandManager', function() {
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard', []).then(() => {
         let executedCommand = commandManager.processInput(null, MsgHelpCommand, config);
         assert(executedCommand.aliases[0] === 'bot!help');
+      });
+    });
+    it('Does not create help command if no commands to show help for', function() {
+      let logger = new MockLogger();
+      let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], ['bot!help'], []);
+      let commandManager = new CommandManager(null, logger, privateConfig, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard', []).then(() => {
+        let executedCommand = commandManager.processInput(null, MsgHelpCommand, config);
+        assert(!executedCommand);
+      });
+    });
+    it('Does not create help command if no aliases for help', function() {
+      let logger = new MockLogger();
+      let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], [], ['1']);
+      let commandManager = new CommandManager(null, logger, privateConfig, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard', []).then(() => {
+        let executedCommand = commandManager.processInput(null, MsgHelpCommand, config);
+        assert(!executedCommand);
       });
     });
   });

@@ -2,6 +2,7 @@
 const reload = require('require-reload')(require);
 const ErisUtils = reload('./../util/eris_utils.js');
 const PublicError = reload('./../public_error.js');
+const strings = reload('./../string_factory.js').help;
 
 function validateCommand(command) {
   let commandName = command.aliases[0];
@@ -173,7 +174,7 @@ class Help {
     if (helpText) {
       return msg.channel.createMessage(helpText);
     } else {
-      throw new PublicError('No commands to show help for', false, 'No commands for help');
+      throw new PublicError('No commands to show help for', false, strings.noCommandsForHelpLog);
     }
   }
 }
