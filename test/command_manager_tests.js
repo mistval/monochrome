@@ -9,17 +9,23 @@ const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
 const MsgHelpCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!help');
 
-let enabledSettingsGetter = {
-  getSettings: (bot, msg, fullyQualifiedUserFacingSettingNames) => {
-    let settings = {
-      serverSettings: {},
-    };
-    for (let fullyQualifiedUserFacingSettingName of fullyQualifiedUserFacingSettingNames) {
-      serverSettings[fullyQualifiedUserFacingSettingName] = true;
+function createSettingsGetter(commandEnabled, otherSettings) {
+  return {
+    getSettings: (bot, msg, fullyQualifiedUserFacingSettingNames) => {
+      let settings = {};
+      for (let fullyQualifiedUserFacingSettingName of fullyQualifiedUserFacingSettingNames) {
+        settings[fullyQualifiedUserFacingSettingName] = commandEnabled;
+      }
+      otherSettings = otherSettings || {};
+      for (let otherSetting of Object.keys(otherSettings)) {
+        settings[otherSetting] = otherSettings[otherSetting];
+      }
+      return Promise.resolve(settings);
     }
-    return settings;
-  }
-};
+  };
+}
+
+let enabledSettingsGetter = createSettingsGetter(true);
 
 describe('CommandManager', function() {
   describe('Load', function() {
@@ -75,8 +81,23 @@ describe('CommandManager', function() {
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/valid_throws', []).then(() => {
         commandManager.processInput(null, MsgAboutCommand, config);
-        assert(logger.failureMessage === strings.commandExecutionFailure.createErrorDescription(MsgAboutCommand.content));
-        assert(logger.failed === true);
+        setTimeout(
+          () => {
+            assert(logger.failureMessage === strings.commandExecutionFailure.createErrorDescription(MsgAboutCommand.content));
+            assert(logger.failed === true);
+          }, 100);
+      });
+    });
+    it('Converts string return values into failures and logs them', function() {
+      let logger = new MockLogger();
+      let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/valid_returns_string', []).then(() => {
+        commandManager.processInput(null, MsgAboutCommand, config);
+        setTimeout(
+          () => {
+            assert(logger.failureMessage === 'Fail');
+            assert(logger.failed === true);
+          }, 100);
       });
     });
   });
