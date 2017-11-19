@@ -43,7 +43,6 @@ function testReloadCommand(msg, callback) {
     commandManager.processInput(null, msg, config);
     setTimeout(
       () => {
-        debugger;
         callback(reloaded);
       }, 100);
   });
@@ -65,7 +64,7 @@ describe('CommandManager', function() {
       let commandManager = new CommandManager(null, logger, config, enabledSettingsGetter);
       return commandManager.load(__dirname + '/mock_commands/invalid_and_valid', []).then(() => {
         let invokeResult = commandManager.processInput(null, MsgAboutCommand, config);
-        assert(invokeResult === true);
+        assert(invokeResult);
       });
     });
     it('Refuses to load command and complains if two commands have save uniqueId', function() {
@@ -76,7 +75,7 @@ describe('CommandManager', function() {
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
         let invokeResult2 = commandManager.processInput(null, MsgHelpCommand, config);
         assert(logger.failed === true);
-        assert((invokeResult1 === true && invokeResult2 === false) || (invokeResult1 === false && invokeResult2 === true));
+        assert((invokeResult1 && !invokeResult2) || (!invokeResult1 && invokeResult2));
       });
     });
     it('Refuses to load command and complains if two commands have the same alias', function() {
@@ -87,7 +86,7 @@ describe('CommandManager', function() {
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
         let invokeResult2 = commandManager.processInput(null, MsgHelpCommand, config);
         assert(logger.failed === true);
-        assert((invokeResult1 === true && invokeResult2 === false) || (invokeResult1 === false && invokeResult2 === true));
+        assert((invokeResult1 && !invokeResult2) || (!invokeResult1 && invokeResult2));
       });
     });
     it('Errors trying to load commands from nonexistent directory', function() {
@@ -184,6 +183,15 @@ describe('CommandManager', function() {
           return done();
         }
         done('Reloaded, but should not have');
+      });
+    });
+    it('Creates and invokes help command', function() {
+      let logger = new MockLogger();
+      let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], ['bot!help'], ['1']);
+      let commandManager = new CommandManager(null, logger, privateConfig, enabledSettingsGetter);
+      return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard', []).then(() => {
+        let executedCommand = commandManager.processInput(null, MsgHelpCommand, config);
+        assert(executedCommand.aliases[0] === 'bot!help');
       });
     });
   });

@@ -224,7 +224,7 @@ class CommandManager {
       handleCommandError(msg, err, this.config_, this.logger_);
     }
 
-    return true;
+    return commandToExecute;
   }
 }
 
