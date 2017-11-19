@@ -60,5 +60,15 @@ describe('MessageProcessorManager', function() {
         assert(logger.failed === true);
       });
     });
+    it('Gracefully handles message processor returning string', function() {
+      let logger = new MockLogger();
+      let processorManager = new MessageProcessorManager(logger);
+      return processorManager.load(__dirname + '/mock_message_processors/valid_returns_string').then(() => {
+        debugger;
+        assert(logger.failed !== true);
+        let result = processorManager.processInput(null, MsgHello, config);
+        assert(logger.failed === true);
+      });
+    });
   });
 });
