@@ -35,6 +35,7 @@ class SettingsCategory extends AbstractSettingElement {
     this.children_ = [];
     this.type = categoryTypeIdentifier;
     this.settingsCommand_ = config.serverSettingsCommandAliases[0];
+    this.setChildren_(settingsBlob.children);
   }
 
   /**
@@ -48,8 +49,8 @@ class SettingsCategory extends AbstractSettingElement {
   * @param {Object} config - The monochrome config object.
   * @returns {SettingsCategory} The created SettingsCategory.
   */
-  static createRootCategory(categoryTypeIdentifier, settingTypeIdentifier, config) {
-    return new SettingsCategory({}, '', categoryTypeIdentifier, settingTypeIdentifier, config);
+  static createRootCategory(categoryTypeIdentifier, settingTypeIdentifier, children, config) {
+    return new SettingsCategory({children: children}, '', categoryTypeIdentifier, settingTypeIdentifier, config);
   }
 
   /**
@@ -117,9 +118,9 @@ class SettingsCategory extends AbstractSettingElement {
     }
   }
 
-  setChildren(children) {
+  setChildren_(children) {
     if (!children || children.length === 0) {
-      throwError('Trying to set 0 children on a settings category.', children);
+      return;
     }
     this.childrenType_ = children[0].type;
     if (!children.every(child => child.type === this.childrenType_)) {
@@ -138,7 +139,6 @@ class SettingsCategory extends AbstractSettingElement {
       } else if (child.type === this.categoryTypeIdentifier_) {
         let childCategory = new SettingsCategory(child, this.fullyQualifiedName_, this.categoryTypeIdentifier_, this.settingTypeIdentifier_, this.config_);
         this.children_.push(childCategory);
-        childCategory.setChildren(child.children);
       } else {
         this.children_.push(new Setting(child, this.fullyQualifiedName_, this.settingsCategorySeparator_, this.config_.colorForSettingsSystemEmbeds, this.settingsCommand_));
       }
