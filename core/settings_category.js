@@ -3,7 +3,8 @@ const reload = require('require-reload')(require);
 const AbstractSettingElement = reload('./abstract_setting_element.js');
 const Setting = reload('./setting.js');
 const assert = require('assert');
-const PublicError = reload('./../core/public_error.js');
+const PublicError = reload('./public_error.js');
+const strings = reload('./string_factory.js').settingsCategory;
 
 function throwError(baseString, failedBlob) {
   throw new Error(baseString + ' Failed blob: \n' + JSON.stringify(failedBlob, null, 2));
@@ -25,6 +26,11 @@ class SettingsCategory extends AbstractSettingElement {
   */
   constructor(settingsBlob, parentFullyQualifiedName, categoryTypeIdentifier, settingTypeIdentifier, config) {
     super();
+    if (parentFullyQualifiedName && (!settingsBlob.userFacingName || typeof settingsBlob.userFacingName !== typeof '')) {
+      throw new Error(strings.createInvalidUserFacingNameErrorString(settingsBlob));
+    } else if (!settingsBlob.children || !Array.isArray(settingsBlob.children)) {
+      throw new Error(strings.createInvalidChildrenErrorString(settingsBlob));
+    }
     this.userFacingName_ = settingsBlob.userFacingName || '';
     this.config_ = config;
     this.settingTypeIdentifier_ = settingTypeIdentifier;

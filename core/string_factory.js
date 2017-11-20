@@ -92,4 +92,17 @@ module.exports.help = {
 
 module.exports.messageProcessorManager = {
   genericLoadingError: 'Error loading message processors.',
+};
+
+function createErrorStringForCategoryBlob(baseString, blob) {
+  return baseString + ' Failed blob: \n' + JSON.stringify(blob, null, 2);
 }
+
+module.exports.settingsCategory = {
+  createInvalidUserFacingNameErrorString(blob) {
+    return createErrorStringForCategoryBlob('A settings category does not have a userFacingName, or it has an invalid one.', blob);
+  },
+  createInvalidChildrenErrorString(blob) {
+    return createErrorStringForCategoryBlob('A settings category has invalid children. The children must be an array, or undefined.', blob);
+  }
+};
