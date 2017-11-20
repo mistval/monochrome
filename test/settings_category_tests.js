@@ -165,4 +165,12 @@ describe('SettingsCategory', function() {
       }
     });
   });
+  describe('Polymorphism', function() {
+    it('Throws if you try to set a value on it as if it is a setting', function() {
+      let settingCategory = createRootSettingsCategory(validHierarchy1);
+      assert.throws(
+        () => settingCategory.setNewValueFromUserFacingString(''),
+        err => err.message === strings.setValueError);
+    });
+  });
 });

@@ -105,7 +105,7 @@ class SettingsCategory extends AbstractSettingElement {
   * This method with a throw is here for debugging purposes.
   */
   setNewValueFromUserFacingString() {
-    throw new Error('This is a category, not a setting');
+    throw new Error(strings.setValueError);
   }
 
   /**

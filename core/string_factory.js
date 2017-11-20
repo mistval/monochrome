@@ -99,6 +99,7 @@ function createErrorStringForCategoryBlob(baseString, blob) {
 }
 
 module.exports.settingsCategory = {
+  setValueError: 'This is a category, not a setting',
   createInvalidCategoryIdentifierErrorString(blob) {
     return createErrorStringForCategoryBlob('The category identifier is invalid. This is an internal error, please report it.', blob);
   },
