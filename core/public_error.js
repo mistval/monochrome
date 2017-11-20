@@ -74,6 +74,9 @@ class PublicError extends Error {
 
   output(logger, loggerTitle, config, msg, forceSilentFail) {
     let publicMessage = this.publicMessage_;
+    if (forceSilentFail) {
+      publicMessage = PublicMessageType.NONE;
+    }
     if (publicMessage === PublicMessageType.GENERIC) {
       publicMessage = config.genericErrorMessage;
     } else if (publicMessage === PublicMessageType.INSUFFICIENT_PRIVILEGE) {
@@ -84,7 +87,7 @@ class PublicError extends Error {
       throw new Error('Unknown public message type');
     }
 
-    if (publicMessage && !forceSilentFail) {
+    if (publicMessage) {
       if (this.deleteAutomatically_) {
         ErisUtils.sendMessageAndDelete(msg, publicMessage);
       } else {

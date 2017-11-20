@@ -5,14 +5,13 @@ const MessageProcessor = reload('./message_processor.js');
 const PublicError = reload('./../core/public_error.js');
 const strings = reload('./string_factory.js').messageProcessorManager;
 
-function handleError(msg, err, logger) {
+function handleError(msg, err, logger, config) {
   const loggerTitle = 'MESSAGE';
-  let errDescription = err.logDescription || 'Exception or promise rejection';
-  let internalErr = err.internalErr || err;
-  logger.logInputReaction(loggerTitle, msg, '', false, errDescription);
-  if (internalErr) {
-    logger.logFailure(loggerTitle, 'A message processor threw an exception or returned a promise that rejected for message: \'' + msg.content + '\'', internalErr);
+  let errorToOutput = err;
+  if (!errorToOutput.output) {
+    errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
   }
+  errorToOutput.output(logger, loggerTitle, undefined, msg, true);
 }
 
 /**
@@ -54,7 +53,6 @@ class MessageProcessorManager {
   * Receives and considers agreeing to process user input.
   * @param {Eris.Client} bot - The Eris bot.
   * @param {Eris.Message} msg - The msg to process.
-  * @param {Config} config - The monochrome configuration.
   * @returns {Boolean} True if a message processor accepted responsibility to handle the message and did so, false otherwise.
   */
   processInput(bot, msg) {
