@@ -1,6 +1,5 @@
 'use strict'
 const reload = require('require-reload')(require);
-const assert = require('assert');
 const AbstractSettingElement = reload('./abstract_setting_element.js');
 
 const ValueType = {
@@ -118,7 +117,7 @@ function validateSettingsBlob(settingsBlob, settingsCategorySeparator) {
     return property in settingsBlob;
   });
   if (!('valueType' in settingsBlob)) {
-    throwError('Setting does not a valueType property. It must be one of ' + Object.keys(prettyPrintForValueType).join(', '), settingsBlob);
+    throwError('Setting does not have a valueType property. It must be one of ' + Object.keys(prettyPrintForValueType).join(', '), settingsBlob);
   } else if (settingsBlob.valueType === ValueType.CUSTOM && !hasAllNecessaryPropertiesForCustomType) {
     throwError('The valueType is custom, but the setting does not contain the necessary custom properties: ' + requiredBlobPropertiesForCustomType.join(', '), settingsBlob);
   } else if (!settingsBlob.description || typeof settingsBlob.description !== typeof '') {
@@ -134,7 +133,7 @@ function validateSettingsBlob(settingsBlob, settingsCategorySeparator) {
   } else if (!('defaultDatabaseFacingValue' in settingsBlob)) {
     throwError('A setting has no defaultDatabaseFacingValue value. It must have one.', settingsBlob);
   } else if (settingsBlob.allowedDatabaseFacingValues && !stringIsRangeConstructor(settingsBlob.allowedDatabaseFacingValues) && !Array.isArray(settingsBlob.allowedDatabaseFacingValues)) {
-    throwError('A setting has and invalid allowedDatabaseFacingValues. It must be an array or a Range(x,y)', settingsBlob);
+    throwError('A setting has an invalid allowedDatabaseFacingValues. It must be an array or a Range(x,y)', settingsBlob);
   } else if (stringIsRangeConstructor(settingsBlob.allowedDatabaseFacingValues) && settingsBlob.valueType !== ValueType.INTEGER && settingsBlob.valueType !== ValueType.FLOAT) {
     throwError('A setting has an allowedDatabaseFacingValues value that looks like a range, but its valueType is neither INTEGER nor FLOAT', settingsBlob);
   }

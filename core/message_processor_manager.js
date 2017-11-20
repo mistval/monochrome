@@ -3,6 +3,7 @@ const reload = require('require-reload')(require);
 const FileSystemUtils = reload('./util/file_system_utils.js');
 const MessageProcessor = reload('./message_processor.js');
 const PublicError = reload('./../core/public_error.js');
+const strings = reload('./string_factory.js').messageProcessorManager;
 
 function handleError(msg, err, logger) {
   const loggerTitle = 'MESSAGE';
@@ -45,7 +46,7 @@ class MessageProcessorManager {
       }
       this.processors_.push(new MessageProcessor(reload('./message_processors/user_and_channel_hook.js')));
     }).catch(err => {
-      this.logger_.logFailure(loggerTitle, 'Error loading message processors.', err);
+      this.logger_.logFailure(loggerTitle, strings.genericLoadingError, err);
     });
   }
 

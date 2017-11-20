@@ -89,3 +89,7 @@ module.exports.commandManager = {
 module.exports.help = {
   noCommandsForHelpLog: 'No commands for help',
 };
+
+module.exports.messageProcessorManager = {
+  genericLoadingError: 'Error loading message processors.',
+}
