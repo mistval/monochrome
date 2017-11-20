@@ -220,6 +220,8 @@ describe('Setting', function() {
       assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting1));
       assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting2));
     });
+  });
+  describe('Resolution', function() {
     it('Resolves or fails to resolve as appropriate', function() {
       let userFacingName = 'name';
       let settingData = {
@@ -246,6 +248,8 @@ describe('Setting', function() {
       assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName5));
       assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName6));
     });
+  });
+  describe('Getting/setting value', function() {
     it('Returns default value if nothing in database', function() {
       let setting = createSetting(validIntegerSetting);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validIntegerSetting.defaultDatabaseFacingValue);
@@ -308,13 +312,6 @@ describe('Setting', function() {
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID2, settings) === newValue);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID3, settings) === validIntegerSetting.defaultDatabaseFacingValue);
     });
-    it('Creates embeds for configuration instructions', function() {
-      for (let settingData of validSettings) {
-        let setting = createSetting(settingData);
-        let botContent = setting.getConfigurationInstructionsBotContent(MOCK_CHANNEL_ID1, {}, setting.getFullyQualifiedUserFacingName());
-        assert(botContent.embed);
-      }
-    });
     it('Does not allow setting a value that\'s not in the allowedDatabaseFacingValues array, if there is one', function() {
       const newValue = 999;
       let setting = createSetting(validFloatSetting);
@@ -363,6 +360,15 @@ describe('Setting', function() {
         setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, value.toString(), 'all');
         assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === value);
         assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === value);
+      }
+    });
+  });
+  describe('Configuration instructions', function() {
+    it('Creates embeds for configuration instructions', function() {
+      for (let settingData of validSettings) {
+        let setting = createSetting(settingData);
+        let botContent = setting.getConfigurationInstructionsBotContent(MOCK_CHANNEL_ID1, {}, setting.getFullyQualifiedUserFacingName());
+        assert(botContent.embed);
       }
     });
   });
