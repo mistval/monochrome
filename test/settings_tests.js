@@ -151,6 +151,7 @@ let validSettings = [
 const MOCK_NON_EMPTY_QUALIFICATION_WO_NAME = 'categories';
 const SEPARATOR = '.';
 const SETTINGS_COMMAND_ALIAS = '!settings';
+const MOCK_CHANNEL_ID = '111';
 
 function createSetting(settingBlob) {
   return new Setting(settingBlob, MOCK_NON_EMPTY_QUALIFICATION_WO_NAME, SEPARATOR, 0, SETTINGS_COMMAND_ALIAS);
@@ -194,6 +195,64 @@ describe('Setting', function() {
     it('Throws for invalid database facing values', function() {
       assert.throws(() => createSetting(invalidDatabaseFacingValues1));
       assert.throws(() => createSetting(invalidDatabaseFacingValues2));
+    });
+    it('Resolves or fails to resolve as appropriate', function() {
+      let userFacingName = 'name';
+      let settingData = {
+        'type': 'SETTING',
+        'userFacingName': userFacingName,
+        'description': 'My name.',
+        'valueType': 'STRING',
+        'defaultDatabaseFacingValue': 'Tom',
+      };
+      let setting = createSetting(settingData);
+      let settingName = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + userFacingName;
+      assert(setting.getFullyQualifiedUserFacingName() === settingName);
+      let notSettingName1 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + 'fff';
+      let notSettingName2 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR;
+      let notSettingName3 = SEPARATOR + userFacingName;
+      let notSettingName4 = userFacingName;
+      let notSettingName5 = userFacingName + SEPARATOR;
+      let notSettingName6 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + userFacingName + SEPARATOR;
+      assert(setting.getChildForFullyQualifiedUserFacingName(settingName));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName1));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName2));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName3));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName4));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName5));
+      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName6));
+    });
+    it('Returns default value if nothing in database', function() {
+      let setting = createSetting(validIntegerSetting);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, {}) === validIntegerSetting.defaultDatabaseFacingValue);
+    });
+    it('Returns server setting value if no channel value', function() {
+      const serverSettingValue = 5;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {serverSettings: {}};
+      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === serverSettingValue);
+    });
+    it('Returns server setting value if no channel value for this channel', function() {
+      const serverSettingValue = 5;
+      const channelSettingValue = 3;
+      const fakeChannelId = 'fake_channel';
+      let setting = createSetting(validIntegerSetting);
+      let settings = {serverSettings: {}, channelSettings: {}};
+      settings.channelSettings[fakeChannelId] = {};
+      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
+      settings.channelSettings[fakeChannelId][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === serverSettingValue);
+    });
+    it('Returns channel setting value if it exists', function() {
+      const serverSettingValue = 5;
+      const channelSettingValue = 3;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {serverSettings: {}, channelSettings: {}};
+      settings.channelSettings[MOCK_CHANNEL_ID] = {};
+      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
+      settings.channelSettings[MOCK_CHANNEL_ID][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === channelSettingValue);
     });
   });
 });

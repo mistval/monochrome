@@ -99,6 +99,19 @@ function clearValueFromChannelSettings(channelSettings, settingName) {
   }
 }
 
+function sanitizeSettingsObject(settings) {
+  if (!settings) {
+    settings = {};
+  }
+  if (!settings.serverSettings) {
+    settings.serverSettings = {};
+  }
+  if (!settings.channelSettings) {
+    settings.channelSettings = {};
+  }
+  return settings;
+}
+
 const requiredBlobPropertiesForCustomType = [
   'customAllowedValuesDescription',
   'customValidateDatabaseFacingValueFunction',
@@ -247,6 +260,7 @@ class Setting extends AbstractSettingElement {
   * @returns {Object} The current database facing value of this setting for the channel we are examining the settings for.
   */
   getCurrentDatabaseFacingValue(channelId, settings) {
+    settings = sanitizeSettingsObject(settings);
     let settingsForChannel = settings.channelSettings[channelId];
     if (settingsForChannel) {
       let setting = settings.channelSettings[channelId][this.fullyQualifiedDatabaseFacingName_];
@@ -309,6 +323,7 @@ class Setting extends AbstractSettingElement {
   * @returns {String} The result of the operation in the form of a string that the bot should send to the user.
   */
   setNewValueFromUserFacingString(currentChannelId, channelsInGuild, currentSettings, newValue, secondStepUserResponseString) {
+    currentSettings = sanitizeSettingsObject(currentSettings);
     if (!secondStepUserResponseString) {
       secondStepUserResponseString = 'all';
     }
