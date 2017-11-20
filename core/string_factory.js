@@ -99,10 +99,16 @@ function createErrorStringForCategoryBlob(baseString, blob) {
 }
 
 module.exports.settingsCategory = {
+  createInvalidCategoryIdentifierErrorString(blob) {
+    return createErrorStringForCategoryBlob('The category identifier is invalid. This is an internal error, please report it.', blob);
+  },
+  createInvalidSettingIdentifierErrorString(blob) {
+    return createErrorStringForCategoryBlob('The setting identifier is invalid. This is an internal error, please report it.', blob);
+  },
   createInvalidUserFacingNameErrorString(blob) {
     return createErrorStringForCategoryBlob('A settings category does not have a userFacingName, or it has an invalid one.', blob);
   },
   createInvalidChildrenErrorString(blob) {
     return createErrorStringForCategoryBlob('A settings category has invalid children. The children must be an array, or undefined.', blob);
-  }
+  },
 };

@@ -10,6 +10,10 @@ function throwError(baseString, failedBlob) {
   throw new Error(baseString + ' Failed blob: \n' + JSON.stringify(failedBlob, null, 2));
 }
 
+function verifyIsNonEmptyString(str) {
+  return str && typeof str === typeof '';
+}
+
 /**
 * Represents a category of settings (a branch) as opposed to a setting (a leaf)
 */
@@ -30,6 +34,10 @@ class SettingsCategory extends AbstractSettingElement {
       throw new Error(strings.createInvalidUserFacingNameErrorString(settingsBlob));
     } else if (!settingsBlob.children || !Array.isArray(settingsBlob.children)) {
       throw new Error(strings.createInvalidChildrenErrorString(settingsBlob));
+    } else if (!verifyIsNonEmptyString(categoryTypeIdentifier)) {
+      throw new Error(strings.createInvalidCategoryIdentifierErrorString(settingsBlob));
+    } else if (!verifyIsNonEmptyString(settingTypeIdentifier)) {
+      throw new Error(strings.createInvalidSettingIdentifierErrorString(settingsBlob));
     }
     this.userFacingName_ = settingsBlob.userFacingName || '';
     this.config_ = config;

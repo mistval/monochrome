@@ -27,12 +27,26 @@ let invalidChildren2 = {
   "children": 5,
 };
 
+let valid1 = {
+  "type": "CATEGORY",
+  "userFacingName": 'name',
+  "children": [],
+};
+
 const MOCK_PARENT_FULLY_QUALIFIED_NAME1 = 'parentname1';
 const CATEGORY_TYPE_IDENTIFIER = 'CATEGORY';
 const SETTING_TYPE_IDENTIFIER = 'SETTING';
 
 function createNonRootSettingsCategory(settingsBlob) {
   return new SettingsCategory(settingsBlob, MOCK_PARENT_FULLY_QUALIFIED_NAME1, CATEGORY_TYPE_IDENTIFIER, SETTING_TYPE_IDENTIFIER, config);
+}
+
+function createNonRootSettingsCategoryWithInvalidCategoryIdentifier(settingsBlob) {
+  return new SettingsCategory(settingsBlob, MOCK_PARENT_FULLY_QUALIFIED_NAME1, 5, SETTING_TYPE_IDENTIFIER, config);
+}
+
+function createNonRootSettingsCategoryWithInvalidSettingIdentifier(settingsBlob) {
+  return new SettingsCategory(settingsBlob, MOCK_PARENT_FULLY_QUALIFIED_NAME1, CATEGORY_TYPE_IDENTIFIER, 5, config);
 }
 
 describe('SettingsCategory', function() {
@@ -52,6 +66,16 @@ describe('SettingsCategory', function() {
       assert.throws(
         () => createNonRootSettingsCategory(invalidChildren2),
         err => err.message === strings.createInvalidChildrenErrorString(invalidChildren2));
+    });
+    it('Throws for invalid category identifier', function() {
+      assert.throws(
+        () => createNonRootSettingsCategoryWithInvalidCategoryIdentifier(valid1),
+        err => err.message === strings.createInvalidCategoryIdentifierErrorString(valid1));
+    });
+    it('Throws for invalid setting identifier', function() {
+      assert.throws(
+        () => createNonRootSettingsCategoryWithInvalidSettingIdentifier(valid1),
+        err => err.message === strings.createInvalidSettingIdentifierErrorString(valid1));
     });
   });
 });
