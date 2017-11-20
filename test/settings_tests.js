@@ -151,7 +151,9 @@ let validSettings = [
 const MOCK_NON_EMPTY_QUALIFICATION_WO_NAME = 'categories';
 const SEPARATOR = '.';
 const SETTINGS_COMMAND_ALIAS = '!settings';
-const MOCK_CHANNEL_ID = '111';
+const MOCK_CHANNEL_ID1 = '111';
+const MOCK_CHANNEL_ID2 = '222';
+const MOCK_CHANNEL_ID3 = '333';
 
 function createSetting(settingBlob) {
   return new Setting(settingBlob, MOCK_NON_EMPTY_QUALIFICATION_WO_NAME, SEPARATOR, 0, SETTINGS_COMMAND_ALIAS);
@@ -224,14 +226,14 @@ describe('Setting', function() {
     });
     it('Returns default value if nothing in database', function() {
       let setting = createSetting(validIntegerSetting);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, {}) === validIntegerSetting.defaultDatabaseFacingValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validIntegerSetting.defaultDatabaseFacingValue);
     });
     it('Returns server setting value if no channel value', function() {
       const serverSettingValue = 5;
       let setting = createSetting(validIntegerSetting);
       let settings = {serverSettings: {}};
       settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === serverSettingValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverSettingValue);
     });
     it('Returns server setting value if no channel value for this channel', function() {
       const serverSettingValue = 5;
@@ -242,17 +244,47 @@ describe('Setting', function() {
       settings.channelSettings[fakeChannelId] = {};
       settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
       settings.channelSettings[fakeChannelId][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === serverSettingValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverSettingValue);
     });
     it('Returns channel setting value if it exists', function() {
       const serverSettingValue = 5;
       const channelSettingValue = 3;
       let setting = createSetting(validIntegerSetting);
       let settings = {serverSettings: {}, channelSettings: {}};
-      settings.channelSettings[MOCK_CHANNEL_ID] = {};
+      settings.channelSettings[MOCK_CHANNEL_ID1] = {};
       settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
-      settings.channelSettings[MOCK_CHANNEL_ID][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID, settings) === channelSettingValue);
+      settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === channelSettingValue);
+    });
+    it('Sets the channel value correctly for here', function() {
+      const newValue = 8;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'here');
+      assert(settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] === newValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+    });
+    it('Sets the channel value correctly for all', function() {
+      const newValue = 8;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+    });
+    it('Sets the channel value correctly for specified channels', function() {
+      const newValue = 8;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      let channelsInGuild = [MOCK_CHANNEL_ID1, MOCK_CHANNEL_ID2, MOCK_CHANNEL_ID3].map(id => { return {id: id}; });
+      let channelString = `<#${MOCK_CHANNEL_ID1}> <#${MOCK_CHANNEL_ID2}>`;
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, channelsInGuild, settings, newValue, channelString);
+      assert(settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] === newValue);
+      assert(settings.channelSettings[MOCK_CHANNEL_ID2][setting.getFullyQualifiedUserFacingName()] === newValue);
+      assert(!settings.channelSettings[MOCK_CHANNEL_ID3]);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID2, settings) === newValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID3, settings) === validIntegerSetting.defaultDatabaseFacingValue);
     });
   });
 });
