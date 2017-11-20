@@ -34,6 +34,8 @@ function createSettingsGetter(commandEnabled, otherSettings) {
   };
 }
 
+const settingsCategorySeparator = (new MockConfig()).settingsCategorySeparator;
+
 let commandEnabledSettingsGetter = createSettingsGetter(true);
 let commandDisabledSettingsGetter = createSettingsGetter(false);
 
@@ -201,7 +203,7 @@ const invalidRequiredSettings2 = {
 };
 
 const invalidAliasContainsSeparatorCharacter = {
-  commandAliases: 'al/ias1',
+  commandAliases: 'al' + settingsCategorySeparator + 'ias1',
   canBeChannelRestricted: false,
   action(bot, msg, suffix) { this.invoked = true; },
 };
@@ -276,8 +278,6 @@ function errorStringMatches(error, errorString) {
   }
   return error.message === errorString && !!errorString;
 }
-
-const settingsCategorySeparator = (new MockConfig()).settingsCategorySeparator;
 
 describe('Command', function() {
   describe('constructor()', function() {

@@ -33,9 +33,56 @@ let valid1 = {
   "children": [],
 };
 
+let validHierarchy1 = {
+  "type": "CATEGORY",
+  "userFacingName": 'root',
+  "children": [
+    {
+      "type": "CATEGORY",
+      "userFacingName": 'subcategory1',
+      "children": [
+        {
+          "type": "SETTING",
+          "userFacingName": "setting1",
+          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
+          "valueType": "INTEGER",
+          "defaultDatabaseFacingValue": 10,
+          "allowedDatabaseFacingValues": "Range(1, 10)"
+        }
+      ],
+    },
+    {
+      "type": "CATEGORY",
+      "userFacingName": 'subcategory2',
+      "children": [
+        {
+          "type": "SETTING",
+          "userFacingName": "setting2",
+          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
+          "valueType": "INTEGER",
+          "defaultDatabaseFacingValue": 10,
+          "allowedDatabaseFacingValues": "Range(1, 10)"
+        },
+        {
+          "type": "SETTING",
+          "userFacingName": "setting3",
+          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
+          "valueType": "INTEGER",
+          "defaultDatabaseFacingValue": 10,
+          "allowedDatabaseFacingValues": "Range(1, 10)"
+        },
+      ],
+    },
+  ],
+};
+
 const MOCK_PARENT_FULLY_QUALIFIED_NAME1 = 'parentname1';
 const CATEGORY_TYPE_IDENTIFIER = 'CATEGORY';
 const SETTING_TYPE_IDENTIFIER = 'SETTING';
+
+function createRootSettingsCategory(settingsBlob) {
+  return SettingsCategory.createRootCategory(CATEGORY_TYPE_IDENTIFIER, SETTING_TYPE_IDENTIFIER, [settingsBlob], config);
+}
 
 function createNonRootSettingsCategory(settingsBlob) {
   return new SettingsCategory(settingsBlob, MOCK_PARENT_FULLY_QUALIFIED_NAME1, CATEGORY_TYPE_IDENTIFIER, SETTING_TYPE_IDENTIFIER, config);
@@ -76,6 +123,27 @@ describe('SettingsCategory', function() {
       assert.throws(
         () => createNonRootSettingsCategoryWithInvalidSettingIdentifier(valid1),
         err => err.message === strings.createInvalidSettingIdentifierErrorString(valid1));
+    });
+    it('Valid settings blobs load without error', function() {
+      createNonRootSettingsCategory(valid1);
+      createNonRootSettingsCategory(validHierarchy1);
+    });
+  });
+  describe('Child resolution', function() {
+    it('Resolves to the correct children', function() {
+      let settingCategory = createRootSettingsCategory(validHierarchy1);
+      let qualifiedNamesToTest = [
+        'root.subcategory1',
+        'root.subcategory1.setting1',
+        'root.subcategory2',
+        'root.subcategory2.setting2',
+        'root.subcategory2.setting3',
+      ];
+
+      for (let name of qualifiedNamesToTest) {
+        let child = settingCategory.getChildForFullyQualifiedUserFacingName(name);
+        assert(child.getFullyQualifiedUserFacingName() === name);
+      }
     });
   });
 });
