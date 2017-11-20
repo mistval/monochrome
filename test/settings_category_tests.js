@@ -145,5 +145,24 @@ describe('SettingsCategory', function() {
         assert(child.getFullyQualifiedUserFacingName() === name);
       }
     });
+    it('Fuzzy resolves to the nearest match child, if a match doesn\'t exist', function() {
+      let settingCategory = createRootSettingsCategory(validHierarchy1);
+      let tests = [
+        {query: 'root.subcategory1ff', result: 'root'},
+        {query: 'rooeft.subcategory1', result: ''},
+        {query: 'root.', result: 'root'},
+        {query: 'root.subcategory2.', result: 'root.subcategory2'},
+        {query: 'root.subcategory2.fff', result: 'root.subcategory2'},
+        {query: 'root.subcategory2.setting3.', result: 'root.subcategory2'},
+        {query: 'root.subcategory2.setting3.fff', result: 'root.subcategory2'},
+      ];
+
+      for (let test of tests) {
+        let child = settingCategory.getChildForFullyQualifiedUserFacingName(test.query);
+        if (child.getFullyQualifiedUserFacingName() !== test.result) {
+        }
+        assert(child.getFullyQualifiedUserFacingName() === test.result);
+      }
+    });
   });
 });
