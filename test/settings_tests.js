@@ -26,8 +26,8 @@ let validFloatSetting = {
   'userFacingName': 'Fraction',
   'description': 'My favorite fraction',
   'valueType': 'FLOAT',
-  'defaultDatabaseFacingValue': 10,
-  'allowedDatabaseFacingValues': 'Range(1, 10)',
+  'defaultDatabaseFacingValue': 1.0,
+  'allowedDatabaseFacingValues': [1.0, 2.0],
 };
 
 let validStringSetting = {
@@ -44,6 +44,24 @@ let validBooleanSetting = {
   'description': 'Whether I should act dumb or not.',
   'valueType': 'BOOLEAN',
   'defaultDatabaseFacingValue': true,
+};
+
+let defaultValueOutOfAllowedRangeSetting1 = {
+  'type': 'SETTING',
+  'userFacingName': 'Fraction',
+  'description': 'My favorite fraction',
+  'valueType': 'FLOAT',
+  'defaultDatabaseFacingValue': 3.0,
+  'allowedDatabaseFacingValues': [1.0, 2.0],
+};
+
+let defaultValueOutOfAllowedRangeSetting2 = {
+  'type': 'SETTING',
+  'userFacingName': 'countdown_start',
+  'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
+  'valueType': 'INTEGER',
+  'defaultDatabaseFacingValue': 11,
+  'allowedDatabaseFacingValues': 'Range(1, 10)',
 };
 
 let invalidValueTypeSetting1 = {
@@ -198,6 +216,10 @@ describe('Setting', function() {
       assert.throws(() => createSetting(invalidDatabaseFacingValues1));
       assert.throws(() => createSetting(invalidDatabaseFacingValues2));
     });
+    it('Throws if the defaultDatabaseFacingValue is not in allowedDatabaseFacingValues', function() {
+      assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting1));
+      assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting2));
+    });
     it('Resolves or fails to resolve as appropriate', function() {
       let userFacingName = 'name';
       let settingData = {
@@ -285,6 +307,63 @@ describe('Setting', function() {
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID2, settings) === newValue);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID3, settings) === validIntegerSetting.defaultDatabaseFacingValue);
+    });
+    it('Creates embeds for configuration instructions', function() {
+      for (let settingData of validSettings) {
+        let setting = createSetting(settingData);
+        let botContent = setting.getConfigurationInstructionsBotContent(MOCK_CHANNEL_ID1, {}, setting.getFullyQualifiedUserFacingName());
+        assert(botContent.embed);
+      }
+    });
+    it('Does not allow setting a value that\'s not in the allowedDatabaseFacingValues array, if there is one', function() {
+      const newValue = 999;
+      let setting = createSetting(validFloatSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validFloatSetting.defaultDatabaseFacingValue);
+      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
+    });
+    it('Does allow setting a value that\'s in the allowedDatabaseFacingValues array, if there is one', function() {
+      const newValue = validFloatSetting.allowedDatabaseFacingValues[1];
+      let setting = createSetting(validFloatSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
+    });
+    it('Does not allow setting a value that\'s not in the allowable range, if there is one', function() {
+      const newValue = 999;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validIntegerSetting.defaultDatabaseFacingValue);
+      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
+    });
+    it('Does allow setting a value that is in the allowable range, if there is one', function() {
+      const newValue = 5;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
+    });
+    it('Does not allow non-boolean setting for boolean setting', function() {
+      const newValue = 'ffffff';
+      let setting = createSetting(validBooleanSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validBooleanSetting.defaultDatabaseFacingValue);
+      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
+    });
+    it('Does allow boolean setting for boolean setting', function() {
+      let values = [!validBooleanSetting.defaultDatabaseFacingValue, validBooleanSetting.defaultDatabaseFacingValue];
+      for (let value of values) {
+        let setting = createSetting(validBooleanSetting);
+        let settings = {};
+        setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, value.toString(), 'all');
+        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === value);
+        assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === value);
+      }
     });
   });
 });

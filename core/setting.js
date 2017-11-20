@@ -149,6 +149,8 @@ function validateSettingsBlob(settingsBlob, settingsCategorySeparator) {
     throwError('A setting has an invalid allowedDatabaseFacingValues. It must be an array or a Range(x,y)', settingsBlob);
   } else if (stringIsRangeConstructor(settingsBlob.allowedDatabaseFacingValues) && settingsBlob.valueType !== ValueType.INTEGER && settingsBlob.valueType !== ValueType.FLOAT) {
     throwError('A setting has an allowedDatabaseFacingValues value that looks like a range, but its valueType is neither INTEGER nor FLOAT', settingsBlob);
+  } else if (settingsBlob.allowedDatabaseFacingValues && settingsBlob.allowedDatabaseFacingValues.indexOf(settingsBlob.defaultDatabaseFacingValue) === -1) {
+    throw Error('The defaultDatabaseFacingValue is not one of the allowedDatabaseFacingValues', settingsBlob);
   }
 }
 
