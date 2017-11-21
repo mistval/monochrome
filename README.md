@@ -50,7 +50,7 @@ The demo version of monochrome comes with demo commands, message processors, set
 <ol>
 <li>Delete unwanted commands from monochrome/commands. Simply delete the files for the commands you don't want.</li>
 <li>Delete unwanted message processors from monochrome/message_processors. Simply delete the files for the message processors you don't want.</li>
-<li>Delete the settings in monochrome/server_settings.js. You can leave the file empty, but you should not delete it.</li>
+<li>Delete monochrome/server_settings.js if you do not need to create any settings. If you do need to create your own settings, read below and add them to monochrome/server_settings.js.</li>
 <li>Write code for your own commands and add them to monochrome/commands.</li>
 <li>Write code for your own message processors and add them to monochrome/message_processors.</li>
 <li>Add your own settings hierarchy to monochrome/server_settings.js.</li>
