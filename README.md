@@ -1,6 +1,17 @@
 # monochrome
 A flexible Discord bot core.
 Node 6.9.1+ recommended.
+## Key features
+<ol>
+<li>Command framework</li>
+<li>Settings framework</li>
+<li>Auto-generated help command</li>
+<li>Navigations (see below)</li>
+<li>Arbitrary message hooks</li>
+<li>Detailed logging</li>
+<li>Good test coverage</li>
+</ol>
+
 ## Basics
 ### Installation
 ```
@@ -223,6 +234,7 @@ And then open monochrome/documentation/index.html.
 
 The core code (mostly) complies with Google's JavaScript coding conventions, with the exception of its maximum line length limit. Code style in the core classes can be checked with ```sh monochrome/style_checks.sh```
 ### Tests
+Nearly one hundred tests defend against regression.
 ```
 npm install -g nyc
 npm test
@@ -261,11 +273,15 @@ It will also log the error with the error reason and the stack trace:
 
 ![PublicError log message](https://github.com/mistval/monochrome/blob/master/public_error_log.png)
 
-The arguments for PublicError's constructor are:
-1. {String} An error message to send to the user. (can be an empty string, in which case no message is sent)
-2. {Boolean} True if the message should be automatically deleted after a short period of time. False if it should not be deleted.
-3. {String} A brief description of the failure to print in the logs. (can be an empty string, in which case no description is printed in the logs)
-4. {Error} The internal error, if there is one. (can be undefined, in which case no stack trace for the error is printed in the logs)
+PublicError should be constructed via one of its factory methods:
+PublicError.createWithCustomPublicMessage(publicMessage {String}, deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
+PublicError.createWithGenericPublicMessage(deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
+PublicError.createWithNoPublicMessage(logDescription {String}, internalErr {Error});
+
+publicMessage gets sent to the user. If deleteAutomatically is true, that message gets deleted after a short amount of time. The logDescription is a brief description of the error for logging (can be undefined). internalErr is an Error object to log a stack trace for (can be undefined).
+
+Note that in the case of a PublicError being thrown in a message processor, the publicMessage will be ignored and no message will be sent to the user. This is to protect against the possibility of your bot erroring and publically broadcasting an error for every single message sent in a server. If you are certain that you want to circumvent that behavior, you can catch the PublicError yourself, broadcast the publicMessage, and rethrow the error.
+
 ## Sample bot
 Add my bot [Kotoba](https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot) to your server to see an example of a bot running on monochrome.
 ## Help
