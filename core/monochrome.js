@@ -273,7 +273,7 @@ class Monochrome {
       }
       if (this.config_.statusRotation.length > 0) {
         if (this.config_.statusRotation.length > 1) {
-          this.rotateStatusesTimeoutHandle_ = setTimeout(this.rotateStatuses_, this.config_.statusRotationIntervalInSeconds * 1000, this.config_);
+          this.rotateStatusesTimeoutHandle_ = setTimeout(() => this.rotateStatuses_(), this.config_.statusRotationIntervalInSeconds * 1000);
         }
 
         let nextStatus = this.statusQueue_.pop();
