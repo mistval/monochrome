@@ -198,11 +198,16 @@ See /commands/navigation.js for the code behind the above example.
 ### Dynamic reloading
 In general, when you change bot code, it is safest to stop and restart the bot. But if your bot has non-persistent data that you don't want to lose, or if you want absolutely zero downtime, monochrome supports dynamic reloading of code via the }reload command. You can add, remove, or modify commands and any other code of yours on the fly, without stopping the bot.
 
-In order to support this, you must do one thing. Use ```reload``` instead of ```require``` to import your modules. See monochrome/commands/broadcast.js for an example.
+In order to support this, you must do one thing. In your commands, use the reload module to import your modules, instead of ```require```. Here is an example:
 
-You should only ```reload``` your own code. Core monochrome code, and npm modules, should be imported normally with ```require```. While most core monochrome code can be reloaded, some must not be, so unless you are planning to change and reload core code on the fly, it is best to ```require``` all of it.
+```js
+const reload = require('require-reload')(require);
+const textRenderer = reload('./../utils/render_text.js');
+```
 
-```Reload``` does not play nicely with singletons or other modules that have static data. For best results when using the }reload command, avoid static data in your code. If you must have static data, use ```require``` instead of ```reload``` to import files that contain static data. Consider separating static data and program logic into separate files, so that you can ```reload``` program logic and ```require``` static data.
+You should only ```reload``` your own code. monochrome-bot and other npm modules should be imported normally with ```require```.
+
+```Reload``` does not play nicely with mutable static data (for example a singleton that has state). For best results when using the }reload command, avoid mutable static data in your code. If you must have mutable static data, use ```require``` instead of ```reload``` to import files that contain mutable static data. Consider separating mutable static data and program logic into separate files, so that you can ```reload``` program logic and ```require``` static data.
 ### Persistence
 Persistence powered by node-persist is built in and can be accessed with ```require('monochrome-bot').persistence```
 
