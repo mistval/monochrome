@@ -174,7 +174,6 @@ A navigation is a message that the bot edits in response to reactions, allowing 
 
 See /commands/navigation.js for the code behind the above example.
 
-Warning: In order to work around [a bug in the Discord client](https://trello.com/c/Nnkj5D0W/1154-editing-a-message-may-sometimes-cause-part-of-previous-message-to-appear) a navigation edits the message twice per reaction. That being the case, you are likely to see some rate limit warnings in the logs when people use navigations. Also, the workaround is not 100% effective, and sometimes the edited message may be messed up.
 ### Settings
 It's easy to define settings that server admins can set on a per-channel basis, and that your commands can use.
 
