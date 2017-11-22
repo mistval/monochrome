@@ -277,11 +277,13 @@ It will also log the error with the error reason and the stack trace:
 
 PublicError should be constructed via one of its factory methods:
 
+```js
 PublicError.createWithCustomPublicMessage(publicMessage {String}, deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
 
 PublicError.createWithGenericPublicMessage(deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
 
 PublicError.createWithNoPublicMessage(logDescription {String}, internalErr {Error});
+```
 
 publicMessage gets sent to the user. If deleteAutomatically is true, that message gets deleted after a short amount of time. The logDescription is a brief description of the error for logging (can be undefined). internalErr is an Error object to log a stack trace for (can be undefined).
 
