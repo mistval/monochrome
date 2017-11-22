@@ -1,7 +1,5 @@
 FILES="\
   README.md \
-  core/* \
-  message_processors/* \
-  commands/*"
+  core/*"
 
 jsdoc ${FILES} --destination ./documentation

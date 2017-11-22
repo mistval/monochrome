@@ -1,6 +1,9 @@
 # monochrome
 A flexible Discord bot core.
 Node 6.9.1+ recommended.
+
+In order to get up and running as quickly as possible, consider cloning the [monochrome demo](https://github.com/mistval/monochrome-demo) and customizing it to fit your needs. By doing this, you do not need to create configuration files, command directories, etc from scratch.
+
 ## Key features
 <ol>
 <li>Command framework</li>
@@ -15,52 +18,29 @@ Node 6.9.1+ recommended.
 ## Basics
 ### Installation
 ```
-git clone https://github.com/mistval/monochrome.git
-cd monochrome
-npm install -S --no-optional
+npm install --save --no-optional monochrome-bot
 ```
-### Configuration
-<ol>
-<li>Create an application in <a href='https://discordapp.com/developers/applications/me'>Discord applications</a>. (or use an existing bot token)</li>
-<li>In your application's settings, click "Create a Bot User" and confirm.
-<li>Enter your new bot's Token into monochrome/config.json's botToken field.</li>
-<li>Use your application's Client ID to add your bot to your server. Substitute the Client ID into this link: https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot</li>
-</ol>
+### Usage
+```
+let monochrome = require('monochrome-bot');
 
-### Starting the bot
+let configFilePath = __dirname + '/config.json';
+let commandsDirectoryPath = __dirname + '/commands';
+let messageProcessorsDirectoryPath = __dirname + '/message_processors';
+let settingsFilePath = __dirname + '/server_settings.json';
+
+let bot = new monochrome.Bot(
+  configFilePath,
+  commandsDirectoryPath,
+  messageProcessorsDirectoryPath,
+  settingsFilePath);
+bot.connect();
 ```
-node monochrome/monochrome.js
-```
-Your bot should now appear as online in your server. Try bot!help to get a response, and see the demo commands.
-### Adding commands
-Here is a simple hello world command:
+The arguments to the monochrome.Bot constructor are described below.
+### Configuration
+monochrome requires a path to a configuration js file. That configuration file should look like this (from the monochrome demo):
 ```js
 module.exports = {
-  commandAliases: ['bot!hello', 'bot!hi'], // Aliases for the command
-  uniqueId: 'hello4859', // Can be anything, as long as it's unique, and you shouldn't change it.
-  action(bot, msg, suffix) {
-    return bot.createMessage(msg.channel.id, 'Hello World!');
-  },
-};
-```
-Save that as helloworld.js and drop it into the monochrome/commands directory. Start your bot and say bot!hello or bot!hi to get a response. (If your bot is already running, you can use the }reload command to reload commands).
-### Making it yours
-The demo version of monochrome comes with demo commands, message processors, settings, and configuration. While some of these are useful, such as the set avatar command, others are not, and you will wish to delete them. To make the bot yours, you should:
-
-<ol>
-<li>Delete unwanted commands from monochrome/commands. Simply delete the files for the commands you don't want.</li>
-<li>Delete unwanted message processors from monochrome/message_processors. Simply delete the files for the message processors you don't want.</li>
-<li>Delete monochrome/server_settings.js if you do not need to create any settings. If you do need to create your own settings, read below and add them to monochrome/server_settings.js.</li>
-<li>Write code for your own commands and add them to monochrome/commands.</li>
-<li>Write code for your own message processors and add them to monochrome/message_processors.</li>
-<li>Add your own settings hierarchy to monochrome/server_settings.js.</li>
-<li>Update monochrome/config.json with your desired configuration.</li>
-</ol>
-
-## Advanced
-Here is a full explanation of the fields in monochrome/config.json:
-```json
-{
   "botToken": "", // Your bot's token from https://discordapp.com/developers/applications/me
   "botAdminIds": [""], // An array of user IDs for the bot admins (you can use Discord's developer mode to find any user's ID).
   "serverSettingsCommandAliases": ["]settings", "]s"], // The aliases for the built-in settings command (discussed more later). If you don't want a settings command, this should be an empty array.
@@ -99,9 +79,10 @@ Here is a full explanation of the fields in monochrome/config.json:
   "colorForSettingsSystemEmbeds": 2522111, // The built-in settings command uses embeds. That field controls the color of those embeds.
   "settingsCategorySeparator": "/" // Settings are hierarchical. If the value of this field is "/", then a setting called "enabled" under a category called "lazer_cannon" will be referred to as "lazer_cannon/enabled"
 }
+
 ```
-### Advanced command configuration
-Here is the same hello world command from above, but with all optional fields specified:
+### Commands
+monochrome requires a path to a directory where you put your command files. A command file should look like this:
 ```js
 module.exports = {
   commandAliases: ['bot!hello', 'bot!hi'], // Aliases for the command
@@ -123,6 +104,67 @@ module.exports = {
   }
 };
 ```
+### Message processors
+monochrome requires a path to a directory where you put your message processor files. A message processor is an arbitrary hook that can process any message sent to the bot, regardless of whether or not it starts with a command. A message processor file should look like this:
+```js
+module.exports = {
+  name: 'Palindrome',
+  action: (bot, msg) => {
+    let text = msg.content;
+    let textBackwards = text.split('').reverse().join('');
+    if (text === textBackwards) {
+      bot.createMessage(msg.channel.id, 'That\'s a palindrome!');
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
+```
+### Settings
+monochrome can be provided a path to a js file where you define settings for server admins to configure. Alternatively, that argument to the bot constructor may be omitted. The settings file should look like this:
+```js
+module.exports = [
+  {
+    "type": "CATEGORY", // "CATEGORY" for a group of settings, "SETTING" for a setting.
+    "userFacingName": "fun", // This is the name of the category. The user will see it if they use the settings command.
+    "children": // A category's children can be either other CATEGORYs or SETTINGs, but not both.
+    [
+      {
+        "type": "SETTING",
+        "userFacingName": "countdown_start", // This is the name of the setting. The user will see it if they use the settings command. Its full path is fun/countdown_start.
+        "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
+        "valueType": "INTEGER", // Can be INTEGER, FLOAT, STRING, or BOOLEAN
+        "defaultDatabaseFacingValue": 10,
+        "allowedDatabaseFacingValues": "Range(1, 10)" // This can be a range as shown here, or an array of discrete values, or it can be undefined.
+      }
+    ]
+  }
+];
+```
+This adds a settings category called 'fun' with a setting called 'countdown_start'. [Here is how a server admin would view and set this setting.](https://github.com/mistval/monochrome/blob/master/settings_example.png)
+
+And here is how a countdown command can require and use the value of that setting:
+```js
+module.exports = {
+  commandAliases: ['bot!countdown'],
+  botAdminOnly: false,
+  uniqueId: 'countdown29490',
+  requiredSettings: ['fun/countdown_start'],
+  shortDescription: 'Start a countdown.',
+  action(bot, msg, suffix, settings) {
+    let countdownStart = settings['fun/countdown_start'];
+    for (let i = countdownStart; i >= 0; --i) {
+      setTimeout(() => {
+        msg.channel.createMessage(i.toString());
+      }, (countdownStart - i) * 2000);
+    }
+  },
+};
+```
+In the image, you may have noticed that there is also an enabled_commands settings category. This category is automatically generated by monochrome and lets server admins control where commands can and cannot be used.
+
+## Advanced
 ### Command extensions
 Command extensions are an alternative to command arguments and command aliases, and may be more diserable in some cases.
 
@@ -147,64 +189,12 @@ module.exports = {
   }
 };
 ```
-### Message Processors
-A message processor is like a more flexible command. It can choose whether to respond to any input. Here is a simple message processor:
-```js
-module.exports = {
-  name: 'Palindrome',
-  action: (bot, msg) => {
-    let text = msg.content;
-    let textBackwards = text.split('').reverse().join('');
-    if (text === textBackwards) {
-      bot.createMessage(msg.channel.id, 'That\'s a palindrome!');
-      return true;
-    } else {
-      return false;
-    }
-  }
-};
-```
-Save that as palindrome.js and drop it into the monochrome/message_processors directory. Start your bot and say 'racecar', 'hannah', etc to get a response.
-
-If a message processor agrees to process the input, it should return true. If it does not agree to process the input, it should return false.
 ### Navigations
 A navigation is a message that the bot edits in response to reactions, allowing a user to browse through pages of information.
 
 ![Navigation gif](https://github.com/mistval/monochrome/blob/master/nav.gif "Navigation gif")
 
 See /commands/navigation.js for the code behind the above example.
-
-### Settings
-It's easy to define settings that server admins can set on a per-channel basis, and that your commands can use.
-
-You can define settings in monochrome/server_settings.json. The master branch has one setting there already as an example. The master branch's monochrome/server_settings.json looks like this:
-
-```json
-[
-  {
-    "type": "CATEGORY",
-    "userFacingName": "fun",
-    "children":
-    [
-      {
-        "type": "SETTING",
-        "userFacingName": "countdown_start",
-        "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
-        "valueType": "INTEGER",
-        "defaultDatabaseFacingValue": 10,
-        "allowedDatabaseFacingValues": "Range(1, 10)"
-      }
-    ]
-  }
-]
-```
-This adds a settings category called 'fun' with a setting called 'countdown_start'. The monochrome/commands/countdown.js command uses this setting to decide what number the countdown should start at.
-
-With this setting defined in server_settings.json, it will now appear when a server admin uses the settings command. [Here is how a server admin would view and set this setting.](https://github.com/mistval/monochrome/blob/master/settings_example.png)
-
-In the above linked image, you may notice that there is also an enabled_commands settings category. This category is automatically generated by monochrome and lets server admins control where commands can and cannot be used.
-
-See monochrome/commands/countdown.js to see how the countdown command requires and accesses the value of this setting.
 ### Dynamic reloading
 In general, when you change bot code, it is safest to stop and restart the bot. But if your bot has non-persistent data that you don't want to lose, or if you want absolutely zero downtime, monochrome supports dynamic reloading of code via the }reload command. You can add, remove, or modify commands and any other code of yours on the fly, without stopping the bot.
 
@@ -214,24 +204,31 @@ You should only ```reload``` your own code. Core monochrome code, and npm module
 
 ```Reload``` does not play nicely with singletons or other modules that have static data. For best results when using the }reload command, avoid static data in your code. If you must have static data, use ```require``` instead of ```reload``` to import files that contain static data. Consider separating static data and program logic into separate files, so that you can ```reload``` program logic and ```require``` static data.
 ### Persistence
-Persistence powered by node-persist is built in. See the included commands: addquote.js and getrandomquote.js for an example.
+Persistence powered by node-persist is built in and can be accessed with ```require('monochrome-bot').persistence```
+
+For examples of using persistence, see the following commands in the monochrome demo:
+[Add quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/addquote.js)
+[Get quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/getrandomquote.js)
+
+The edit functions are atomic. That is, you don't need to be concerned about two different actors reading the same data, making different edits to it, and overwriting each other.
+
 ### Logging
 The Logger singleton can be used for logging.
 ```js
-const Logger = require('./../core/Logger.js'); // Path relative to the monochrome/commands directory.
+const logger = require('monochrome-bot').logger;
 
-Logger.logSuccess('TITLE', 'message');
-Logger.logFailure('TITLE', 'message', errorObjectIfThereIsOne);
+logger.logSuccess('TITLE', 'message');
+logger.logFailure('TITLE', 'message', errorObjectIfThereIsOne);
 ```
 ### Documentation
 JSDoc can be used to generate documentation for the core classes.
 ```
 npm install -g jsdoc
-sh monochrome/generate_documentation.sh
+sh node_modules/monochrome-bot/generate_documentation.sh
 ```
-And then open monochrome/documentation/index.html.
+And then open node_modules/monochrome-bot/documentation/index.html.
 
-The core code (mostly) complies with Google's JavaScript coding conventions, with the exception of its maximum line length limit. Code style in the core classes can be checked with ```sh monochrome/style_checks.sh```
+The core code (mostly) complies with Google's JavaScript coding conventions, with the exception of its maximum line length limit. Code style in the core classes can be checked with ```node_modules/monochrome-bot/style_checks.sh```
 ### Tests
 Nearly one hundred tests defend against regression.
 ```
@@ -253,12 +250,13 @@ TIP: Most Eris methods return promises, for example ```msg.channel.createMessage
 ### Throwing
 If your command fails in an irrecoverable way (even if it's an expected failure), you should throw and allow the bot core to handle it (by logging it and sending a failure message).
 ### Throwing PublicError
-PublicError is a class available from monochrome/core/public_error.js
+PublicError is a class available from monochrome.
 
 For expected failures, you generally should throw a PublicError.
 
 Here is an example of throwing PublicError:
 ```js
+let PublicError = require('monochrome-bot').PublicError;
 ...
 }).catch(err => {
   throw new PublicError('Sorry, Jisho is not responding. Please try again later.', false, 'Error fetching from Jisho', err);
@@ -286,4 +284,4 @@ Add my bot [Kotoba](https://discordapp.com/oauth2/authorize?client_id=2512391700
 ## Help
 [Support](https://discord.gg/f4Gkqku)
 
-While the releases are well tested, the master branch is more experimental. If you encounter a bug, or want to suggest a feature, please open an issue, as I take this project seriously and would like it to meet your needs.
+For bug reports or feature requests please open an issue on the Github repo.
