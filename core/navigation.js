@@ -95,20 +95,7 @@ class Navigation {
 
       pagePromise.then(navigationPage => {
         if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
-          // TODO. Don't need to do this double edit after Discord fixes this: https://trello.com/c/Nnkj5D0W/1154-editing-a-message-may-sometimes-cause-part-of-previous-message-to-appear
-          let replaceContent = {};
-          replaceContent.content = '';
-          replaceContent.embed = {
-            title: '',
-            description: '',
-          };
-          this.message_.edit(replaceContent).then(() => {
-            this.message_.edit(navigationPage.content).catch(err => {
-              logger.logFailure(LOGGER_TITLE, 'Error editing navigation', err);
-            });
-          }).catch(err => {
-            logger.logFailure(LOGGER_TITLE, 'Error editing navigation', err);
-          });
+          return this.message_.edit(navigationPage.content);
         }
       }).catch(err => {
         logger.logFailure(LOGGER_TITLE, 'Error navigating.', err);
