@@ -281,24 +281,48 @@ describe('Setting', function() {
     });
     it('Returns server setting value if no channel value for this channel', function() {
       const serverSettingValue = 5;
-      const channelSettingValue = 3;
-      const fakeChannelId = 'fake_channel';
-      let setting = createSetting(validIntegerSetting);
       let settings = {serverSettings: {}, channelSettings: {}};
+      const fakeChannelId = 'fake_channel';
       settings.channelSettings[fakeChannelId] = {};
-      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
-      settings.channelSettings[fakeChannelId][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverSettingValue);
+      let testCases = [
+        {rawSetting: validIntegerSetting, serverValue: 5, channelValue: 1},
+        {rawSetting: validFloatSetting, serverValue: 3.5, channelValue: 3},
+        {rawSetting: validStringSetting, serverValue: 'test', channelValue: 'test2'},
+        {rawSetting: validBooleanSetting, serverValue: false, channelValue: true},
+      ];
+
+      for (let testCase of testCases) {
+        let rawSetting = testCase.rawSetting;
+        let serverValue = testCase.serverValue;
+        let fakeChannelValue = testCase.channelValue;
+        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
+        let setting = createSetting(rawSetting);
+        settings.channelSettings[fakeChannelId][setting.getFullyQualifiedUserFacingName()] = fakeChannelValue;
+        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
+        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverValue);
+      }
     });
     it('Returns channel setting value if it exists', function() {
       const serverSettingValue = 5;
-      const channelSettingValue = 3;
-      let setting = createSetting(validIntegerSetting);
       let settings = {serverSettings: {}, channelSettings: {}};
       settings.channelSettings[MOCK_CHANNEL_ID1] = {};
-      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
-      settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] = channelSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === channelSettingValue);
+      let testCases = [
+        {rawSetting: validIntegerSetting, serverValue: 5, channelValue: 1},
+        {rawSetting: validFloatSetting, serverValue: 3.5, channelValue: 3},
+        {rawSetting: validStringSetting, serverValue: 'test', channelValue: 'test2'},
+        {rawSetting: validBooleanSetting, serverValue: false, channelValue: true},
+      ];
+
+      for (let testCase of testCases) {
+        let rawSetting = testCase.rawSetting;
+        let serverValue = testCase.serverValue;
+        let channelValue = testCase.channelValue;
+        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
+        let setting = createSetting(rawSetting);
+        settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] = channelValue;
+        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
+        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === channelValue);
+      }
     });
     it('Sets the channel value correctly for here', function() {
       const newValue = 8;
@@ -307,6 +331,8 @@ describe('Setting', function() {
       setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'here');
       assert(settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] === newValue);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+      assert(setting.getCurrentDatabaseFacingValue('other_channel', settings) === validIntegerSetting.defaultDatabaseFacingValue);
+      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
     });
     it('Sets the channel value correctly for all', function() {
       const newValue = 8;
@@ -315,6 +341,27 @@ describe('Setting', function() {
       setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
       assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
+      assert(Object.keys(settings.channelSettings).length === 0);
+    });
+    it('All overrides channel specific settings', function() {
+      const newServerValue = 8;
+      const newChannelValue = 7
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newChannelValue, 'here');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newChannelValue);
+      assert(Object.keys(settings.channelSettings[MOCK_CHANNEL_ID1]).length === 1);
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newServerValue, 'all');
+      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newServerValue);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newServerValue);
+      assert(Object.keys(settings.channelSettings[MOCK_CHANNEL_ID1]).length === 0);
+    });
+    it('Cancel cancels', function() {
+      const newServerValue = 8;
+      let setting = createSetting(validIntegerSetting);
+      let settings = {};
+      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newServerValue, 'cancel');
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validIntegerSetting.defaultDatabaseFacingValue);
     });
     it('Sets the channel value correctly for specified channels', function() {
       const newValue = 8;
