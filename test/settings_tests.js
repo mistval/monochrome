@@ -253,13 +253,31 @@ describe('Setting', function() {
     it('Returns default value if nothing in database', function() {
       let setting = createSetting(validIntegerSetting);
       assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validIntegerSetting.defaultDatabaseFacingValue);
+      setting = createSetting(validStringSetting);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validStringSetting.defaultDatabaseFacingValue);
+      setting = createSetting(validFloatSetting);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validFloatSetting.defaultDatabaseFacingValue);
+      setting = createSetting(validBooleanSetting);
+      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validBooleanSetting.defaultDatabaseFacingValue);
     });
     it('Returns server setting value if no channel value', function() {
       const serverSettingValue = 5;
-      let setting = createSetting(validIntegerSetting);
       let settings = {serverSettings: {}};
-      settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverSettingValue;
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverSettingValue);
+      let testCases = [
+        {rawSetting: validIntegerSetting, serverValue: 5},
+        {rawSetting: validFloatSetting, serverValue: 3.5},
+        {rawSetting: validStringSetting, serverValue: 'test'},
+        {rawSetting: validBooleanSetting, serverValue: false},
+      ];
+
+      for (let testCase of testCases) {
+        let rawSetting = testCase.rawSetting;
+        let serverValue = testCase.serverValue;
+        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
+        let setting = createSetting(rawSetting);
+        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
+        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverValue);
+      }
     });
     it('Returns server setting value if no channel value for this channel', function() {
       const serverSettingValue = 5;
