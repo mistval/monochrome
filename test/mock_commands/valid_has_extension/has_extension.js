@@ -6,7 +6,7 @@ module.exports = {
   canBeChannelRestricted: false,
   action(bot, msg, suffix, settings, extension) {
     invoked = true;
-    correctExtension = extension === 'extension'
+    correctExtension = extension === 'extension';
   },
   canHandleExtension(extension) {
     invoked = false;

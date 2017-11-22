@@ -2,7 +2,7 @@ module.exports.publicError = {
   missingPermissionsDiscordError: 'Missing Permissions',
   genericErrorDescriptionLog: 'Error',
   createErrorDescription(commandText) {
-    return 'Command \'' + commandText + '\' errored.'
+    return 'Command \'' + commandText + '\' errored.';
   },
 };
 

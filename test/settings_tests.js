@@ -158,7 +158,6 @@ let invalidDatabaseFacingValues2 = {
   'allowedDatabaseFacingValues': 'Range(0, 10)',
 };
 
-
 let validSettings = [
   validIntegerSetting,
   validFloatSetting,
@@ -345,7 +344,7 @@ describe('Setting', function() {
     });
     it('All overrides channel specific settings', function() {
       const newServerValue = 8;
-      const newChannelValue = 7
+      const newChannelValue = 7;
       let setting = createSetting(validIntegerSetting);
       let settings = {};
       setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newChannelValue, 'here');

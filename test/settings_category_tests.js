@@ -6,70 +6,70 @@ const MockConfig = require('./mock_objects/mock_config.js');
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
 let invalidUserFacingNameCategory1 = {
-  "type": "CATEGORY",
-  "userFacingName": 5,
-  "children": [],
+  'type': 'CATEGORY',
+  'userFacingName': 5,
+  'children': [],
 };
 
 let invalidUserFacingNameCategory2 = {
-  "type": "CATEGORY",
-  "children": [],
+  'type': 'CATEGORY',
+  'children': [],
 };
 
 let invalidChildren1 = {
-  "type": "CATEGORY",
-  "userFacingName": 'name',
+  'type': 'CATEGORY',
+  'userFacingName': 'name',
 };
 
 let invalidChildren2 = {
-  "type": "CATEGORY",
-  "userFacingName": 'name',
-  "children": 5,
+  'type': 'CATEGORY',
+  'userFacingName': 'name',
+  'children': 5,
 };
 
 let valid1 = {
-  "type": "CATEGORY",
-  "userFacingName": 'name',
-  "children": [],
+  'type': 'CATEGORY',
+  'userFacingName': 'name',
+  'children': [],
 };
 
 let validHierarchy1 = {
-  "type": "CATEGORY",
-  "userFacingName": 'root',
-  "children": [
+  'type': 'CATEGORY',
+  'userFacingName': 'root',
+  'children': [
     {
-      "type": "CATEGORY",
-      "userFacingName": 'subcategory1',
-      "children": [
+      'type': 'CATEGORY',
+      'userFacingName': 'subcategory1',
+      'children': [
         {
-          "type": "SETTING",
-          "userFacingName": "setting1",
-          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
-          "valueType": "INTEGER",
-          "defaultDatabaseFacingValue": 10,
-          "allowedDatabaseFacingValues": "Range(1, 10)"
+          'type': 'SETTING',
+          'userFacingName': 'setting1',
+          'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
+          'valueType': 'INTEGER',
+          'defaultDatabaseFacingValue': 10,
+          'allowedDatabaseFacingValues': 'Range(1, 10)'
         }
       ],
     },
     {
-      "type": "CATEGORY",
-      "userFacingName": 'subcategory2',
-      "children": [
+      'type': 'CATEGORY',
+      'userFacingName': 'subcategory2',
+      'children': [
         {
-          "type": "SETTING",
-          "userFacingName": "setting2",
-          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
-          "valueType": "INTEGER",
-          "defaultDatabaseFacingValue": 10,
-          "allowedDatabaseFacingValues": "Range(1, 10)"
+          'type': 'SETTING',
+          'userFacingName': 'setting2',
+          'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
+          'valueType': 'INTEGER',
+          'defaultDatabaseFacingValue': 10,
+          'allowedDatabaseFacingValues': 'Range(1, 10)'
         },
         {
-          "type": "SETTING",
-          "userFacingName": "setting3",
-          "description": "This setting controls what number I'll count down from when you use the bot!countdown command.",
-          "valueType": "INTEGER",
-          "defaultDatabaseFacingValue": 10,
-          "allowedDatabaseFacingValues": "Range(1, 10)"
+          'type': 'SETTING',
+          'userFacingName': 'setting3',
+          'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
+          'valueType': 'INTEGER',
+          'defaultDatabaseFacingValue': 10,
+          'allowedDatabaseFacingValues': 'Range(1, 10)'
         },
       ],
     },
