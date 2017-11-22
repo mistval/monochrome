@@ -21,7 +21,7 @@ In order to get up and running as quickly as possible, consider cloning the [mon
 npm install --save --no-optional monochrome-bot
 ```
 ### Usage
-```
+```js
 let monochrome = require('monochrome-bot');
 
 let configFilePath = __dirname + '/config.json';
@@ -196,7 +196,7 @@ A navigation is a message that the bot edits in response to reactions, allowing 
 
 See /commands/navigation.js for the code behind the above example.
 ### Dynamic reloading
-In general, when you change bot code, it is safest to stop and restart the bot. But if your bot has non-persistent data that you don't want to lose, or if you want absolutely zero downtime, monochrome supports dynamic reloading of code via the }reload command. You can add, remove, or modify commands and any other code of yours on the fly, without stopping the bot.
+In general, when you change bot code, it is safest to stop and restart the bot. But if your bot has volatile data that you don't want to lose, or if you want absolutely zero downtime, monochrome supports dynamic reloading of code via the }reload command. You can add, remove, or modify commands and any other code of yours on the fly, without stopping the bot.
 
 In order to support this, you must do one thing. In your commands, use the reload module to import your modules, instead of ```require```. Here is an example:
 
@@ -211,9 +211,9 @@ You should only ```reload``` your own code. monochrome-bot and other npm modules
 ### Persistence
 Persistence powered by node-persist is built in and can be accessed with ```require('monochrome-bot').persistence```
 
-For examples of using persistence, see the following commands in the monochrome demo:
-[Add quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/addquote.js)
-[Get quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/getrandomquote.js)
+For examples of using persistence, see the following commands in the monochrome demo:  
+[Add quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/addquote.js)  
+[Get quote command](https://github.com/mistval/monochrome-demo/blob/master/commands/getrandomquote.js)  
 
 The edit functions are atomic. That is, you don't need to be concerned about two different actors reading the same data, making different edits to it, and overwriting each other.
 
@@ -276,8 +276,11 @@ It will also log the error with the error reason and the stack trace:
 ![PublicError log message](https://github.com/mistval/monochrome/blob/master/public_error_log.png)
 
 PublicError should be constructed via one of its factory methods:
+
 PublicError.createWithCustomPublicMessage(publicMessage {String}, deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
+
 PublicError.createWithGenericPublicMessage(deleteAutomatically {Boolean}, logDescription {String}, internalErr {Error});
+
 PublicError.createWithNoPublicMessage(logDescription {String}, internalErr {Error});
 
 publicMessage gets sent to the user. If deleteAutomatically is true, that message gets deleted after a short amount of time. The logDescription is a brief description of the error for logging (can be undefined). internalErr is an Error object to log a stack trace for (can be undefined).
