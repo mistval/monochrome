@@ -1,8 +1,11 @@
 {
-  "name": "monochrome",
+  "name": "monochrome-bot",
   "version": "1.0.0",
-  "description": "A lightweight and simple node.js Discord bot core based on Eris",
+  "description": "A flexible Discord bot core based on Eris",
   "main": "monochrome.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "nyc mocha"
   },
@@ -12,29 +15,26 @@
   },
   "keywords": [
     "discord",
-    "node.js",
-    "nodejs",
-    "node",
-    "js",
     "bot",
+    "core",
     "framework",
     "library",
-    "core"
+    "command",
+    "commands",
+    "setting",
+    "settings"
   ],
-  "author": "Randall",
-  "license": "ISC",
+  "author": "rschmidt",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/mistval/monochrome/issues"
   },
   "homepage": "https://github.com/mistval/monochrome#readme",
   "dependencies": {
-    "eris": "^0.8.0",
+    "eris": "^0.8.1",
     "node-persist": "^2.1.0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "require-reload": "^0.2.2"
-  },
-  "devDependencies": {
-    "heapdump": "^0.3.9"
   }
 }
