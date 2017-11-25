@@ -66,15 +66,15 @@ class Navigation {
   * @param {String} userId - The id of the user who toggled the emoji.
   */
   handleEmojiToggled(bot, emoji, userId) {
-    this.actionAccumulator_.enqueue(() => {
-      if (bot.user.id === userId) {
-        return;
-      } else if (emoji.name === this.currentEmojiName_) {
-        return;
-      } else if (userId !== this.ownerId_) {
-        return;
-      }
+    if (bot.user.id === userId) {
+      return;
+    } else if (emoji.name === this.currentEmojiName_) {
+      return;
+    } else if (userId !== this.ownerId_) {
+      return;
+    }
 
+    this.actionAccumulator_.enqueue(() => {
       let pagePromise = undefined;
       let desiredEmojiName = emoji.name;
 
@@ -94,7 +94,7 @@ class Navigation {
       }
 
       pagePromise.then(navigationPage => {
-        if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
+        if (navigationPage && navigationPage.content && desiredEmojiName === this.currentEmojiName_) {
           return this.message_.edit(navigationPage.content);
         }
       }).catch(err => {
