@@ -54,13 +54,18 @@ class NavigationChapter {
   */
   getCurrentPage() {
     if (!this.preparedData_) {
-      return Promise.resolve(() => this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
-        this.preparedData_ = preparedData;
-        return this.getCurrentPageFromPreparedData_();
-      }).catch(err => {
+      try {
+        return Promise.resolve(this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
+          this.preparedData_ = preparedData;
+          return this.getCurrentPageFromPreparedData_();
+        }).catch(err => {
+          logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
+          throw err;
+        });
+      } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
-        throw err;
-      });
+        return Promise.reject(err);
+      }
     } else {
       return this.getCurrentPageFromPreparedData_();
     }
