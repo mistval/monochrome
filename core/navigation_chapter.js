@@ -54,7 +54,7 @@ class NavigationChapter {
   */
   getCurrentPage() {
     if (!this.preparedData_) {
-      return Promise.resolve(this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
+      return Promise.resolve(() => this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
         this.preparedData_ = preparedData;
         return this.getCurrentPageFromPreparedData_();
       }).catch(err => {

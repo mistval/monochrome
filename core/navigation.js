@@ -38,7 +38,7 @@ class Navigation {
   createMessage(msg) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage().then(navigationPage => {
-      return msg.channel.createMessage(navigationPage.content);
+      return msg.channel.createMessage(navigationPage.content, navigationPage.file);
     }).then(sentMessage => {
       this.message_ = sentMessage;
       let emojis = Object.keys(this.chapterForEmojiName_);
