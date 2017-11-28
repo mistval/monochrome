@@ -148,35 +148,7 @@ class Monochrome {
     });
 
     this.bot_.on('messageCreate', msg => {
-      if (!msg.author) {
-        return; // Sometimes an empty message with no author appears. *shrug*
-      }
-      if (msg.author.bot) {
-        return;
-      }
-      try {
-        if (this.commandManager_.processInput(this.bot_, msg)) {
-          return;
-        }
-        if (this.messageProcessorManager_.processInput(this.bot_, msg, this.config_)) {
-          return;
-        }
-        if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
-          logger.logInputReaction('MENTION', msg, '', true);
-          return;
-        }
-        if (!msg.channel.guild && this.config_.genericDMReply) {
-          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
-          logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
-          return;
-        }
-      } catch (err) {
-        logger.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
-        if (this.config_.genericErrorMessage) {
-          msg.channel.createMessage(this.config_.genericErrorMessage);
-        }
-      }
+      this.onMessageCreate_(msg);
     });
 
     this.bot_.on('guildCreate', guild => {
@@ -219,15 +191,47 @@ class Monochrome {
       navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
     });
 
-    this.bot_.connect().catch(err => {
-      logger.logFailure(LOGGER_TITLE, 'Error logging in', err);
-    });
-
     this.bot_.on('guildDelete', (guild, unavailable) => {
       if (!unavailable) {
         logger.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild));
       }
     });
+
+    this.bot_.connect().catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Error logging in', err);
+    });
+  }
+
+  onMessageCreate_(msg) {
+    try {
+      if (!msg.author) {
+        return; // Sometimes an empty message with no author appears. *shrug*
+      }
+      if (msg.author.bot) {
+        return;
+      }
+      if (this.commandManager_.processInput(this.bot_, msg)) {
+        return;
+      }
+      if (this.messageProcessorManager_.processInput(this.bot_, msg, this.config_)) {
+        return;
+      }
+      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
+        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
+        logger.logInputReaction('MENTION', msg, '', true);
+        return;
+      }
+      if (!msg.channel.guild && this.config_.genericDMReply) {
+        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
+        logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
+        return;
+      }
+    } catch (err) {
+      logger.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
+      if (this.config_.genericErrorMessage) {
+        msg.channel.createMessage(this.config_.genericErrorMessage);
+      }
+    }
   }
 
   reloadCore_() {
