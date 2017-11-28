@@ -92,6 +92,7 @@ class Command {
       throw new Error(strings.validation.noEnabledCommandsCategoryName);
     }
     commandData = sanitizeCommandData(commandData, settingsCategorySeparator);
+    this.enabledCommandsFailSilentlyKey_ = 'enabled_commands' + settingsCategorySeparator + 'disabled_commands_fail_silently';
     this.aliases = commandData.commandAliases;
     this.uniqueId = commandData.uniqueId;
     this.requiredSettings_ = commandData.requiredSettings;
@@ -177,7 +178,8 @@ class Command {
 
     let requiredSettings = this.requiredSettings_;
     if (this.enabledSettingFullyQualifiedUserFacingName_) {
-      requiredSettings = requiredSettings.concat([this.enabledSettingFullyQualifiedUserFacingName_]);
+      requiredSettings.push(this.enabledSettingFullyQualifiedUserFacingName_);
+      requiredSettings.push(this.enabledCommandsFailSilentlyKey_);
     }
     return settingsGetter.getSettings(bot, msg, requiredSettings).then(settings => {
       if (!this.enabledSettingFullyQualifiedUserFacingName_ ||
@@ -186,7 +188,11 @@ class Command {
         return this.invokeAction_(bot, msg, suffix, settings, extension);
       }
 
-      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.commandDisabled, true, strings.invokeFailure.commandDisabledLog);
+      let publicMessage = '';
+      if (!settings[this.enabledCommandsFailSilentlyKey_]) {
+        publicMessage = strings.invokeFailure.commandDisabled;
+      }
+      throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.commandDisabledLog);
     });
   }
 

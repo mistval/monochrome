@@ -125,17 +125,6 @@ function stringIsRangeConstructor(str) {
   return str && str.indexOf('Range(') === 0;
 }
 
-function tryParseAllowedDatabaseFacingValues(allowedDatabaseFacingValues) {
-  if (stringIsRangeConstructor(allowedDatabaseFacingValues)) {
-    try {
-      return eval('new ' + allowedDatabaseFacingValues);
-    } catch (err) {
-      throwError('Tried to parse allowedValues as a Range, but failed.', settingsBlob);
-    }
-  }
-  return allowedDatabaseFacingValues;
-}
-
 function validateSettingsBlob(settingsBlob, settingsCategorySeparator) {
   let hasAllNecessaryPropertiesForCustomType = requiredBlobPropertiesForCustomType.every(property => {
     return property in settingsBlob;
@@ -160,18 +149,22 @@ function validateSettingsBlob(settingsBlob, settingsCategorySeparator) {
     throwError('A setting has an invalid allowedDatabaseFacingValues. It must be an array or a Range(x,y)', settingsBlob);
   } else if (stringIsRangeConstructor(settingsBlob.allowedDatabaseFacingValues) && settingsBlob.valueType !== ValueType.INTEGER && settingsBlob.valueType !== ValueType.FLOAT) {
     throwError('A setting has an allowedDatabaseFacingValues value that looks like a range, but its valueType is neither INTEGER nor FLOAT', settingsBlob);
-  } else if (settingsBlob.allowedDatabaseFacingValues) {
-    let allowedValues = tryParseAllowedDatabaseFacingValues(settingsBlob.allowedDatabaseFacingValues);
-    if (Array.isArray(allowedValues)) {
-      if (allowedValues.indexOf(settingsBlob.defaultDatabaseFacingValue) === -1) {
-        throw Error('The defaultDatabaseFacingValue is not one of the allowedDatabaseFacingValues', settingsBlob);
-      }
-    } else if (!stringIsRangeConstructor(settingsBlob.allowedDatabaseFacingValues)) {
-      throw Error('Unknown allowedDatabaseFacingValues types. It doesn\'t look like an array or a range.', settingsBlob);
-    } else if (!allowedValues.isWithinRange(settingsBlob.defaultDatabaseFacingValue)) {
-      throw Error('The defaultDatabaseFacingValue is not within the rang eof allowedDatabaseFacingValues.', settingsBlob);
+  } else if (settingsBlob.allowedDatabaseFacingValues &&
+      Array.isArray(settingsBlob.allowedDatabaseFacingValues) &&
+      settingsBlob.allowedDatabaseFacingValues.indexOf(settingsBlob.defaultDatabaseFacingValue) === -1) {
+    throw Error('The defaultDatabaseFacingValue is not one of the allowedDatabaseFacingValues', settingsBlob);
+  }
+}
+
+function tryParseAllowedDatabaseFacingValues(allowedDatabaseFacingValues) {
+  if (stringIsRangeConstructor(allowedDatabaseFacingValues)) {
+    try {
+      return eval('new ' + allowedDatabaseFacingValues);
+    } catch (err) {
+      throwError('Tried to parse allowedValues as a Range, but failed.', settingsBlob);
     }
   }
+  return allowedDatabaseFacingValues;
 }
 
 /** Represents a setting leaf, as opposed to a category of settings */

@@ -2,7 +2,16 @@
 const logger = require('./logger.js');
 
 const LOGGER_TITLE = 'NAVIGATION';
-const EDIT_DELAY_TIME_IN_MS = 2000;
+const EDIT_DELAY_TIME_IN_MS = 1500;
+
+function sendReactions(msg, reactions) {
+  let promise = Promise.resolve();
+  for (let reaction of reactions) {
+    promise = promise.then(() => {
+      return msg.channel.addMessageReaction(msg.id, reaction);
+    });
+  }
+}
 
 /**
 * Represents a navigation. A navigation allows its owner to browse information by using reactions.
@@ -29,7 +38,6 @@ class Navigation {
     this.currentEmojiName_ = initialEmojiName;
     this.ownerId_ = ownerId;
     this.actionAccumulator_ = new ActionAccumulator(EDIT_DELAY_TIME_IN_MS);
-    this.message_ = undefined;
   }
 
   /**
@@ -38,21 +46,24 @@ class Navigation {
   createMessage(msg) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage().then(navigationPage => {
+      if (navigationPage.showPageArrows !== undefined) {
+        this.showPageArrows_ = navigationPage.showPageArrows;
+      }
       return msg.channel.createMessage(navigationPage.content, navigationPage.file);
     }).then(sentMessage => {
-      this.message_ = sentMessage;
       let emojis = Object.keys(this.chapterForEmojiName_);
+      let reactionsToSend = [];
       if (emojis.length > 1) {
-        for (let emoji of emojis) {
-          msg.channel.addMessageReaction(this.message_.id, emoji);
-        }
+        reactionsToSend = reactionsToSend.concat(emojis);
       }
 
       if (this.showPageArrows_) {
-        msg.channel.addMessageReaction(this.message_.id, '⬅');
-        msg.channel.addMessageReaction(this.message_.id, '➡');
+        reactionsToSend.push('⬅');
+        reactionsToSend.push('➡');
       }
 
+      sendReactions(sentMessage, reactionsToSend);
+      this.message_ = sentMessage;
       return sentMessage.id;
     }).catch(err => {
       logger.logFailure(LOGGER_TITLE, 'Failed to create navigation.', err);

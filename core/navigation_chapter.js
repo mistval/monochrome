@@ -97,22 +97,28 @@ class NavigationChapter {
     if (this.pages_[pageToGet]) {
       return Promise.resolve(this.pages_[pageToGet]);
     } else {
-      return Promise.resolve(this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet)).then(page => {
-        while (this.pages_.length <= pageToGet) {
-          this.pages_.push(undefined);
-        }
-        if (!this.pages_[pageToGet]) {
-          this.pages_[pageToGet] = page;
-        }
-        if (!page) {
+      try {
+        return Promise.resolve(this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet)).then(page => {
+          while (this.pages_.length <= pageToGet) {
+            this.pages_.push(undefined);
+          }
+          if (!this.pages_[pageToGet]) {
+            this.pages_[pageToGet] = page;
+          }
+          if (page && page.content) {
+            return Promise.resolve(page);
+          } else {
+            this.pages_[pageToGet] = undefined;
+            return this.flipToPreviousPage().then(() => undefined);
+          }
+        }).catch(err => {
+          logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
           return this.flipToPreviousPage().then(() => undefined);
-        } else {
-          return Promise.resolve(page);
-        }
-      }).catch(err => {
+        });
+      } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
         return this.flipToPreviousPage().then(() => undefined);
-      });
+      }
     }
   }
 }
