@@ -29,14 +29,14 @@ let commandsDirectoryPath = __dirname + '/commands';
 let messageProcessorsDirectoryPath = __dirname + '/message_processors';
 let settingsFilePath = __dirname + '/server_settings.json';
 
-let bot = new monochrome.Bot(
+let bot = new monochrome(
   configFilePath,
   commandsDirectoryPath,
   messageProcessorsDirectoryPath,
   settingsFilePath);
 bot.connect();
 ```
-The arguments to the monochrome.Bot constructor are described below.
+The arguments to the monochrome constructor are described below.
 ### Configuration
 monochrome requires a path to a configuration js file. That configuration file should look like this (from the monochrome demo):
 ```js
@@ -82,7 +82,7 @@ module.exports = {
 
 ```
 ### Commands
-monochrome requires a path to a directory where you put your command files. A command file should look like this:
+monochrome requires a path to a directory where you put your command files. A command file should look like this (though most fields may be omitted):
 ```js
 module.exports = {
   commandAliases: ['bot!hello', 'bot!hi'], // Aliases for the command
@@ -166,7 +166,7 @@ In the image, you may have noticed that there is also an enabled_commands settin
 
 ## Advanced
 ### Command extensions
-Command extensions are an alternative to command arguments and command aliases, and may be more diserable in some cases.
+Command extensions are an alternative to command arguments and command aliases, and may be more convenient in some cases.
 
 As an example, consider a bot!translate command. If someone says "bot!translate German is fun", do they want to translate "German is fun" or do they want to translate "is fun" into German?
 
@@ -194,7 +194,7 @@ A navigation is a message that the bot edits in response to reactions, allowing 
 
 ![Navigation gif](https://github.com/mistval/monochrome/blob/master/nav.gif "Navigation gif")
 
-See /commands/navigation.js for the code behind the above example.
+See [this demo command](https://github.com/mistval/monochrome-demo/blob/master/commands/navigation.js) for the code behind the above example.
 ### Dynamic reloading
 In general, when you change bot code, it is safest to stop and restart the bot. But if your bot has volatile data that you don't want to lose, or if you want absolutely zero downtime, monochrome supports dynamic reloading of code via the }reload command. You can add, remove, or modify commands and any other code of yours on the fly, without stopping the bot.
 
@@ -208,6 +208,8 @@ const textRenderer = reload('./../utils/render_text.js');
 You should only ```reload``` your own code. monochrome-bot and other npm modules should be imported normally with ```require```.
 
 ```Reload``` does not play nicely with mutable static data (for example a singleton that has state). For best results when using the }reload command, avoid mutable static data in your code. If you must have mutable static data, use ```require``` instead of ```reload``` to import files that contain mutable static data. Consider separating mutable static data and program logic into separate files, so that you can ```reload``` program logic and ```require``` static data.
+
+The only field in your configuration file that is guaranteed to be reloaded by the }reload command is commandsToGenerateHelpFor. Most other fields will probably be reloaded as well, but this is not guaranteed.
 ### Persistence
 Persistence powered by node-persist is built in and can be accessed with ```require('monochrome-bot').persistence```
 
@@ -231,13 +233,14 @@ JSDoc can be used to generate documentation for the core classes.
 npm install -g jsdoc
 sh node_modules/monochrome-bot/generate_documentation.sh
 ```
-And then open node_modules/monochrome-bot/documentation/index.html.
+And then open node_modules/monochrome-bot/documentation/index.html. That documentation is not very useful at this time unless you wish to edit core monochrome code.
 
 The core code (mostly) complies with Google's JavaScript coding conventions, with the exception of its maximum line length limit. Code style in the core classes can be checked with ```node_modules/monochrome-bot/style_checks.sh```
 ### Tests
 Nearly one hundred tests defend against regression.
 ```
 npm install -g nyc
+cd ./node_modules/monochrome-bot
 npm test
 ```
 ## Best Practices And What to Return to Core
@@ -251,7 +254,7 @@ It is best for a command to return a promise, and for a message processor to ret
 
 When your command returns a promise, the command manager will wait for that promise to resolve before logging success. If the promise rejects, the command manager will log that as a failure, along with a stack trace, and will also send the genericErrorMessage from your config.json to the channel (unless the error is a PublicError, which is discussed below).
 
-TIP: Most Eris methods return promises, for example ```msg.channel.createMessage('hi')``` returns a promise. Therefore, when you call msg.channel.createMessage() to send the result of the command to the channel, you should return: ```return msg.channel.createMessage('hi')```. By doing this, you ensure that errors such as over-sized messages are caught and logged.
+TIP: Most Eris methods return promises, for example ```msg.channel.createMessage('hi')``` returns a promise. Therefore, when you call msg.channel.createMessage() to send the result of the command to the channel, you should return: ```return msg.channel.createMessage('hi')```. By doing this, you ensure that errors such as over-sized messages and timeouts are caught and logged.
 ### Throwing
 If your command fails in an irrecoverable way (even if it's an expected failure), you should throw and allow the bot core to handle it (by logging it and sending a failure message).
 ### Throwing PublicError
