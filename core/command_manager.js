@@ -3,6 +3,7 @@ const reload = require('require-reload')(require);
 const Command = reload('./command.js');
 const FileSystemUtils = reload('./util/file_system_utils.js');
 const ReloadCommand = reload('./commands/reload.js');
+const ShutdownCommand = reload('./commands/shutdown.js');
 const PublicError = reload('./public_error.js');
 const HelpCommand = reload('./commands/help.js');
 const strings = reload('./string_factory.js').commandManager;
@@ -71,9 +72,10 @@ class CommandManager {
   * @param {Object} config - The monochrome config data.
   * @param {Object} settingsGetter - An object with a getSettings() function.
   */
-  constructor(reloadAction, logger, config, settingsGetter) {
+  constructor(reloadAction, shutdownAction, logger, config, settingsGetter) {
     this.commands_ = [];
     this.reloadAction_ = reloadAction;
+    this.shutdownAction_ = shutdownAction;
     this.logger_ = logger;
     this.config_ = config;
     this.settingsGetter_ = settingsGetter;
@@ -133,6 +135,11 @@ class CommandManager {
         let reloadCommandData = new ReloadCommand(this.reloadAction_);
         let reloadCommand = new Command(reloadCommandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME);
         this.commands_.push(reloadCommand);
+      }
+      if (this.shutdownAction_) {
+        let shutdownCommandData = new ShutdownCommand(this.shutdownAction_);
+        let shutdownCommand = new Command(shutdownCommandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME);
+        this.commands_.push(shutdownCommand);
       }
     }).catch(err => {
       this.logger_.logFailure(loggerTitle, strings.validation.genericError, err);

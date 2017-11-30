@@ -10,19 +10,20 @@ class Reload {
   /**
   * @param {function} reloadAction - The lambda to execute a reload.
   */
-  constructor(reloadAction) {
-    this.commandAliases = ['}reload'];
+  constructor(shutdownAction) {
+    this.commandAliases = ['}shutdown'];
     this.canBeChannelRestricted = false;
     this.botAdminOnly = true;
-    this.action = (bot, msg, suffix) => this.execute_(bot, msg, suffix, reloadAction);
+    this.action = (bot, msg, suffix) => this.execute_(bot, msg, suffix, shutdownAction);
   }
 
-  execute_(bot, msg, suffix, reloadAction) {
+  execute_(bot, msg, suffix, shutdownAction) {
     try {
-      reloadAction();
-      return ErisUtils.sendMessageAndDelete(msg, 'Reloaded!');
+      let promise = ErisUtils.sendMessageAndDelete(msg, 'Shutting down!');
+      shutdownAction();
+      return promise;
     } catch (err) {
-      let errorMessage = 'There was an unhandled error while reloading. Monochrome will continue to run, but may be in a bad state. You should restart it as soon as possible. Check the logs for more details.';
+      let errorMessage = 'There was an unhandled error while shutting down. Monochrome may or may not shut down. If it does not, you should kill it. Check the logs for more details.';
       throw PublicError.createWithCustomPublicMessage(errorMessage, false, undefined, err);
     }
   }

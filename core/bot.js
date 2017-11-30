@@ -245,7 +245,7 @@ class Monochrome {
     let settingsManagerCommands = this.settingsManager_.collectCommands();
     let settingsGetter = this.settingsManager_.createSettingsGetter();
     this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(logger);
-    this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), logger, this.config_, settingsGetter);
+    this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), logger, this.config_, settingsGetter);
     this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands).then(() => {
       let settingsFilePaths = [];
       if (this.settingsFilePath_) {
@@ -256,6 +256,12 @@ class Monochrome {
       logger.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
+  }
+
+  shutdown_() {
+    logger.logSuccess(LOGGER_TITLE, 'Shutting down.');
+    this.bot_.disconnect();
+    process.exit();
   }
 
   startUpdateStatsInterval_() {
