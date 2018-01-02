@@ -29,8 +29,6 @@ function validateConfiguration(config) {
     errorMessage = 'Invalid genericMentionReply value in configuration (should be string, use empty string for no reply message)';
   } else if (typeof config.discordBotsDotOrgAPIKey !== typeof '') {
     errorMessage = 'Invalid discordBotsDotOrgAPIKey value in configuration (should be string, use empty string for no key)';
-  } else if (typeof config.logsDirectory !== typeof '') {
-    errorMessage = 'Invalid logsDirectory value in configuration (should be string, use empty string for no logging to file)';
   } else if (typeof config.useANSIColorsInLogFiles !== typeof true) {
     errorMessage = 'Invalid useANSIColorsInLogFiles value in configuration (should be boolean)';
   } else if (!config.statusRotation || !Array.isArray(config.statusRotation)) {
@@ -116,7 +114,7 @@ function createGuildLeaveJoinLogString(guild) {
 
 let botExists = false;
 class Monochrome {
-  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath) {
+  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath, logDirectoryPath) {
     if (botExists) {
       throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
     }
@@ -129,7 +127,7 @@ class Monochrome {
     this.botMentionString_ = '';
     persistence.init();
     this.config_ = reload(this.configFilePath_);
-    logger.initialize(__dirname + '/' + this.config_.logsDirectory, this.config_.useANSIColorsInLogFiles);
+    logger.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_);
     this.bot_ = new Eris(this.config_.botToken);
     this.reloadCore_();
