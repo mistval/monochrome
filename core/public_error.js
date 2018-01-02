@@ -83,8 +83,6 @@ class PublicError extends Error {
       publicMessage = config.missingPermissionsErrorMessage;
     } else if (publicMessage === PublicMessageType.NONE) {
       publicMessage = undefined;
-    } else if (typeof publicMessage !== typeof '') {
-      throw new Error('Unknown public message type');
     }
 
     if (publicMessage) {
