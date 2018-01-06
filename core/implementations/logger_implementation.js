@@ -7,6 +7,7 @@ const LogMessageBuilder = reload('./../log_message_builder');
 class LoggerImplementation {
   static logInputReaction(loggerState, title, msg, inputReactorTitle, succeeded, failureMessage) {
     try {
+      let turnAroundTimeMs = Date.now() - msg.timestamp;
       let logMessageBuilder = new LogMessageBuilder();
       logMessageBuilder.setColor(ansiColors.YELLOW);
       if (msg.channel.guild) {
@@ -27,6 +28,8 @@ class LoggerImplementation {
       }
       logMessageBuilder.setColor(ansiColors.MAGENTA);
       logMessageBuilder.append(msg.content);
+      logMessageBuilder.setColor(ansiColors.RESET);
+      logMessageBuilder.append(' (' + turnAroundTimeMs + 'ms turnaround)');
 
       if (succeeded) {
         LoggerImplementation.logSuccess(loggerState, title, logMessageBuilder);
