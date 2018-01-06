@@ -28,8 +28,11 @@ class LoggerImplementation {
       }
       logMessageBuilder.setColor(ansiColors.MAGENTA);
       logMessageBuilder.append(msg.content);
-      logMessageBuilder.setColor(ansiColors.RESET);
-      logMessageBuilder.append(' (' + turnAroundTimeMs + 'ms turnaround)');
+
+      if (succeeded) {
+        logMessageBuilder.setColor(ansiColors.RESET);
+        logMessageBuilder.append(' (' + turnAroundTimeMs + 'ms turnaround)');
+      }
 
       if (succeeded) {
         LoggerImplementation.logSuccess(loggerState, title, logMessageBuilder);
