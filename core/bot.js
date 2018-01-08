@@ -114,7 +114,7 @@ function createGuildLeaveJoinLogString(guild) {
 
 let botExists = false;
 class Monochrome {
-  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath, logDirectoryPath) {
+  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath, logDirectoryPath, onShutdown) {
     if (botExists) {
       throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
     }
@@ -123,6 +123,7 @@ class Monochrome {
     this.commandsDirectoryPath_ = commandsDirectoryPath;
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
     this.settingsFilePath_ = settingsFilePath;
+    this.onShutdown_ = onShutdown || (() => {});
 
     this.botMentionString_ = '';
     persistence.init();
@@ -260,8 +261,18 @@ class Monochrome {
 
   shutdown_() {
     logger.logSuccess(LOGGER_TITLE, 'Shutting down.');
-    this.bot_.disconnect();
-    process.exit();
+    try {
+      Promise.resolve(this.onShutdown_(this.bot_)).catch(err => {
+        logger.logFailure(LOGGER_TITLE, 'The promise returned from a custom onShutdown handler rejected. Continuing shutdown.', err);
+      }).then(() => {
+        this.bot_.disconnect();
+        process.exit();
+      });
+    } catch (err) {
+      logger.logFailure(LOGGER_TITLE, 'The custom onShutdown handler threw. Continuing shutdown.', err);
+      this.bot_.disconnect();
+      process.exit();
+    }
   }
 
   startUpdateStatsInterval_() {
