@@ -108,6 +108,7 @@ class Command {
     this.usageExample = commandData.usageExample;
     this.canHandleExtension = commandData.canHandleExtension;
     this.aliasesForHelp = commandData.aliasesForHelp;
+    this.attachIsServerAdmin_ = !!commandData.attachIsServerAdmin;
     if (commandData.canBeChannelRestricted) {
       this.enabledSettingFullyQualifiedUserFacingName_ = enabledCommandsSettingsCategoryFullyQualifiedUserFacingName +
         settingsCategorySeparator +
@@ -185,7 +186,7 @@ class Command {
       if (!this.enabledSettingFullyQualifiedUserFacingName_ ||
         settings[this.enabledSettingFullyQualifiedUserFacingName_] === true ||
         settings[this.enabledSettingFullyQualifiedUserFacingName_] === undefined) {
-        return this.invokeAction_(bot, msg, suffix, settings, extension);
+        return this.invokeAction_(bot, msg, suffix, settings, extension, config);
       }
 
       let publicMessage = '';
@@ -200,7 +201,7 @@ class Command {
     return this.enabledSettingFullyQualifiedUserFacingName_;
   }
 
-  invokeAction_(bot, msg, suffix, settings, extension) {
+  invokeAction_(bot, msg, suffix, settings, extension, config) {
     if (this.cooldown_ !== 0) {
       this.usersCoolingDown_.push(msg.author.id);
     }
@@ -209,6 +210,11 @@ class Command {
       this.usersCoolingDown_.splice(index, 1);
     },
     this.cooldown_ * 1000);
+
+    if (this.attachIsServerAdmin_) {
+      msg.authorIsServerAdmin = userIsServerAdmin(msg, config);
+    }
+
     return this.action_(bot, msg, suffix, settings, extension);
   }
 
