@@ -228,6 +228,10 @@ function userIsServerAdmin(msg, config) {
     return true;
   }
 
+  if (!msg.member) {
+    return false;
+  }
+
   let permission = msg.member.permission.json;
   if (permission.manageGuild || permission.administrator || permission.manageChannels) {
     return true;
