@@ -5,6 +5,7 @@ const request = require('request-promise');
 const logger = require('./logger.js');
 const persistence = require('./persistence.js');
 const navigationManager = require('./navigation_manager.js');
+const replyDeleter = require('./reply_deleter.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -131,6 +132,7 @@ class Monochrome {
     logger.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_);
     this.bot_ = new Eris(this.config_.botToken);
+    replyDeleter.initialize(Eris);
     this.reloadCore_();
   }
 
@@ -184,6 +186,11 @@ class Monochrome {
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
       navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
+      replyDeleter.handleReaction(msg, userId, emoji);
+    });
+
+    this.bot_.on('messageDelete', msg => {
+      replyDeleter.handleMessageDeleted(msg);
     });
 
     this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
