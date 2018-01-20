@@ -1,8 +1,8 @@
+'use strict'
 let ownerIdForSentMessageId = {};
 let responseMessageIdForCommandMessageId = {};
 
 function initialize(eris) {
-  bot = eris;
   let oldCreateMessageProtoype = eris.TextChannel.prototype.createMessage;
   eris.TextChannel.prototype.createMessage = function(content, file, messageInResponseTo) {
     return oldCreateMessageProtoype.call(this, content, file).then(sentMessage => {

@@ -9,6 +9,8 @@ function sendReactions(msg, reactions) {
   for (let reaction of reactions) {
     promise = promise.then(() => {
       return msg.channel.addMessageReaction(msg.id, reaction);
+    }).catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Failed to add reaction button to navigation', err);
     });
   }
 }
