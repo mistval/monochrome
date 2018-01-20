@@ -157,7 +157,7 @@ class Help {
       }
     };
 
-    return msg.channel.createMessage(botContent);
+    return msg.channel.createMessage(botContent, null, msg);
   }
 
   showGeneralHelp_(msg, settings) {
@@ -172,7 +172,7 @@ class Help {
 
     let helpText = createTopLevelHelpTextForCommands(commandsToDisplayHelpFor, this.commandAliases[0]);
     if (helpText) {
-      return msg.channel.createMessage(helpText);
+      return msg.channel.createMessage(helpText, null, msg);
     } else {
       throw PublicError.createWithCustomPublicMessage('There are no commands to show help for. Perhaps the server admins disabled all my commands in this channel.', true, strings.noCommandsForHelpLog);
     }
