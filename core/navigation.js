@@ -49,7 +49,7 @@ class Navigation {
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
-      return msg.channel.createMessage(navigationPage.content, navigationPage.file);
+      return msg.channel.createMessage(navigationPage.content, navigationPage.file, msg);
     }).then(sentMessage => {
       let emojis = Object.keys(this.chapterForEmojiName_);
       let reactionsToSend = [];

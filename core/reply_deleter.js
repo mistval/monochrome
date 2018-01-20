@@ -10,6 +10,7 @@ function initialize(eris) {
         ownerIdForSentMessageId[sentMessage.id] = messageInResponseTo.author.id;
         responseMessageIdForCommandMessageId[messageInResponseTo.id] = sentMessage.id;
       }
+      return sentMessage;
     });
   };
 }
