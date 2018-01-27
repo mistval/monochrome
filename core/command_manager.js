@@ -7,6 +7,7 @@ const ShutdownCommand = reload('./commands/shutdown.js');
 const PublicError = reload('./public_error.js');
 const HelpCommand = reload('./commands/help.js');
 const strings = reload('./string_factory.js').commandManager;
+const statistics = require('./statistics.js');
 
 const COMMAND_CATEGORY_NAME = 'enabled_commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'disabled_commands_fail_silently';
@@ -197,6 +198,7 @@ class CommandManager {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
+      statistics.incrementCommandsExecutedForCommandName(commandToExecute.aliases[0], msg.author.id);
       commandToExecute.handle(bot, msg, suffix, extension, this.config_, this.settingsGetter_, this.disabledCommandsFailSilentySettingFullyQualifiedName_).then(result => {
         if (typeof result === typeof '') {
           throw PublicError.createWithGenericPublicMessage(false, result);

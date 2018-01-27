@@ -4,6 +4,7 @@ const FileSystemUtils = reload('./util/file_system_utils.js');
 const MessageProcessor = reload('./message_processor.js');
 const PublicError = reload('./../core/public_error.js');
 const strings = reload('./string_factory.js').messageProcessorManager;
+const statistics = require('./statistics.js');
 
 function handleError(msg, err, logger, config) {
   const loggerTitle = 'MESSAGE';
@@ -56,6 +57,15 @@ class MessageProcessorManager {
   * @returns {Boolean} True if a message processor accepted responsibility to handle the message and did so, false otherwise.
   */
   processInput(bot, msg) {
+    let handledByProcessorName = this.processInputHelper_(bot, msg);
+    if (handledByProcessorName) {
+      statistics.incrementMessagesProcessedForCommandName(handledByProcessorName, msg.author.id);
+      return true;
+    }
+    return false;
+  }
+
+  processInputHelper_(bot, msg) {
     const loggerTitle = 'MESSAGE';
     for (let processor of this.processors_) {
       try {
@@ -67,19 +77,19 @@ class MessageProcessorManager {
             }
             this.logger_.logInputReaction(loggerTitle, msg, processor.name, true);
           }).catch(err => handleError(msg, err, this.logger_));
-          return true;
+          return processor.name;
         } else if (typeof result === typeof '') {
           throw PublicError.createWithGenericPublicMessage(false, result);
         } else if (result === true) {
           this.logger_.logInputReaction(loggerTitle, msg, processor.name, true);
-          return true;
+          return processor.name;
         } else if (result !== false) {
           this.logger_.logFailure(loggerTitle, 'Message processor \'' + processor.name +
             '\' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.');
         }
       } catch (err) {
         handleError(msg, err, this.logger_);
-        return true;
+        return processor.name;
       };
     }
 

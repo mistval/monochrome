@@ -8,3 +8,4 @@ module.exports.NavigationPage = reload('./core/navigation_page.js');
 module.exports.NavigationChapter = reload('./core/navigation_chapter.js');
 module.exports.navigationManager = require('./core/navigation_manager.js');
 module.exports.Navigation = reload('./core/navigation.js');
+module.exports.statistics = require('./core/statistics.js');
