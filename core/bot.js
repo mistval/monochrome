@@ -138,6 +138,10 @@ class Monochrome {
     this.reloadCore_();
   }
 
+  getErisBot() {
+    return this.bot_;
+  }
+
   connect() {
     if (this.connected_) {
       return;
