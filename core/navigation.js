@@ -69,6 +69,7 @@ class Navigation {
       return sentMessage.id;
     }).catch(err => {
       logger.logFailure(LOGGER_TITLE, 'Failed to create navigation.', err);
+      throw err;
     });
   }
 
