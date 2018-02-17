@@ -10,6 +10,7 @@ const statistics = require('./statistics.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
+const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
 
@@ -293,8 +294,10 @@ class Monochrome {
       return;
     }
     if (this.config_.discordBotsDotOrgAPIKey || this.config_.botsDotDiscordDotPwAPIKey) {
-      updateStats(this.config_, this.bot_);
-      this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.config_, this.bot_);
+      this.updateStatsTimeoutHandle_ = setTimeout(() => {
+        updateStats(this.config_, this.bot_);
+        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.config_, this.bot_);
+      }, UPDATE_STATS_INITIAL_DELAY_IN_MS);
     }
   }
 
