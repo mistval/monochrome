@@ -83,7 +83,8 @@ module.exports = {
   ],
   "statusRotationIntervalInSeconds": 600, // How often to change status.
   "colorForSettingsSystemEmbeds": 2522111, // The built-in settings command uses embeds. That field controls the color of those embeds.
-  "settingsCategorySeparator": "/" // Settings are hierarchical. If the value of this field is "/", then a setting called "enabled" under a category called "lazer_cannon" will be referred to as "lazer_cannon/enabled"
+  "settingsCategorySeparator": "/" // Settings are hierarchical. If the value of this field is "/", then a setting called "enabled" under a category called "lazer_cannon" will be referred to as "lazer_cannon/enabled",
+  "erisOptions": {} // If needed, specify options for the Eris client constructor here. See https://abal.moe/Eris/docs/Client
 }
 
 ```

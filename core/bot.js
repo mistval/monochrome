@@ -137,7 +137,7 @@ class Monochrome {
     this.config_ = reload(this.configFilePath_);
     logger.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_);
-    this.bot_ = new Eris(this.config_.botToken);
+    this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
     statistics.initialize(this.bot_);
     replyDeleter.initialize(Eris);
     this.reloadCore_();
