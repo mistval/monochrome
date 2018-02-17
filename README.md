@@ -74,6 +74,7 @@ module.exports = {
   "genericErrorMessage": "Oh no, that command had an error! Please tell my owner to check the logs!", // If a command errors and that error escapes into core code, this message will be sent to the channel. If you don't want a generic error message, this can be an empty string.
   "genericDMReply": "Hi <user>, bot!help to see my commands!", // The bot will reply with this when DM'd, if the DM doesn't contain a command. <user> is replaced with the user's name.
   "genericMentionReply": "Hi <@user>, say bot!help to see my commands!", // The bot will reply like this when mentioned. <@user> mentions the user.
+  "inviteLinkDmReply": "Click http://123.xyz to invite me to your server!", // Sometimes people will DM the bot a server invite link to try to add it to a server. When this happens, the bot will reply with this message.
   "missingPermissionsErrorMessage": "I don't have permission to reply to that command in this channel (maybe I don't have permission to upload files, embed links, etc)", // If the bot cannot create a message due to missing permissions, and that error escapes into core code (which it generally should, more on that under Best Practices) then this message will be sent to the channel.
   "statusRotation": [ // An array of statuses to rotate through.
     "bot!help for commands!",

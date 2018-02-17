@@ -10,8 +10,8 @@ const statistics = require('./statistics.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
-const USER_MENTION_REPLACE_REGEX = new RegExp('<@user>', 'g');
-const USER_NAME_REPLACE_REGEX = new RegExp('<user>', 'g');
+const USER_MENTION_REPLACE_REGEX = /<@user>/g;
+const USER_NAME_REPLACE_REGEX = /<user>/g;
 
 let RepeatingQueue;
 
@@ -112,6 +112,10 @@ function createGuildLeaveJoinLogString(guild) {
     logger.logFailure(LOGGER_TITLE, 'Couldn\'t create join/leave guild log string', err);
     return '<Error getting guild name or owner name>';
   }
+}
+
+function stringContainsInviteLink(str) {
+  return str.indexOf('discord.gg') !== -1;
 }
 
 let botExists = false;
@@ -228,14 +232,10 @@ class Monochrome {
       if (this.messageProcessorManager_.processInput(this.bot_, msg, this.config_)) {
         return;
       }
-      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
-        logger.logInputReaction('MENTION', msg, '', true);
+      if (this.tryHandleDm_(msg)) {
         return;
       }
-      if (!msg.channel.guild && this.config_.genericDMReply) {
-        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
-        logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
+      if (this.tryHandleMention_(msg)) {
         return;
       }
     } catch (err) {
@@ -313,6 +313,31 @@ class Monochrome {
       }
     } catch (err) {
       logger.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+    }
+  }
+
+  tryHandleDm_(msg) {
+    try {
+      if (!msg.channel.guild) {
+        logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
+        if (this.config_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
+          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.inviteLinkDmReply, msg));
+        } else if (this.config_.genericDMReply) {
+          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
+        }
+        return true;
+      }
+    } catch (err) {
+      logger.logFailure(LOGGER_TITLE, 'Error handling DM', err);
+      return false;
+    }
+  }
+
+  tryHandleMention_(msg) {
+    if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
+      msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
+      logger.logInputReaction('MENTION', msg, '', true);
+      return;
     }
   }
 
