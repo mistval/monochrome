@@ -319,14 +319,20 @@ class Monochrome {
     }
   }
 
+  sendDmOrMentionReply_(toMsg, replyTemplate) {
+    toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
+    });
+  }
+
   tryHandleDm_(msg) {
     try {
       if (!msg.channel.guild) {
         logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
         if (this.config_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
-          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.inviteLinkDmReply, msg));
+          this.sendDmOrMentionReply_(msg, this.config_.inviteLinkDmReply);
         } else if (this.config_.genericDMReply) {
-          msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericDMReply, msg));
+          this.sendDmOrMentionReply_(msg, this.config_.genericDMReply);
         }
         return true;
       }
@@ -340,7 +346,7 @@ class Monochrome {
   tryHandleMention_(msg) {
     try {
       if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
+        this.sendDmOrMentionReply_(msg, this.config_.genericMentionReply);
         logger.logInputReaction('MENTION', msg, '', true);
         return true;
       }
