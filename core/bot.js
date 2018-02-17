@@ -329,16 +329,23 @@ class Monochrome {
       }
     } catch (err) {
       logger.logFailure(LOGGER_TITLE, 'Error handling DM', err);
-      return false;
     }
+
+    return false;
   }
 
   tryHandleMention_(msg) {
-    if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-      msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
-      logger.logInputReaction('MENTION', msg, '', true);
-      return;
+    try {
+      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
+        msg.channel.createMessage(this.createDMOrMentionReply_(this.config_.genericMentionReply, msg));
+        logger.logInputReaction('MENTION', msg, '', true);
+        return true;
+      }
+    } catch (err) {
+      logger.logFailure(LOGGER_TITLE, 'Error handling mention', err);
     }
+
+    return false;
   }
 
   createDMOrMentionReply_(configReply, msg) {
