@@ -20,7 +20,6 @@ function handleError(msg, err, logger, config) {
 */
 class MessageProcessorManager {
   /**
-  * @param {String} directory - The directory to load message processors from
   * @param {Logger} logger - The logger to log to
   */
   constructor(logger) {
