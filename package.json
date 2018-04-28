@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/mistval/monochrome#readme",
   "dependencies": {
-    "eris": "0.8.3",
+    "eris": "0.8.5",
     "node-persist": "2.1.0",
     "request": "2.83.0",
     "request-promise": "4.2.2",
