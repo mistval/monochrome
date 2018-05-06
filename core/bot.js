@@ -119,9 +119,24 @@ function stringContainsInviteLink(str) {
   return str.indexOf('discord.gg') !== -1;
 }
 
+function validateOptions(options) {
+  let errorMessage = '';
+  if (!options || typeof options !== 'object') {
+    throw new Error('Either nothing was passed to the Monochrome bot constructor, or something was but it\'s not an object. The interface changed since version 1.1. Please review the readme.');
+  } else if (!options.configFilePath) {
+    throw new Error('No configuration file path specified');
+  } else if (!options.commandsDirectoryPath) {
+    throw new Error('No commands directory path specified (it can be an empty directory, but must exist)');
+  } else if (!options.messageProcessorsDirectoryPath) {
+    throw new Error('No message processor directory path specified (it can be an empty directory, but must exist)');
+  }
+}
+
 let botExists = false;
 class Monochrome {
   constructor(options) {
+    validateOptions(options);
+
     const {
       configFilePath,
       commandsDirectoryPath,
