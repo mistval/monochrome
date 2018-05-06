@@ -121,7 +121,17 @@ function stringContainsInviteLink(str) {
 
 let botExists = false;
 class Monochrome {
-  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath, logDirectoryPath, onShutdown) {
+  constructor(options) {
+    const {
+      configFilePath,
+      commandsDirectoryPath,
+      messageProcessorsDirectoryPath,
+      settingsFilePath,
+      logDirectoryPath,
+      extensionsDirectoryPath,
+      onShutdown,
+    } = options;
+
     if (botExists) {
       throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
     }
@@ -130,6 +140,7 @@ class Monochrome {
     this.commandsDirectoryPath_ = commandsDirectoryPath;
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
     this.settingsFilePath_ = settingsFilePath;
+    this.extensionsDirectoryPath_ = extensionsDirectoryPath;
     this.onShutdown_ = onShutdown || (() => {});
 
     this.botMentionString_ = '';
@@ -271,6 +282,11 @@ class Monochrome {
       logger.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
+
+    if (this.extensionsDirectoryPath_) {
+      this.extensionManager_ = new (reload('./extension_manager.js'))(logger);
+      this.extensionManager_.load(this.extensionsDirectoryPath_, this.bot_);
+    }
   }
 
   shutdown_() {
