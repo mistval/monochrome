@@ -56,19 +56,49 @@ function findCommandWithAlias(commands, alias) {
 }
 
 function findCloseMatchCommandForAlias(commands, alias) {
-  let currentCandidate;
+  let currentCandidateCommand;
   let currentCandidateAlias;
-  for (let command of commands) {
-    for (let candidateAlias of command.aliases) {
-      if (candidateAlias.indexOf(alias) !== -1) {
-        if (!currentCandidateAlias || currentCandidateAlias.length > candidateAlias.length) {
-          currentCandidateAlias = candidateAlias;
-          currentCandidate = command;
+  for (let newCandidateCommand of commands) {
+    for (let newCandidateAlias of newCandidateCommand.aliases) {
+      if (newCandidateAlias.indexOf(alias) !== -1) {
+        let update = false;
+        if (!currentCandidateCommand) {
+          update = true;
+        } else {
+          let currentStartsWithAlias = currentCandidateAlias.startsWith(alias);
+          let newStartsWithAlias = newCandidateAlias.startsWith(alias);
+          let currentContainsAliasNotAtStart = !currentStartsWithAlias || currentCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
+          let newContainsAliasNotAtStart = !newStartsWithAlias || newCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
+          let newIsShorter = newCandidateAlias.length < currentCandidateAlias.length;
+          if (currentStartsWithAlias && newStartsWithAlias) {
+            // They both start with the alias.
+            if (currentContainsAliasNotAtStart && newContainsAliasNotAtStart) {
+              // They both start with the alias and contain the alias not at start. Update if new is shorter.
+              update = newIsShorter;
+            } else if (newContainsAliasNotAtStart) {
+              // They both start with the alias, only the new one of them contains the alias not at start. Update.
+              update = true;
+            } else {
+              // They both start with the alias, only the old one of them contains the alias not at start. Don't update.
+            }
+          } else if (currentStartsWithAlias || newStartsWithAlias) {
+            // One of them starts with the alias, the other does not. Update if it's the old one.
+            update = currentStartsWithAlias;
+          } else {
+            // They both contain the alias, but not at the start. Update if new is shorter.
+            update = newCandidateAlias.length < currentCandidateAlias.length;
+          }
+        }
+
+        if (update) {
+          console.log(newCandidateAlias);
+          currentCandidateAlias = newCandidateAlias;
+          currentCandidateCommand = newCandidateCommand;
         }
       }
     }
   }
-  return currentCandidate;
+  return currentCandidateCommand;
 }
 
 function indexOfAliasInList(command, list) {
