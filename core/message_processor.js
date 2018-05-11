@@ -15,7 +15,7 @@ class MessageProcessor {
   /**
   * @param {Object} processorData - The raw processor data loaded from a file.
   */
-  constructor(processorData) {
+  constructor(processorData, monochrome) {
     if (!processorData) {
       throw new Error('No processor data');
     }
@@ -25,20 +25,24 @@ class MessageProcessor {
     if (!processorData.name || typeof processorData.name !== typeof '') {
       throw new Error('Processor does not have a name , or it is not a string.');
     }
+    if (processorData.initialize) {
+      processorData.initialize(monochrome);
+    }
 
     this.name = processorData.name;
     this.action_ = processorData.action;
+    this.monochrome_ = monochrome;
   }
 
   /**
   * Try handling a message.
-  * @param {Eris.Client} bot - The Eris bot.
+  * @param {Eris.Client} erisBot - The Eris bot.
   * @param {Eris.Message} msg - The Eris message to consider handling.
   * @returns {(boolean|ActionResponse)} Returns the return value of the action. That should be either true if the message was handled, false otherwise.
   *   Alternatively, an ActionResponse can be returned with an error string for logging.
   */
-  handle(bot, msg) {
-    return this.action_(bot, msg);
+  handle(erisBot, msg) {
+    return this.action_(erisBot, this.monochrome_, msg);
   }
 }
 

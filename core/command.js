@@ -83,7 +83,7 @@ class Command {
   /**
   * @param {Object} commandData - The raw command loaded from a command file.
   */
-  constructor(commandData, settingsCategorySeparator, enabledCommandsSettingsCategoryFullyQualifiedUserFacingName, monochromeBot) {
+  constructor(commandData, settingsCategorySeparator, enabledCommandsSettingsCategoryFullyQualifiedUserFacingName, monochrome) {
     if (!settingsCategorySeparator) {
       throw new Error(strings.validation.noSettingsCategorySeparator);
     }
@@ -108,14 +108,14 @@ class Command {
     this.canHandleExtension = commandData.canHandleExtension;
     this.aliasesForHelp = commandData.aliasesForHelp;
     this.attachIsServerAdmin_ = !!commandData.attachIsServerAdmin;
-    this.monochromeBot_ = monochromeBot;
+    this.monochrome_ = monochrome;
     if (commandData.canBeChannelRestricted) {
       this.enabledSettingFullyQualifiedUserFacingName_ = enabledCommandsSettingsCategoryFullyQualifiedUserFacingName +
         settingsCategorySeparator +
         this.getEnabledSettingUserFacingName_();
     }
     if (commandData.initialize) {
-      commandData.initialize(this.monochromeBot_);
+      commandData.initialize(this.monochrome_);
     }
   }
 
@@ -218,7 +218,7 @@ class Command {
       msg.authorIsServerAdmin = userIsServerAdmin(msg, config);
     }
 
-    return this.action_(bot, this.monochromeBot_, msg, suffix, settings, extension);
+    return this.action_(bot, this.monochrome_, msg, suffix, settings, extension);
   }
 
   getEnabledSettingUserFacingName_() {

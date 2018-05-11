@@ -22,8 +22,9 @@ class MessageProcessorManager {
   /**
   * @param {Logger} logger - The logger to log to
   */
-  constructor(logger) {
-    this.logger_ = logger;
+  constructor(monochrome) {
+    this.logger_ = monochrome.getLogger();
+    this.monochrome_ = monochrome;
     this.processors_ = [];
   }
 
@@ -37,13 +38,14 @@ class MessageProcessorManager {
       for (let processorFile of processorFiles) {
         try {
           let processorInformation = reload(processorFile);
-          let processor = new MessageProcessor(processorInformation);
+          let processor = new MessageProcessor(processorInformation, this.monochrome_);
           this.processors_.push(processor);
         } catch (err) {
           this.logger_.logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
         }
       }
-      this.processors_.push(new MessageProcessor(reload('./message_processors/user_and_channel_hook.js')));
+
+      this.processors_.push(new MessageProcessor(reload('./message_processors/user_and_channel_hook.js'), this.monochrome_));
     }).catch(err => {
       this.logger_.logFailure(loggerTitle, strings.genericLoadingError, err);
     });
@@ -51,12 +53,12 @@ class MessageProcessorManager {
 
   /**
   * Receives and considers agreeing to process user input.
-  * @param {Eris.Client} bot - The Eris bot.
+  * @param {Eris.Client} erisBot - The Eris bot.
   * @param {Eris.Message} msg - The msg to process.
   * @returns {Boolean} True if a message processor accepted responsibility to handle the message and did so, false otherwise.
   */
-  processInput(bot, msg) {
-    let handledByProcessorName = this.processInputHelper_(bot, msg);
+  processInput(erisBot, msg) {
+    let handledByProcessorName = this.processInputHelper_(erisBot, msg);
     if (handledByProcessorName) {
       statistics.incrementMessagesProcessedForCommandName(handledByProcessorName, msg.author.id);
       return true;
@@ -64,11 +66,11 @@ class MessageProcessorManager {
     return false;
   }
 
-  processInputHelper_(bot, msg) {
+  processInputHelper_(erisBot, msg) {
     const loggerTitle = 'MESSAGE';
     for (let processor of this.processors_) {
       try {
-        let result = processor.handle(bot, msg);
+        let result = processor.handle(erisBot, msg);
         if (result && result.then) {
           result.then(innerResult => {
             if (typeof innerResult === typeof '') {
