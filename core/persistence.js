@@ -84,4 +84,4 @@ class Persistence {
   }
 }
 
-module.exports = new Persistence();
+module.exports = Persistence;

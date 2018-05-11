@@ -1,6 +1,5 @@
 'use strict'
 const reload = require('require-reload')(require);
-const persistence = require('./persistence.js');
 const PublicError = reload('./public_error.js');
 const strings = reload('./string_factory.js').command;
 

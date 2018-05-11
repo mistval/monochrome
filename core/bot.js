@@ -3,7 +3,7 @@ const reload = require('require-reload')(require);
 const Eris = require('eris');
 const request = require('request-promise');
 const Logger = require('./logger.js');
-const persistence = require('./persistence.js');
+const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const statistics = require('./statistics.js');
@@ -160,7 +160,8 @@ class Monochrome {
     this.logger_ = new Logger();
 
     this.botMentionString_ = '';
-    persistence.init();
+    this.persistence_ = new Persistence();
+    this.persistence_.init();
     this.config_ = reload(this.configFilePath_);
     this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_, this.logger_);
@@ -181,6 +182,10 @@ class Monochrome {
 
   getNavigationManager() {
     return this.navigationManager_;
+  }
+
+  getPersistence() {
+    return this.persistence_;
   }
 
   connect() {
@@ -296,12 +301,12 @@ class Monochrome {
     this.config_ = reload(this.configFilePath_);
     validateConfiguration(this.config_);
     this.logger_.reload();
-    persistence.reload();
+    this.persistence_.reload();
     this.navigationManager_.reload();
 
     RepeatingQueue = reload('./repeating_queue.js');
     this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
-    this.settingsManager_ = new (reload('./settings_manager.js'))(this.logger_, this.config_);
+    this.settingsManager_ = new (reload('./settings_manager.js'))(this.logger_, this.config_, this.persistence_);
     let settingsManagerCommands = this.settingsManager_.collectCommands();
     let settingsGetter = this.settingsManager_.createSettingsGetter();
     this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this.logger_);

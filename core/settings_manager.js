@@ -1,7 +1,6 @@
 'use strict'
 const reload = require('require-reload')(require);
 const SettingsCategory = reload('./settings_category.js');
-const persistence = require('./persistence.js');
 const userAndChannelHook = require('./message_processors/user_and_channel_hook.js');
 
 const CATEGORY_IDENTIFIER = 'CATEGORY';
@@ -103,9 +102,10 @@ class SettingsManager {
   * @param {Array<String>} settingsFilesPaths - Paths to the files containing the settions information.
   * @param {Logger} logger - The logger to log to
   */
-  constructor(logger, config) {
+  constructor(logger, config, persistence) {
     this.logger_ = logger;
     this.config_ = config;
+    this.persistence_ = persistence;
   }
 
   /**
@@ -157,7 +157,7 @@ class SettingsManager {
     if (!fullyQualifiedUserFacingSettingNames || fullyQualifiedUserFacingSettingNames.length === 0) {
       return Promise.resolve({});
     }
-    return persistence.getDataForServer(serverId).then(data => {
+    return this.persistence_.getDataForServer(serverId).then(data => {
       data = addSettingsObjectIfNotAlreadyInData(data);
       let settingsReturnBlob = {};
       for (let fullyQualifiedUserFacingSettingName of fullyQualifiedUserFacingSettingNames) {
@@ -207,7 +207,7 @@ class SettingsManager {
   getConfigurationInstructionsBotContent_(bot, msg, desiredFullyQualifedName) {
     let child = this.rootSettingsCategory_.getChildForFullyQualifiedUserFacingName(desiredFullyQualifedName);
     let serverId = getServerIdFromMessage(msg);
-    return persistence.getDataForServer(serverId).then(data => {
+    return this.persistence_.getDataForServer(serverId).then(data => {
       addSettingsObjectIfNotAlreadyInData(data);
       return child.getConfigurationInstructionsBotContent(msg.channel.id, data.settings, desiredFullyQualifedName);
     });
@@ -217,7 +217,7 @@ class SettingsManager {
 function commitEdit(bot, msg, childSettingToEdit, value, nextStepResponseString) {
   let serverId = getServerIdFromMessage(msg);
   let responseString;
-  return persistence.editDataForServer(serverId, data => {
+  return this.persistence_.editDataForServer(serverId, data => {
     data = addSettingsObjectIfNotAlreadyInData(data);
     let channelsInGuild = msg.channel.guild ? msg.channel.guild.channels : [msg.channel];
     responseString = childSettingToEdit.setNewValueFromUserFacingString(msg.channel.id, channelsInGuild, data.settings, value, nextStepResponseString);
