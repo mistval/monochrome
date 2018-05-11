@@ -131,7 +131,6 @@ function validateOptions(options) {
   }
 }
 
-let botExists = false;
 class Monochrome {
   constructor(options) {
     validateOptions(options);
@@ -146,10 +145,6 @@ class Monochrome {
       onShutdown,
     } = options;
 
-    if (botExists) {
-      throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
-    }
-    botExists = true;
     this.configFilePath_ = configFilePath;
     this.commandsDirectoryPath_ = commandsDirectoryPath;
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
