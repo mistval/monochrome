@@ -1,10 +1,7 @@
-'use strict'
-const logger = require('./logger.js');
-
 const LOGGER_TITLE = 'NAVIGATION';
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
-function sendReactions(msg, reactions) {
+function sendReactions(msg, reactions, logger) {
   let promise = Promise.resolve();
   for (let reaction of reactions) {
     promise = promise.then(() => {
@@ -32,8 +29,7 @@ class Navigation {
   constructor(ownerId, showPageArrows, initialEmojiName, chapterForEmojiName) {
     let keys = Object.keys(chapterForEmojiName);
     if (keys.indexOf(initialEmojiName) === -1) {
-      logger.logFailure(LOGGER_TITLE, 'Value of initialEmojiName not found in chapterForEmojiName');
-      initialEmojiName = keys[0];
+      throw new Error('Value of initialEmojiName not found in chapterForEmojiName');
     }
     this.showPageArrows_ = showPageArrows;
     this.chapterForEmojiName_ = chapterForEmojiName;
@@ -45,9 +41,9 @@ class Navigation {
   /**
   * @param {Eris.Message} msg - The message the navigation is getting created in response to. The navigation will be sent to the same channel.
   */
-  createMessage(msg) {
+  createMessage(msg, logger) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
-    return chapter.getCurrentPage().then(navigationPage => {
+    return chapter.getCurrentPage(logger).then(navigationPage => {
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
@@ -64,7 +60,7 @@ class Navigation {
         reactionsToSend.push('➡');
       }
 
-      sendReactions(sentMessage, reactionsToSend);
+      sendReactions(sentMessage, reactionsToSend, logger);
       this.message_ = sentMessage;
       return sentMessage.id;
     }).catch(err => {
@@ -79,7 +75,7 @@ class Navigation {
   * @param {String} emoji - The unicode emoji that was toggled.
   * @param {String} userId - The id of the user who toggled the emoji.
   */
-  handleEmojiToggled(bot, emoji, userId) {
+  handleEmojiToggled(bot, emoji, userId, logger) {
     if (bot.user.id === userId) {
       return;
     } else if (emoji.name === this.currentEmojiName_) {

@@ -23,7 +23,7 @@ class SettingsCommand {
     this.canBeChannelRestricted = false;
     this.serverAdminOnly = true;
     this.shortDescription = 'Server admins can use this command to see and configure my settings on their server.';
-    this.action = (bot, msg, suffix) => this.execute_(bot, msg, suffix, settingsManager);
+    this.action = (erisBot, monochrome, msg, suffix) => this.execute_(erisBot, msg, suffix, settingsManager);
   }
 
   static registerHook_(msg, userResponseCallback) {

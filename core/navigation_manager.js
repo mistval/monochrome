@@ -6,9 +6,10 @@ let implementation;
 * A singleton to manage registered Navigation's.
 */
 class NavigationManager {
-  constructor() {
+  constructor(logger) {
     this.reload();
     this.navigationForMessageId_ = {};
+    this.logger_ = logger;
   }
 
   /**
@@ -25,7 +26,7 @@ class NavigationManager {
   * @param {Eris.Message} msg - The message that the navigation is being created in response to.
   */
   register(navigation, expirationTimeInMs, msg) {
-    return implementation.register(this, navigation, expirationTimeInMs, msg);
+    return implementation.register(this, navigation, expirationTimeInMs, msg, this.logger_);
   }
 
   /** Handled a reaction being toggled.
@@ -39,4 +40,4 @@ class NavigationManager {
   }
 }
 
-module.exports = new NavigationManager();
+module.exports = NavigationManager;

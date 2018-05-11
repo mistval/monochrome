@@ -1,6 +1,5 @@
 'use strict'
 const reload = require('require-reload')(require);
-const logger = require('./../core/logger.js');
 const NavigationPage = reload('./navigation_page.js');
 
 const LOGGER_TITLE = 'NAVIGATION';
@@ -52,12 +51,12 @@ class NavigationChapter {
   /**
   * @returns {Promise<NavigationPage>} The current page of the navigation.
   */
-  getCurrentPage() {
+  getCurrentPage(logger) {
     if (!this.preparedData_) {
       try {
         return Promise.resolve(this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
           this.preparedData_ = preparedData;
-          return this.getCurrentPageFromPreparedData_();
+          return this.getCurrentPageFromPreparedData_(logger);
         }).catch(err => {
           logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
           throw err;
@@ -67,7 +66,7 @@ class NavigationChapter {
         return Promise.reject(err);
       }
     } else {
-      return this.getCurrentPageFromPreparedData_();
+      return this.getCurrentPageFromPreparedData_(logger);
     }
   }
 
@@ -92,7 +91,7 @@ class NavigationChapter {
     return this.getCurrentPage();
   }
 
-  getCurrentPageFromPreparedData_() {
+  getCurrentPageFromPreparedData_(logger) {
     let pageToGet = this.currentPageIndex_;
     if (this.pages_[pageToGet]) {
       return Promise.resolve(this.pages_[pageToGet]);

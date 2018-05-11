@@ -89,7 +89,7 @@ class CommandManager {
   * @param {String} directory - A file path to the command data directory.
   * @param {Array<Object>} extraCommandDatas - Any other command data that should be loaded.
   */
-  load(directory, extraCommandDatas) {
+  load(directory, extraCommandDatas, monochromeBot) {
     const loggerTitle = 'COMMAND MANAGER';
     let commandDatasToLoad = extraCommandDatas || [];
     this.commands_ = [];
@@ -107,7 +107,7 @@ class CommandManager {
       for (let commandData of commandDatasToLoad) {
         let command;
         try {
-          command = new Command(commandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME);
+          command = new Command(commandData, this.config_.settingsCategorySeparator, COMMAND_CATEGORY_NAME, monochromeBot);
         } catch (err) {
           this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId), err);
           continue;

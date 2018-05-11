@@ -1,11 +1,6 @@
-'use strict'
-const Logger = require('./../logger.js');
-
-const LOGGER_TITLE = 'NAVIGATION';
-
 class NavigationManagerImplementation {
-  static register(navigationManagerState, navigation, expirationTimeInMs, msg) {
-    return navigation.createMessage(msg).then(messageId => {
+  static register(navigationManagerState, navigation, expirationTimeInMs, msg, logger) {
+    return navigation.createMessage(msg, navigationManagerState.logger_).then(messageId => {
       navigationManagerState.navigationForMessageId_[messageId] = navigation;
       setTimeout(NavigationManagerImplementation.unregister_, expirationTimeInMs, navigationManagerState, messageId);
     });
@@ -18,7 +13,7 @@ class NavigationManagerImplementation {
   static handleEmojiToggled(navigationManagerState, bot, msg, emoji, userId) {
     let navigation = navigationManagerState.navigationForMessageId_[msg.id];
     if (navigation) {
-      navigation.handleEmojiToggled(bot, emoji, userId);
+      navigation.handleEmojiToggled(bot, emoji, userId, navigationManagerState.logger_);
     }
   }
 }

@@ -2,9 +2,9 @@
 const reload = require('require-reload')(require);
 const Eris = require('eris');
 const request = require('request-promise');
-const logger = require('./logger.js');
+const Logger = require('./logger.js');
 const persistence = require('./persistence.js');
-const navigationManager = require('./navigation_manager.js');
+const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const statistics = require('./statistics.js');
 
@@ -16,7 +16,7 @@ const USER_NAME_REPLACE_REGEX = /<user>/g;
 
 let RepeatingQueue;
 
-function validateConfiguration(config) {
+function validateConfiguration(config, logger) {
   let errorMessage;
   if (!config.botToken) {
     errorMessage = 'Invalid botToken value in configuration (should be non-empty string)';
@@ -60,7 +60,7 @@ function validateConfiguration(config) {
   }
 }
 
-function updateDiscordBotsDotOrg(config, bot) {
+function updateDiscordBotsDotOrg(config, bot, logger) {
   if (!config.discordBotsDotOrgAPIKey) {
     return;
   }
@@ -80,7 +80,7 @@ function updateDiscordBotsDotOrg(config, bot) {
   });
 }
 
-function updateBotsDotDiscordDotPw(config, bot) {
+function updateBotsDotDiscordDotPw(config, bot, logger) {
   if (!config.botsDotDiscordDotPwAPIKey) {
     return;
   }
@@ -100,12 +100,12 @@ function updateBotsDotDiscordDotPw(config, bot) {
   });
 }
 
-function updateStats(config, bot) {
-  updateBotsDotDiscordDotPw(config, bot);
-  updateDiscordBotsDotOrg(config, bot);
+function updateStats(config, bot, logger) {
+  updateBotsDotDiscordDotPw(config, bot, logger);
+  updateDiscordBotsDotOrg(config, bot, logger);
 }
 
-function createGuildLeaveJoinLogString(guild) {
+function createGuildLeaveJoinLogString(guild, logger) {
   try {
     let owner = guild.members.get(guild.ownerID).user;
     return guild.name + ' owned by ' + owner.username + '#' + owner.discriminator;
@@ -157,15 +157,17 @@ class Monochrome {
     this.settingsFilePath_ = settingsFilePath;
     this.extensionsDirectoryPath_ = extensionsDirectoryPath;
     this.onShutdown_ = onShutdown || (() => {});
+    this.logger_ = new Logger();
 
     this.botMentionString_ = '';
     persistence.init();
     this.config_ = reload(this.configFilePath_);
-    logger.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
-    validateConfiguration(this.config_);
+    this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
+    validateConfiguration(this.config_, this.logger_);
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
     statistics.initialize(this.bot_);
     replyDeleter.initialize(Eris);
+    this.navigationManager_ = new NavigationManager(this.logger_);
     this.reloadCore_();
   }
 
@@ -174,7 +176,11 @@ class Monochrome {
   }
 
   getLogger() {
-    return logger;
+    return this.logger_;
+  }
+
+  getNavigationManager() {
+    return this.navigationManager_;
   }
 
   connect() {
@@ -185,7 +191,7 @@ class Monochrome {
     this.bot_.on('ready', () => {
       this.ready_ = true;
       this.loadExtensions_();
-      logger.logSuccess(LOGGER_TITLE, 'Bot ready.');
+      this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
       this.botMentionString_ = '<@' + this.bot_.user.id + '>';
       this.rotateStatuses_();
       this.startUpdateStatsInterval_();
@@ -196,7 +202,7 @@ class Monochrome {
     });
 
     this.bot_.on('guildCreate', guild => {
-      logger.logSuccess('JOINED GUILD', createGuildLeaveJoinLogString(guild));
+      this.logger_.logSuccess('JOINED GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
     });
 
     this.bot_.on('error', (err, shardId) => {
@@ -204,31 +210,31 @@ class Monochrome {
       if (shardId) {
         errorMessage += ' on shard ' + shardId;
       }
-      logger.logFailure(LOGGER_TITLE, errorMessage, err);
+      this.logger_.logFailure(LOGGER_TITLE, errorMessage, err);
     });
 
     this.bot_.on('disconnect', () => {
-      logger.logFailure(LOGGER_TITLE, 'All shards disconnected');
+      this.logger_.logFailure(LOGGER_TITLE, 'All shards disconnected');
     });
 
     this.bot_.on('shardDisconnect', (err, id) => {
-      logger.logFailure(LOGGER_TITLE, 'Shard ' + id + ' disconnected', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Shard ' + id + ' disconnected', err);
     });
 
     this.bot_.on('shardResume', id => {
-      logger.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' reconnected');
+      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' reconnected');
     });
 
     this.bot_.on('warn', message => {
-      logger.logFailure(LOGGER_TITLE, 'Warning: ' + message);
+      this.logger_.logFailure(LOGGER_TITLE, 'Warning: ' + message);
     });
 
     this.bot_.on('shardReady', id => {
-      logger.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' connected');
+      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' connected');
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
-      navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
+      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
       replyDeleter.handleReaction(msg, userId, emoji);
     });
 
@@ -237,17 +243,17 @@ class Monochrome {
     });
 
     this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
-      navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
+      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
     });
 
     this.bot_.on('guildDelete', (guild, unavailable) => {
       if (!unavailable) {
-        logger.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild));
+        this.logger_.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
       }
     });
 
     this.bot_.connect().catch(err => {
-      logger.logFailure(LOGGER_TITLE, 'Error logging in', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error logging in', err);
     });
   }
 
@@ -279,7 +285,7 @@ class Monochrome {
         return;
       }
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
       if (this.config_.genericErrorMessage) {
         msg.channel.createMessage(this.config_.genericErrorMessage);
       }
@@ -289,25 +295,25 @@ class Monochrome {
   reloadCore_() {
     this.config_ = reload(this.configFilePath_);
     validateConfiguration(this.config_);
-    logger.reload();
+    this.logger_.reload();
     persistence.reload();
-    navigationManager.reload();
+    this.navigationManager_.reload();
 
     RepeatingQueue = reload('./repeating_queue.js');
     this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
-    this.settingsManager_ = new (reload('./settings_manager.js'))(logger, this.config_);
+    this.settingsManager_ = new (reload('./settings_manager.js'))(this.logger_, this.config_);
     let settingsManagerCommands = this.settingsManager_.collectCommands();
     let settingsGetter = this.settingsManager_.createSettingsGetter();
-    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(logger);
-    this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), logger, this.config_, settingsGetter);
-    this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands).then(() => {
+    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this.logger_);
+    this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), this.logger_, this.config_, settingsGetter);
+    this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands, this).then(() => {
       let settingsFilePaths = [];
       if (this.settingsFilePath_) {
         settingsFilePaths.push(this.settingsFilePath_);
       }
       this.settingsManager_.load(this.commandManager_.collectSettingsCategories(), settingsFilePaths, this.config_);
     }).catch(err => {
-      logger.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
 
@@ -317,16 +323,16 @@ class Monochrome {
   }
 
   shutdown_() {
-    logger.logSuccess(LOGGER_TITLE, 'Shutting down.');
+    this.logger_.logSuccess(LOGGER_TITLE, 'Shutting down.');
     try {
       Promise.resolve(this.onShutdown_(this.bot_)).catch(err => {
-        logger.logFailure(LOGGER_TITLE, 'The promise returned from a custom onShutdown handler rejected. Continuing shutdown.', err);
+        this.logger_.logFailure(LOGGER_TITLE, 'The promise returned from a custom onShutdown handler rejected. Continuing shutdown.', err);
       }).then(() => {
         this.bot_.disconnect();
         process.exit();
       });
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'The custom onShutdown handler threw. Continuing shutdown.', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'The custom onShutdown handler threw. Continuing shutdown.', err);
       this.bot_.disconnect();
       process.exit();
     }
@@ -338,8 +344,8 @@ class Monochrome {
     }
     if (this.config_.discordBotsDotOrgAPIKey || this.config_.botsDotDiscordDotPwAPIKey) {
       this.updateStatsTimeoutHandle_ = setTimeout(() => {
-        updateStats(this.config_, this.bot_);
-        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.config_, this.bot_);
+        updateStats(this.config_, this.bot_, this.logger_);
+        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.config_, this.bot_, this.logger_);
       }, UPDATE_STATS_INITIAL_DELAY_IN_MS);
     }
   }
@@ -358,20 +364,20 @@ class Monochrome {
         this.bot_.editStatus({name: nextStatus});
       }
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
     }
   }
 
   sendDmOrMentionReply_(toMsg, replyTemplate) {
     toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
-      logger.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
     });
   }
 
   tryHandleDm_(msg) {
     try {
       if (!msg.channel.guild) {
-        logger.logInputReaction('DIRECT MESSAGE', msg, '', true);
+        this.logger_.logInputReaction('DIRECT MESSAGE', msg, '', true);
         if (this.config_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
           this.sendDmOrMentionReply_(msg, this.config_.inviteLinkDmReply);
         } else if (this.config_.genericDMReply) {
@@ -380,7 +386,7 @@ class Monochrome {
         return true;
       }
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Error handling DM', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error handling DM', err);
     }
 
     return false;
@@ -390,11 +396,11 @@ class Monochrome {
     try {
       if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
         this.sendDmOrMentionReply_(msg, this.config_.genericMentionReply);
-        logger.logInputReaction('MENTION', msg, '', true);
+        this.logger_.logInputReaction('MENTION', msg, '', true);
         return true;
       }
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Error handling mention', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error handling mention', err);
     }
 
     return false;
@@ -406,7 +412,7 @@ class Monochrome {
       reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
       return reply;
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Couldn\'t create DM or mention reply', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Couldn\'t create DM or mention reply', err);
       return this.config_.genericErrorMessage;
     }
   }

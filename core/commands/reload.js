@@ -14,10 +14,10 @@ class Reload {
     this.commandAliases = ['}reload'];
     this.canBeChannelRestricted = false;
     this.botAdminOnly = true;
-    this.action = (bot, msg, suffix) => this.execute_(bot, msg, suffix, reloadAction);
+    this.action = (erisBot, monochromeBot, msg, suffix) => this.execute_(msg, suffix, reloadAction);
   }
 
-  execute_(bot, msg, suffix, reloadAction) {
+  execute_(msg, suffix, reloadAction) {
     try {
       reloadAction();
       return ErisUtils.sendMessageAndDelete(msg, 'Reloaded!');

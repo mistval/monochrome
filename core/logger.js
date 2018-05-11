@@ -4,8 +4,6 @@ const fs = require('fs');
 
 const LOGGER_TITLE = 'LOGGER';
 
-let implementation;
-
 /**
 * Logs text to both the console and to log files. Singleton.
 * @property {boolean} closed - True if close() has been called and the logger is closed. No further methods should be called on the logger if this is true.
@@ -17,8 +15,8 @@ class Logger {
   */
   initialize(logDirectoryPath, useANSIColorsInLogFiles) {
     this.reload();
-    if (this.logToFile_) {
-      implementation.logFailure(this, LOGGER_TITLE, 'Logger already initialized. Someone is trying to initialize it again', new Error('Logger error'));
+    if (this.logToFile_ !== undefined) {
+      this.implementation_.logFailure(this, LOGGER_TITLE, 'Logger already initialized. Someone is trying to initialize it again', new Error('Logger error'));
       return;
     }
 
@@ -34,16 +32,16 @@ class Logger {
       this.fileStream_ = fs.createWriteStream(logFilePath);
       this.fileStream_.on('error', (err) => {
         this.logToFile_ = false;
-        implementation.logFailure(this, LOGGER_TITLE, 'Error logging to file. Disabling logging to file.', err);
+        this.implementation_.logFailure(this, LOGGER_TITLE, 'Error logging to file. Disabling logging to file.', err);
       });
     }
   }
 
   /**
-  * Reload the class' main implementation. Since this class is a singleton and holds a file handle that we don't want to close, we do not reload this class itself.
+  * Reload the class' main implementation. Since this class holds a file handle that we don't want to close, we do not reload this class itself.
   */
   reload() {
-    implementation = reload('./implementations/logger_implementation.js');
+    this.implementation_ = reload('./implementations/logger_implementation.js');
   }
 
   /**
@@ -55,7 +53,7 @@ class Logger {
   * @param {String} [failureMessage] - If the reaction failed, a brief description of why.
   */
   logInputReaction(title, msg, inputReactorTitle, succeeded, failureMessage) {
-    implementation.logInputReaction(this, title, msg, inputReactorTitle, succeeded, failureMessage);
+    this.implementation_.logInputReaction(this, title, msg, inputReactorTitle, succeeded, failureMessage);
   }
 
   /**
@@ -64,7 +62,7 @@ class Logger {
   * @param {(String|LogMessageBuilder)} message - The message to log.
   */
   logSuccess(title, message) {
-    implementation.logSuccess(this, title, message);
+    this.implementation_.logSuccess(this, title, message);
   }
 
   /**
@@ -74,7 +72,7 @@ class Logger {
   * @param {Error} [err] - The error object, if there was one.
   */
   logFailure(title, message, err) {
-    implementation.logFailure(this, title, message, err);
+    this.implementation_.logFailure(this, title, message, err);
   }
 
   /**
@@ -82,8 +80,8 @@ class Logger {
   * @returns {Promise} A promise that is fulfilled when the logger is successfully closed.
   */
   close() {
-    return implementation.close(this);
+    return this.implementation_.close(this);
   }
 }
 
-module.exports = new Logger();
+module.exports = Logger;

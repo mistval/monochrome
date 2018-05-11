@@ -14,10 +14,10 @@ class Reload {
     this.commandAliases = ['}shutdown'];
     this.canBeChannelRestricted = false;
     this.botAdminOnly = true;
-    this.action = (bot, msg, suffix) => this.execute_(bot, msg, suffix, shutdownAction);
+    this.action = (erisBot, monochromeBot, msg) => this.execute_(msg, shutdownAction);
   }
 
-  execute_(bot, msg, suffix, shutdownAction) {
+  execute_(msg, shutdownAction) {
     try {
       let promise = ErisUtils.sendMessageAndDelete(msg, 'Shutting down!');
       shutdownAction();

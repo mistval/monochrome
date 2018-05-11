@@ -1,6 +1,5 @@
 'use strict'
 const reload = require('require-reload')(require);
-const logger = require('./logger.js');
 const assert = require('assert');
 const strings = reload('./string_factory.js').publicError;
 const ErisUtils = reload('./util/eris_utils.js');
