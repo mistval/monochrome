@@ -2,7 +2,7 @@ const assert = require('assert');
 const Command = require('./../core/command.js');
 const MockMessage = require('./mock_objects/mock_message.js');
 const MockConfig = require('./mock_objects/mock_config.js');
-const persistence = require('./../core/persistence.js');
+const Persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
 const MockLogger = require('./mock_objects/mock_logger.js');
 const SettingsManager = require('./../core/settings_manager.js');
@@ -39,9 +39,8 @@ const settingsCategorySeparator = (new MockConfig()).settingsCategorySeparator;
 let commandEnabledSettingsGetter = createSettingsGetter(true);
 let commandDisabledSettingsGetter = createSettingsGetter(false);
 
-if (!persistence.initialized_) {
-  persistence.init({dir: './test/persistence'});
-}
+let persistence = new Persistence();
+persistence.init({dir: './test/persistence'});
 
 Storage.clearSync();
 
@@ -523,4 +522,3 @@ describe('Command', function() {
     });
   });
 });
-

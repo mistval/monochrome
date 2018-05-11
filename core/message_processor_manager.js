@@ -21,30 +21,29 @@ class MessageProcessorManager {
   /**
   * @param {Logger} logger - The logger to log to
   */
-  constructor(monochrome) {
-    this.logger_ = monochrome.getLogger();
-    this.monochrome_ = monochrome;
+  constructor(logger) {
+    this.logger_ = logger;
     this.processors_ = [];
   }
 
   /**
   * Loads message processors. Can be called to reload message processors that have been edited.
   */
-  load(directory) {
+  load(directory, monochrome) {
     const loggerTitle = 'MESSAGE MANAGER';
     this.processors_ = [];
     return FileSystemUtils.getFilesInDirectory(directory).then((processorFiles) => {
       for (let processorFile of processorFiles) {
         try {
           let processorInformation = reload(processorFile);
-          let processor = new MessageProcessor(processorInformation, this.monochrome_);
+          let processor = new MessageProcessor(processorInformation, monochrome);
           this.processors_.push(processor);
         } catch (err) {
           this.logger_.logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
         }
       }
 
-      this.processors_.push(new MessageProcessor(reload('./message_processors/user_and_channel_hook.js'), this.monochrome_));
+      this.processors_.push(new MessageProcessor(reload('./message_processors/user_and_channel_hook.js'), monochrome));
     }).catch(err => {
       this.logger_.logFailure(loggerTitle, strings.genericLoadingError, err);
     });

@@ -49,7 +49,7 @@ class Hook {
 */
 module.exports = {
   name: 'Followup Message',
-  action(bot, msg) {
+  action(erisBot, monochrome, msg) {
     let hookIdentifier = createHookIdentifier(msg.author.id, msg.channel.id);
     let correspondingHook = unreloadableDataStore.hookForUserAndChannel[hookIdentifier];
     if (correspondingHook) {

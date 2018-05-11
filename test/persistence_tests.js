@@ -1,10 +1,10 @@
 const assert = require('assert');
 const Storage = require('node-persist');
-const persistence = require('./../core/persistence.js');
+const Persistence = require('./../core/persistence.js');
 
-if (!persistence.initialized_) {
-  persistence.init({dir: './test/persistence'});
-}
+let persistence = new Persistence();
+persistence.init({dir: './test/persistence'});
+
 
 Storage.clearSync();
 

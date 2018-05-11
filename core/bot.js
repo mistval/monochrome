@@ -302,7 +302,7 @@ class Monochrome {
     this.settingsManager_ = new (reload('./settings_manager.js'))(this.logger_, this.config_, this.persistence_);
     let settingsManagerCommands = this.settingsManager_.collectCommands();
     let settingsGetter = this.settingsManager_.createSettingsGetter();
-    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this);
+    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this.logger_);
     this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), this.logger_, this.config_, settingsGetter);
     this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands, this).then(() => {
       let settingsFilePaths = [];
@@ -313,7 +313,7 @@ class Monochrome {
     }).catch(err => {
       this.logger_.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
-    this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
+    this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_, this);
 
     if (this.ready_) {
       this.loadExtensions_();
