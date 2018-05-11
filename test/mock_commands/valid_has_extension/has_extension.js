@@ -4,7 +4,7 @@ let correctExtension = false;
 module.exports = {
   commandAliases: 'bot!about',
   canBeChannelRestricted: false,
-  action(bot, msg, suffix, settings, extension) {
+  action(erisBot, monochrome, msg, suffix, settings, extension) {
     invoked = true;
     correctExtension = extension === 'extension';
   },

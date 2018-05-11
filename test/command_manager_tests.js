@@ -216,4 +216,3 @@ describe('CommandManager', function() {
     });
   });
 });
-
