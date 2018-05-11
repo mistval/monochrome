@@ -173,6 +173,10 @@ class Monochrome {
     return this.bot_;
   }
 
+  getLogger() {
+    return logger;
+  }
+
   connect() {
     if (this.connected_) {
       return;
