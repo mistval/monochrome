@@ -8,16 +8,10 @@ const PublicError = reload('./../core/public_error.js');
 */
 class ExtensionManager {
   /**
-  * @param {Logger} logger - The logger to log to
-  */
-  constructor(logger) {
-    this.logger_ = logger;
-  }
-
-  /**
   * Loads extensions. Can be called to reload extensions that have been edited.
   */
-  async load(directory, erisBot) {
+  async load(directory, monochromeBot) {
+    const logger = monochromeBot.getLogger();
     const loggerTitle = 'EXTENSIONS';
     try {
       const extensionFiles = await FileSystemUtils.getFilesInDirectory(directory);
@@ -30,14 +24,14 @@ class ExtensionManager {
             throw new Error('Extension does not have an invoke property, or it is not a function.');
           }
 
-          invoke(erisBot);
-          this.logger_.logSuccess(loggerTitle, `Loaded and invoked extension '${extensionFile}'`);
+          await invoke(monochromeBot);
+          logger.logSuccess(loggerTitle, `Loaded and invoked extension '${extensionFile}'`);
         } catch (err) {
-          this.logger_.logFailure(loggerTitle, 'Failed to load extension from file: ' + extensionFile, err);
+          logger.logFailure(loggerTitle, 'Failed to load extension from file: ' + extensionFile, err);
         }
       }
     } catch (err) {
-      this.logger_.logFailure(loggerTitle, 'Error loading extensions', err);
+      logger.logFailure(loggerTitle, 'Error loading extensions', err);
     }
   }
 }

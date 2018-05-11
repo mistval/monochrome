@@ -183,6 +183,8 @@ class Monochrome {
     }
     this.connected_ = true;
     this.bot_.on('ready', () => {
+      this.ready_ = true;
+      this.loadExtensions_();
       logger.logSuccess(LOGGER_TITLE, 'Bot ready.');
       this.botMentionString_ = '<@' + this.bot_.user.id + '>';
       this.rotateStatuses_();
@@ -249,6 +251,13 @@ class Monochrome {
     });
   }
 
+  loadExtensions_() {
+    if (this.extensionsDirectoryPath_) {
+      this.extensionManager_ = new (reload('./extension_manager.js'))();
+      this.extensionManager_.load(this.extensionsDirectoryPath_, this);
+    }
+  }
+
   onMessageCreate_(msg) {
     try {
       if (!msg.author) {
@@ -302,9 +311,8 @@ class Monochrome {
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
 
-    if (this.extensionsDirectoryPath_) {
-      this.extensionManager_ = new (reload('./extension_manager.js'))(logger);
-      this.extensionManager_.load(this.extensionsDirectoryPath_, this.bot_);
+    if (this.ready_) {
+      this.loadExtensions_();
     }
   }
 
