@@ -6,7 +6,6 @@ const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
-const statistics = require('./statistics.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -166,7 +165,6 @@ class Monochrome {
     this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     validateConfiguration(this.config_, this.logger_);
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
-    statistics.initialize(this.bot_);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
     this.reloadCore_();
