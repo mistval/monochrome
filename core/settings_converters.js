@@ -10,14 +10,17 @@ function stringToInt(value) {
   return parseInt(value);
 }
 
-function createStringToBooleanConverter(trueValueLowerCase, falseValueLowerCase) {
+function createStringToBooleanConverter(trueValue, falseValue) {
+  const trueValueLowerCase = trueValue.toLowerCase();
+  const falseValueLowerCase = falseValue.toLowerCase();
+
   return value => {
     let valueLowerCase = value.toLowerCase();
     if (valueLowerCase === trueValueLowerCase) {
       return true;
     }
     if (valueLowerCase === falseValueLowerCase) {
-      return true;
+      return false;
     }
     return 0;
   };
