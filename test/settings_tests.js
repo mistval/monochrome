@@ -7,13 +7,22 @@ const Storage = require('node-persist');
 
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 
-const SERVER_ONLY_SETTING_NAME_1 = 'quiz/japanese/unanswered_question_limit';
-const SETTING_NAME_1 ='quiz/japanese/unanswered_question_limit';
-const USER_SETTABLE_SETTING_NAME_1 = 'quiz/japanese/score_limit';
-const VALID_SETTING_VALUE_1 = '10';
-const INVALID_SETTING_VALUE_1 = '1000';
-const DEFAULT_SETTING_USER_FACING_VALUE_1 = '5';
-const DEFAULT_SETTING_INTERNAL_VALUE_1 = 5;
+const serverOnlySettingInfo = {
+  uniqueId: 'quiz/japanese/unanswered_question_limit',
+  defaultUserFacingValue: '5',
+  defaultInternalValue: 5,
+  validNonDefaultUserFacingValue: '10',
+  invalidUserFacingValue: '1000',
+};
+
+const userSettableSettingInfo = {
+  uniqueId: 'quiz/japanese/score_limit',
+  defaultUserFacingValue: '10',
+  defaultInternalValue: 10,
+  validNonDefaultUserFacingValue: '30',
+  invalidUserFacingValue: '-1',
+};
+
 const NON_EXISTENT_SETTING_NAME_1 = 'rherrhweth';
 
 const SERVER_ID_1 = 'server1';
@@ -92,7 +101,7 @@ describe('Settings', function() {
       const result = await settings.setServerWideSettingValue(
         NON_EXISTENT_SETTING_NAME_1,
         SERVER_ID_1,
-        VALID_SETTING_VALUE_1,
+        10,
         false,
       );
 
@@ -102,9 +111,9 @@ describe('Settings', function() {
     it('Handles non-admin trying to set server setting', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.setServerWideSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
-        VALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.validNonDefaultUserFacingValue,
         false,
       );
 
@@ -114,10 +123,10 @@ describe('Settings', function() {
     it('Handles non-admin trying to set channel setting', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.setChannelSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         CHANNEL_ID_1,
         SERVER_ID_1,
-        VALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.validNonDefaultUserFacingValue,
         false,
       );
 
@@ -127,9 +136,9 @@ describe('Settings', function() {
     it('Handles trying to set an invalid value', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.setServerWideSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
-        INVALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.invalidUserFacingValue,
         true,
       );
 
@@ -139,9 +148,9 @@ describe('Settings', function() {
     it('Handles trying to set a server only setting as a user setting', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.setUserSettingValue(
-        SERVER_ONLY_SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         USER_ID_1,
-        VALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.validNonDefaultUserFacingValue,
       );
 
       assert(result.accepted === false);
@@ -151,118 +160,119 @@ describe('Settings', function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
 
       const setResult = await settings.setServerWideSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
-        VALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.validNonDefaultUserFacingValue,
         true,
       );
 
       assert(setResult.accepted === true);
 
       const getResultThatServer = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(getResultThatServer === VALID_SETTING_VALUE_1);
+      assert(getResultThatServer === serverOnlySettingInfo.validNonDefaultUserFacingValue);
 
       const getResultOtherServer = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_2,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
       assert(getResultOtherServer !== getResultThatServer);
-      assert(getResultOtherServer === DEFAULT_SETTING_USER_FACING_VALUE_1);
+      assert(getResultOtherServer === serverOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one channel', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
 
       const setResult = await settings.setChannelSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
-        VALID_SETTING_VALUE_1,
+        serverOnlySettingInfo.validNonDefaultUserFacingValue,
         true,
       );
 
       assert(setResult.accepted === true);
 
       const getResultThatChannel = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(getResultThatChannel === VALID_SETTING_VALUE_1);
+      assert(getResultThatChannel === serverOnlySettingInfo.validNonDefaultUserFacingValue);
 
       const getResultOtherChannel = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_2,
         USER_ID_1,
       );
 
       assert(getResultOtherChannel !== getResultThatChannel);
-      assert(getResultOtherChannel === DEFAULT_SETTING_USER_FACING_VALUE_1);
+      assert(getResultOtherChannel === serverOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one user', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      debugger;
 
       const setResult = await settings.setUserSettingValue(
-        USER_SETTABLE_SETTING_NAME_1,
+        userSettableSettingInfo.uniqueId,
         USER_ID_1,
-        VALID_SETTING_VALUE_1,
+        userSettableSettingInfo.validNonDefaultUserFacingValue,
       );
 
       assert(setResult.accepted === true);
 
       const getResultThatUser = await settings.getUserFacingSettingValue(
-        USER_SETTABLE_SETTING_NAME_1,
+        userSettableSettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(getResultThatUser === VALID_SETTING_VALUE_1);
+      assert(getResultThatUser === userSettableSettingInfo.validNonDefaultUserFacingValue);
 
       const getResultOtherUser = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        userSettableSettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_2,
       );
 
       assert(getResultOtherUser !== getResultThatUser);
-      assert(getResultOtherUser === DEFAULT_SETTING_USER_FACING_VALUE_1);
+      assert(getResultOtherUser === userSettableSettingInfo.defaultUserFacingValue);
     });
   });
   describe('Getting values', function() {
     it('Gets default internal value correctly', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.getInternalSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(result === DEFAULT_SETTING_INTERNAL_VALUE_1);
+      assert(result === serverOnlySettingInfo.defaultInternalValue);
     });
     it('Gets default user-facing value correctly', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       const result = await settings.getUserFacingSettingValue(
-        SETTING_NAME_1,
+        serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(result === DEFAULT_SETTING_USER_FACING_VALUE_1);
+      assert(result === serverOnlySettingInfo.defaultUserFacingValue);
     });
     it('Returns undefined for non-existent setting', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);

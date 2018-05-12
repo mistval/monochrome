@@ -1,10 +1,10 @@
 const reload = require('require-reload')(require);
 
 const UpdateRejectionReason = {
-  NOT_ADMIN: 1,
-  INVALID_VALUE: 2,
-  SETTING_DOES_NOT_EXIST: 3,
-  SERVER_ONLY: 4,
+  NOT_ADMIN: 'not admin',
+  INVALID_VALUE: 'invalid value',
+  SETTING_DOES_NOT_EXIST: 'that setting doesn\'t exist',
+  SERVER_ONLY: 'that setting cannot be set per-user (only per server or per channel)',
 };
 
 function createUpdateRejectionResultUserNotAdmin(treeNode) {
@@ -251,7 +251,7 @@ class Settings {
   }
 
   async setUserSettingValue(settingUniqueId, userId, newUserFacingValue, params) {
-    const newSettingValidationResult = this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, true, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, true, params);
     if (newSettingValidationResult.accepted) {
       await this.persistence_.editDataForUser(userId, userData => {
         userData = userData || {};
