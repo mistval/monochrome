@@ -5,7 +5,6 @@ const MockConfig = require('./mock_objects/mock_config.js');
 const Persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
 const MockLogger = require('./mock_objects/mock_logger.js');
-const SettingsManager = require('./../core/settings_manager.js');
 const strings = require('./../core/string_factory.js').command;
 const Settings = require('./../core/settings.js');
 
@@ -485,12 +484,12 @@ describe('Command', function() {
     });
   });
   describe('createEnabledSetting()', function() {
-    it('should return a valid setting that the SettingsManager can load', function() {
+    it('should return a valid setting that the settings can load', function() {
       let logger = new MockLogger();
       let command = new Command(validCommandServerOnly, newSettings());
       let setting = command.createEnabledSetting();
-      let settingsManager = new SettingsManager(logger, config);
-      assert(logger.failed !== true);
+      let settings = newSettings();
+      settings.addNodeToRoot(setting);
     });
   });
 });
