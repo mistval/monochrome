@@ -6,6 +6,7 @@ const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
+const Settings = require('./settings.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -181,6 +182,10 @@ class Monochrome {
     return this.persistence_;
   }
 
+  getSettings() {
+    return this.settings_;
+  }
+
   connect() {
     if (this.connected_) {
       return;
@@ -304,6 +309,7 @@ class Monochrome {
     let settingsGetter = this.settingsManager_.createSettingsGetter();
     this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this.logger_);
     this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), this.logger_, this.config_, settingsGetter);
+    this.settings_ = new Settings(this.persistence_, this.settingsFilePath_, this.logger_);
     this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands, this).then(() => {
       let settingsFilePaths = [];
       if (this.settingsFilePath_) {
