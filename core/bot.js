@@ -6,15 +6,12 @@ const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
-const Settings = require('./settings.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
 const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
-
-let RepeatingQueue;
 
 function validateConfiguration(config, logger) {
   let errorMessage;
@@ -42,8 +39,6 @@ function validateConfiguration(config, logger) {
     errorMessage = 'Invalid botAdminId in configuration (should be a string (not a number! put quotes around it))';
   } else if (config.statusRotation.some(status => typeof status !== typeof '')) {
     errorMessage = 'Invalid status in configuration (should be a string)';
-  } else if (!config.settingsCategorySeparator || typeof config.settingsCategorySeparator !== typeof '' || config.settingsCategorySeparator.indexOf(' ') !== -1) {
-    errorMessage = 'Invalid settingsCategorySeparator in configuration (should be a string with no spaces)';
   } else if (!config.serverSettingsCommandAliases || config.serverSettingsCommandAliases.some(alias => typeof alias !== typeof '')) {
     errorMessage = 'Invalid serverSettingsCommandAliases in configuration (should be an array of strings)';
   } else if (!config.commandsToGenerateHelpFor || !Array.isArray(config.commandsToGenerateHelpFor)) {
@@ -302,23 +297,23 @@ class Monochrome {
     this.persistence_.reload();
     this.navigationManager_.reload();
 
-    RepeatingQueue = reload('./repeating_queue.js');
+    const MessageProcessorManager = reload('./message_processor_manager.js');
+    const Settings = reload('./settings.js');
+    const CommandManager = reload('./command_manager.js');
+    const RepeatingQueue = reload('./repeating_queue.js');
+
     this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
-    this.settingsManager_ = new (reload('./settings_manager.js'))(this.logger_, this.config_, this.persistence_);
-    let settingsManagerCommands = this.settingsManager_.collectCommands();
-    let settingsGetter = this.settingsManager_.createSettingsGetter();
-    this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(this.logger_);
-    this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), this.logger_, this.config_, settingsGetter);
-    this.settings_ = new Settings(this.persistence_, this.settingsFilePath_, this.logger_);
-    this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands, this).then(() => {
-      let settingsFilePaths = [];
-      if (this.settingsFilePath_) {
-        settingsFilePaths.push(this.settingsFilePath_);
-      }
-      this.settingsManager_.load(this.commandManager_.collectSettingsCategories(), settingsFilePaths, this.config_);
-    }).catch(err => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
-    });
+    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
+    this.settings_ = new Settings(this.persistence_, this.logger_, this.settingsFilePath_);
+    this.commandManager_ = new CommandManager(
+      () => this.reloadCore_(),
+      () => this.shutdown_(),
+      this.logger_,
+      this.config_,
+      this.settings_,
+    );
+
+    this.commandManager_.load(this.commandsDirectoryPath_, this);
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_, this);
 
     if (this.ready_) {

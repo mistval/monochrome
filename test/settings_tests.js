@@ -283,7 +283,6 @@ describe('Settings', function() {
     });
     it('Successfully sets a value on one user', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
-      debugger;
 
       const setResult = await settings.setUserSettingValue(
         userSettableSettingInfo.uniqueId,

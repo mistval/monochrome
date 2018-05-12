@@ -50,9 +50,6 @@ module.exports.command = {
     },
   },
   settings: {
-    createDatabaseFacingEnabledSettingName(uniqueId) {
-      return uniqueId + '_enabled';
-    },
     createEnabledSettingDescription(alias) {
       return `This setting controls whether the ${alias} command (and all of its aliases) is allowed to be used or not.`;
     },

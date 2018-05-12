@@ -2,8 +2,11 @@
 const reload = require('require-reload')(require);
 const PublicError = reload('./public_error.js');
 const strings = reload('./string_factory.js').command;
+const SettingsConverters = reload('./settings_converters.js');
+const SettingsValidators = reload('./settings_validators.js');
+const Constants = reload('./constants.js');
 
-function sanitizeCommandData(commandData, settingsCategorySeparator) {
+function sanitizeCommandData(commandData) {
   if (!commandData) {
     throw new Error(strings.validation.noData);
   } else if (!commandData.commandAliases || commandData.commandAliases.length === 0) {
@@ -16,8 +19,6 @@ function sanitizeCommandData(commandData, settingsCategorySeparator) {
   for (let alias of commandData.commandAliases) {
     if (typeof alias !== typeof '' || alias === '') {
       throw new Error(strings.validation.invalidAlias);
-    } else if (settingsCategorySeparator && alias.indexOf(settingsCategorySeparator) !== -1) {
-      throw new Error(strings.validation.createCannotContainCategorySeparatorString(settingsCategorySeparator));
     }
 
     aliases.push(alias.toLowerCase());
@@ -73,25 +74,9 @@ function sanitizeCommandData(commandData, settingsCategorySeparator) {
   return commandData;
 }
 
-/**
-* Represents a command that users can invoke.
-* @property {Array<String>} aliases - A list of aliases that should trigger this command.
-* @property {Boolean} canBeChannelRestricted - True if the command is allowed to be restricted to individual server channels.
-* @property {String} uniqueId - A uniqueId for the command (for purposes of persisting information about it).
-*/
 class Command {
-  /**
-  * @param {Object} commandData - The raw command loaded from a command file.
-  */
-  constructor(commandData, settingsCategorySeparator, enabledCommandsSettingsCategoryFullyQualifiedUserFacingName, monochrome) {
-    if (!settingsCategorySeparator) {
-      throw new Error(strings.validation.noSettingsCategorySeparator);
-    }
-    if (!enabledCommandsSettingsCategoryFullyQualifiedUserFacingName) {
-      throw new Error(strings.validation.noEnabledCommandsCategoryName);
-    }
-    commandData = sanitizeCommandData(commandData, settingsCategorySeparator);
-    this.enabledCommandsFailSilentlyKey_ = 'enabled_commands' + settingsCategorySeparator + 'disabled_commands_fail_silently';
+  constructor(commandData, settings, monochrome) {
+    commandData = sanitizeCommandData(commandData);
     this.aliases = commandData.commandAliases;
     this.uniqueId = commandData.uniqueId;
     this.requiredSettings_ = commandData.requiredSettings;
@@ -101,19 +86,17 @@ class Command {
     this.onlyInServer_ = !!commandData.onlyInServer;
     this.cooldown_ = commandData.cooldown || 0;
     this.usersCoolingDown_ = [];
-    this.settingsCategorySeparator_ = settingsCategorySeparator;
     this.shortDescription = commandData.shortDescription;
     this.longDescription = commandData.longDescription;
     this.usageExample = commandData.usageExample;
     this.canHandleExtension = commandData.canHandleExtension;
     this.aliasesForHelp = commandData.aliasesForHelp;
     this.attachIsServerAdmin_ = !!commandData.attachIsServerAdmin;
+    this.canBeChannelRestricted_ = commandData.canBeChannelRestricted;
     this.monochrome_ = monochrome;
-    if (commandData.canBeChannelRestricted) {
-      this.enabledSettingFullyQualifiedUserFacingName_ = enabledCommandsSettingsCategoryFullyQualifiedUserFacingName +
-        settingsCategorySeparator +
-        this.getEnabledSettingUserFacingName_();
-    }
+    this.settings_ = settings;
+    this.requiredSettings_.push(this.getEnabledSettingUniqueId());
+    this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
     if (commandData.initialize) {
       commandData.initialize(this.monochrome_);
     }
@@ -131,35 +114,29 @@ class Command {
     return this.botAdminOnly_;
   }
 
-  createEnabledSetting() {
-    if (this.enabledSettingFullyQualifiedUserFacingName_) {
-      return {
-        userFacingName: this.getEnabledSettingUserFacingName_(),
-        databaseFacingName: strings.settings.createDatabaseFacingEnabledSettingName(this.uniqueId),
-        type: 'SETTING',
-        description: strings.settings.createEnabledSettingDescription(this.aliases[0]),
-        valueType: 'BOOLEAN',
-        defaultDatabaseFacingValue: true,
-      };
-    }
+  getEnabledSettingUniqueId() {
+    return `enabled_commands/${this.uniqueId}_enabled`;
   }
 
-  /**
-  * Handle a command.
-  * @param {Eris.Client} bot - The Eris bot.
-  * @param {Eris.Message} msg - The Eris message to handle.
-  * @param {String} suffix - The command suffix.
-  * @param {String} extension - The command extension, if there is one.
-  * @param {Object} config - The monochrome config.
-  * @param {Object} settingsGetter - An object with a getSettings() function.
-  * @returns {(String|undefined|Promise)} An error string if there is a benign, expected error (invalid command syntax, etc).
-  *    undefined if there is no error.
-  *    A promise can also be returned. It should resolve with either a benign error string, or undefined.
-  *    If it rejects, the error will be logged, and the generic error message will be sent to the channel.
-  *    (Or if the error is a PublicError, or if it has a publicMessage property, the value of that property
-  *    will be sent to the channel instead of the generic error message)
-  */
-  handle(bot, msg, suffix, extension, config, settingsGetter) {
+  createEnabledSetting() {
+    if (!this.canBeChannelRestricted_) {
+      return undefined;
+    }
+
+    return {
+      userFacingName: this.getEnabledSettingUserFacingName_(),
+      description: strings.settings.createEnabledSettingDescription(this.getEnabledSettingUserFacingName_()),
+      allowedValuesDescription: '**Enabled** or **Disabled**',
+      defaultUserFacingValue: 'Enabled',
+      uniqueId: this.getEnabledSettingUniqueId(),
+      serverOnly: true,
+      convertUserFacingValueToInternalValue: SettingsConverters.createStringToBooleanConverter('enabled', 'disabled'),
+      convertInternalValueToUserFacingValue: SettingsConverters.createBooleanToStringConverter('Enabled', 'Disabled'),
+      validateInternalValue: SettingsValidators.isBoolean,
+    };
+  }
+
+  async handle(bot, msg, suffix, extension, config) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
       let publicErrorMessage = strings.invokeFailure.createNotCooledDownString(msg.author.username, this.cooldown_);
       throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, strings.invokeFailure.notCooledDownLogDescription);
@@ -180,28 +157,27 @@ class Command {
       }
     }
 
-    let requiredSettings = this.requiredSettings_;
-    if (this.enabledSettingFullyQualifiedUserFacingName_) {
-      requiredSettings.push(this.enabledSettingFullyQualifiedUserFacingName_);
-      requiredSettings.push(this.enabledCommandsFailSilentlyKey_);
-    }
-    return settingsGetter.getSettings(bot, msg, requiredSettings).then(settings => {
-      if (!this.enabledSettingFullyQualifiedUserFacingName_ ||
-        settings[this.enabledSettingFullyQualifiedUserFacingName_] === true ||
-        settings[this.enabledSettingFullyQualifiedUserFacingName_] === undefined) {
-        return this.invokeAction_(bot, msg, suffix, settings, extension, config);
-      }
+    const settingsPromises = this.requiredSettings_.map(requiredSetting => {
+      const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
+      return this.settings_.getInternalSettingValue(requiredSetting, serverId, msg.channel.id, msg.author.id);
+    });
 
+    const settingsArray = await Promise.all(settingsPromises);
+    const settingsMap = {};
+
+    this.requiredSettings_.map((settingId, i) => {
+      settingsMap[settingId] = settingsArray[i];
+    });
+
+    if (settingsMap[this.getEnabledSettingUniqueId()] === undefined || settingsMap[this.getEnabledSettingUniqueId()] === true) {
+      return this.invokeAction_(bot, msg, suffix, settingsMap, extension, config);
+    } else {
       let publicMessage = '';
-      if (!settings[this.enabledCommandsFailSilentlyKey_]) {
+      if (!settings[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
         publicMessage = strings.invokeFailure.commandDisabled;
       }
       throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.commandDisabledLog);
-    });
-  }
-
-  getEnabledSettingFullyQualifiedUserFacingName() {
-    return this.enabledSettingFullyQualifiedUserFacingName_;
+    }
   }
 
   invokeAction_(bot, msg, suffix, settings, extension, config) {

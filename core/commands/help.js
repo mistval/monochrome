@@ -134,7 +134,7 @@ class Help {
       .filter(command => indexOfAliasInList(command, config.commandsToGenerateHelpFor) !== -1)
       .sort((a, b) => compareCommandOrder(a, b, config.commandsToGenerateHelpFor));
     this.requiredSettings = this.commandsForTopLevelHelp_
-      .map(command => command.getEnabledSettingFullyQualifiedUserFacingName())
+      .map(command => command.getEnabledSettingUniqueId())
       .filter(settingName => !!settingName);
     for (let command of this.commandsForTopLevelHelp_) {
       validateCommand(command);
@@ -194,7 +194,7 @@ class Help {
   showGeneralHelp_(msg, settings) {
     let commandsToDisplayHelpFor = [];
     for (let command of this.commandsForTopLevelHelp_) {
-      let enabledSettingName = command.getEnabledSettingFullyQualifiedUserFacingName();
+      let enabledSettingName = command.getEnabledSettingUniqueId();
       if (enabledSettingName && !settings[enabledSettingName]) {
         continue;
       }

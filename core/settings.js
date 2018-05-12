@@ -168,8 +168,10 @@ class Settings {
   }
 
   addNodeToRoot(node) {
-    this.settingsTree_.unshift(node);
-    sanitizeAndValidateSettingsTree(this.settingsTree_);
+    if (node) {
+      this.settingsTree_.unshift(node);
+      sanitizeAndValidateSettingsTree(this.settingsTree_);  
+    }
   }
 
   getRawSettingsTree() {
