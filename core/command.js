@@ -224,6 +224,10 @@ function userIsServerAdmin(msg, config) {
     return true;
   }
 
+  if (config.botAdminIds.indexOf(msg.author.id) !== -1) {
+    return true;
+  }
+
   return false;
 }
 
