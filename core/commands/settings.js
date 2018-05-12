@@ -176,14 +176,14 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmi
   if (locationStringLowerCase === 'me') {
     resultString = 'The new setting has been applied as a user setting. It will take effect whenever you use the command.';
     if (setting.serverOnly) {
-      return msg.channel.createMessage('That setting cannot be set as a user setting. Please say **this channel**, **server**, **cancel**, **back**, or provide a list of channels.');
+      return msg.channel.createMessage('That setting cannot be set as a user setting. Please say **this channel**, **this server**, **cancel**, **back**, or provide a list of channels.');
     }
     setResults = [await settings.setUserSettingValue(setting.uniqueId, msg.author.id, newUserFacingValue)];
   } else if (locationStringLowerCase === 'this channel' || !msg.channel.guild) {
     resultString = 'The new setting has been applied to this channel.';
     setResults = [await settings.setChannelSettingValue(setting.uniqueId, serverId, msg.channel.id, newUserFacingValue, userIsServerAdmin)];
-  } else if (locationStringLowerCase === 'server') {
-    resultString = 'The new setting has been applied to all channels in the server.';
+  } else if (locationStringLowerCase === 'this server') {
+    resultString = 'The new setting has been applied to all channels in this server.';
     setResults = [await settings.setServerWideSettingValue(setting.uniqueId, serverId, newUserFacingValue, userIsServerAdmin)];
   } else {
     resultString = `The new setting has been applied to the channels: ${locationString}`;
@@ -220,6 +220,8 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmi
 }
 
 function promptForSettingLocation(hook, msg, monochrome, settingNode, color, userIsServerAdmin, newUserFacingValue) {
+  assert(userIsServerAdmin, 'If the user isn\'t a server admin, we should automatically apply it as a user setting (skipping this function)');
+
   hook.unregister();
 
   hook = Hook.registerHook(
@@ -240,9 +242,9 @@ function promptForSettingLocation(hook, msg, monochrome, settingNode, color, use
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
   if (settingNode.serverOnly) {
-    return msg.channel.createMessage('Where should the new setting be applied? You can say **server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
+    return msg.channel.createMessage('Where should the new setting be applied? You can say **this server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
   } else {
-    return msg.channel.createMessage('Where should the new setting be applied? You can say **me**, **server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
+    return msg.channel.createMessage('Where should the new setting be applied? You can say **me**, **this server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
   }
 }
 
