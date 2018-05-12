@@ -44,8 +44,8 @@ class Hook {
 }
 
 /**
-* Lets core classes (of anyone else sneaky enough to reference it)
-* to register arbitrary hooks for when a certain user says something in a certain channel
+* Lets core classes (or anyone else sneaky enough to reference it)
+* register arbitrary hooks for when a certain user says something in a certain channel
 */
 module.exports = {
   name: 'Followup Message',
