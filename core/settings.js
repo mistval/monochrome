@@ -219,13 +219,13 @@ class Settings {
   }
 
   async setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, false, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, false, params);
     if (newSettingValidationResult.accepted) {
-      await this.persistence_.editServerData(serverId, serverData => {
+      await this.persistence_.editDataForServer(serverId, serverData => {
         serverData = serverData || {};
         serverData.settings = serverData.settings || {};
         serverData.settings.serverSettings = serverData.settings.serverSettings || {};
-        serverData.settings.serverSettings[settingUniqueId] = newInternalValue;
+        serverData.settings.serverSettings[settingUniqueId] = newSettingValidationResult.newInternalValue;
         delete serverData.settings.channelSettings;
         return serverData;
       });
@@ -235,14 +235,14 @@ class Settings {
   }
 
   async setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, params);
     if (newSettingValidationResult.accepted) {
-      await this.persistence_.editServerData(serverId, serverData => {
+      await this.persistence_.editDataForServer(serverId, serverData => {
         serverData = serverData || {};
         serverData.settings = serverData.settings || {};
         serverData.settings.channelSettings = serverData.settings.channelSettings || {};
-        serverData.settings.channelSettings[channelId] = serverData.settings.channelSetting[channelId] || {};
-        serverData.settings.channelSettings[channelId] = newSettingValidationResult.newInternalValue;
+        serverData.settings.channelSettings[channelId] = serverData.settings.channelSettings[channelId] || {};
+        serverData.settings.channelSettings[channelId][settingUniqueId] = newSettingValidationResult.newInternalValue;
         return serverData;
       });
     }
@@ -253,7 +253,7 @@ class Settings {
   async setUserSettingValue(settingUniqueId, userId, newUserFacingValue, params) {
     const newSettingValidationResult = this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, true, params);
     if (newSettingValidationResult.accepted) {
-      await this.persistence_.editUserData(userId, userData => {
+      await this.persistence_.editDataForUser(userId, userData => {
         userData = userData || {};
         userData.settings = userData.settings || {};
         userData.settings.global = userData.settings.global || {};
@@ -290,3 +290,4 @@ class Settings {
 }
 
 module.exports = Settings;
+module.exports.UpdateRejectionReason = UpdateRejectionReason;
