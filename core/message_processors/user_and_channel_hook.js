@@ -10,10 +10,11 @@ function createHookIdentifier(userId, channelId) {
 }
 
 class Hook {
-  constructor(userId, channelId, callback) {
+  constructor(userId, channelId, callback, logger) {
     this.userId_ = userId;
     this.channelId_ = channelId;
     this.callback_ = callback;
+    this.logger_ = logger;
   }
 
   register() {
@@ -36,8 +37,12 @@ class Hook {
     clearTimeout(this.timer_);
     delete this.timer_;
     this.timer_ = setTimeout(() => {
-      this.unregister();
-      timeoutCallback();
+      try {
+        this.unregister();
+        timeoutCallback();
+      } catch (err) {
+        this.logger_.logFailure('CORE', 'Hook expiration callback threw error', err);
+      }
     },
     expiration);
   }
@@ -65,8 +70,8 @@ module.exports = {
     }
     return false;
   },
-  registerHook(userId, channelId, callback) {
-    let hook = new Hook(userId, channelId, callback);
+  registerHook(userId, channelId, callback, logger) {
+    let hook = new Hook(userId, channelId, callback, logger);
     hook.register();
     return hook;
   }

@@ -103,7 +103,7 @@ function messageToIndex(msg) {
 }
 
 function handleExpiration(msg) {
-  return msg.channel.createMessage('The settings menu has closed due to inactivity');
+  return msg.channel.createMessage('The settings menu has closed due to inactivity.');
 }
 
 function findParent(children, targetNode, previous) {
@@ -193,10 +193,11 @@ function showRoot(monochrome, msg, color) {
       monochrome,
       cbMsg,
       color,
-    )
+    ),
+    monochrome.getLogger(),
   );
 
-  hook.setExpirationInMs(HOOK_EXPIRATION_MS, (cbHook, cbMsg, monochrome) => handleRootViewMsg(cbHook, cbMsg, monochrome, color));
+  hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
   return msg.channel.createMessage(rootContent);
 }
 
@@ -211,9 +212,10 @@ function showCategory(monochrome, msg, color, category) {
       color,
       category,
     ),
+    monochrome.getLogger(),
   );
 
-  hook.setExpirationInMs(HOOK_EXPIRATION_MS, (cbHook, cbMsg, monochrome) => h(cbHook, cbMsg, monochrome, color));
+  hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
   return msg.channel.createMessage(categoryContent);
 }
 
@@ -228,9 +230,10 @@ async function showSetting(monochrome, msg, color, setting) {
       color,
       setting,
     ),
+    monochrome.getLogger(),
   );
 
-  hook.setExpirationInMs(HOOK_EXPIRATION_MS, (cbHook, cbMsg, monochrome) => h(cbHook, cbMsg, monochrome, color));
+  hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
   return msg.channel.createMessage(settingContent);
 }
 
