@@ -6,6 +6,7 @@ const assert = require('assert');
 const Storage = require('node-persist');
 
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
+const NON_ARRAY_SETTINGS_PATH = `${__dirname}/mock_settings/non_array.js`;
 
 const serverOnlySettingInfo = {
   uniqueId: 'quiz/japanese/unanswered_question_limit',
@@ -37,7 +38,7 @@ const logger = new Logger();
 const persistence = new Persistence();
 persistence.init({dir: './test/persistence'});
 
-function createValidSettingSimple() {
+function createValidSetting1() {
   return {
     userFacingName: 'Answer time limit',
     description: 'This setting controls how many seconds players have to answer a quiz question before I say time\'s up and move on to the next question.',
@@ -51,11 +52,44 @@ function createValidSettingSimple() {
   };
 }
 
+function createValidSetting2() {
+  return {
+    userFacingName: 'Score limit',
+    description: 'This setting controls how many points the quiz game stops at. When a player scores this many points, the game stops and they win.',
+    allowedValuesDescription: 'A whole number between 1 and 10000',
+    uniqueId: 'quiz/japanese/score_limit2',
+    serverOnly: false,
+    defaultUserFacingValue: '10',
+    convertUserFacingValueToInternalValue: SettingsConverters.stringToInt,
+    convertInternalValueToUserFacingValue: SettingsConverters.toString,
+    validateInternalValue: SettingsValidators.createRangeValidator(1, 10000),
+  };
+}
+
+function createValidSettingNoOptionalFields() {
+  return {
+    userFacingName: 'Score limit',
+    uniqueId: 'quiz/japanese/score_limit3',
+    defaultUserFacingValue: '10',
+  };
+}
+
 function createValidSettingCategorySimple() {
   return {
     userFacingName: 'Timing',
     children: [
-      createValidSettingSimple(),
+      createValidSetting1(),
+    ],
+  };
+}
+
+function createValidSettingCategoryWithDuplicateUniqueIdChildren() {
+  return {
+    userFacingName: 'Timing',
+    children: [
+      createValidSetting1(),
+      createValidSetting2(),
+      createValidSetting2(),
     ],
   };
 }
@@ -74,25 +108,53 @@ describe('Settings', function() {
       assert(settings.getRawSettingsTree().length === 0);
     });
     it('Accepts a valid settings tree', function() {
-      const settings = new Settings(persistence, logger, `${__dirname}/mock_settings/kotoba.js`);
-      settings.addNodeToRoot(createValidSettingSimple());
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      settings.addNodeToRoot(createValidSetting1());
     });
     it('Rejects trees containing invalid fields', function() {
-      function deleteFieldFromSimpleAndTest(fieldName) {
+      function deleteFieldFromSimpleSettingAndTest(fieldName) {
         const settings = new Settings(persistence, logger, undefined);
-        let setting = createValidSettingSimple();
+        let setting = createValidSetting1();
         delete setting[fieldName];
         assert.throws(() => settings.addNodeToRoot(setting));
       }
 
-      deleteFieldFromSimpleAndTest('userFacingName');
-      deleteFieldFromSimpleAndTest('uniqueId');
-      deleteFieldFromSimpleAndTest('defaultUserFacingValue');
+      function deleteFieldFromSimpleSettingCategoryAndTest(fieldName) {
+        const settings = new Settings(persistence, logger, undefined);
+        let category = createValidSettingCategorySimple();
+        delete category[fieldName];
+        assert.throws(() => settings.addNodeToRoot(category));
+      }
 
-      const settings = new Settings(persistence, logger, undefined);
-      let category = createValidSettingCategorySimple();
-      delete category.children;
-      assert.throws(() => settings.addNodeToRoot(category));
+      deleteFieldFromSimpleSettingAndTest('userFacingName');
+      deleteFieldFromSimpleSettingAndTest('uniqueId');
+      deleteFieldFromSimpleSettingAndTest('defaultUserFacingValue');
+
+      deleteFieldFromSimpleSettingCategoryAndTest('userFacingName');
+      deleteFieldFromSimpleSettingCategoryAndTest('children');
+    });
+    it('Rejects tree containing multiple settings with same unique ID', function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      assert.throws(() => settings.addNodeToRoot(createValidSettingCategoryWithDuplicateUniqueIdChildren()));
+    });
+    it('Provides defaults for unspecified setting fields', function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const node = createValidSettingNoOptionalFields();
+      settings.addNodeToRoot(node);
+
+      assert(node.serverOnly === false);
+      assert(node.convertUserFacingValueToInternalValue);
+      assert(node.convertInternalValueToUserFacingValue);
+      assert(node.validateInternalValue);
+    });
+    it('Errors if given settings file containing non-array', function() {
+      assert.throws(() => new Settings(persistence, logger, NON_ARRAY_SETTINGS_PATH));
+    });
+  });
+  describe('Accessing the settings tree', function() {
+    it('Returns the tree it was given', function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      assert(settings.getRawSettingsTree() === require(KOTOBA_SETTINGS_PATH));
     });
   });
   describe('Setting values', function() {
@@ -276,14 +338,20 @@ describe('Settings', function() {
     });
     it('Returns undefined for non-existent setting', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
-      const result = await settings.getUserFacingSettingValue(
+      const userFacingResult = await settings.getUserFacingSettingValue(
+        NON_EXISTENT_SETTING_NAME_1,
+        SERVER_ID_1,
+        CHANNEL_ID_1,
+        USER_ID_1,
+      );
+      const internalResult = await settings.getInternalSettingValue(
         NON_EXISTENT_SETTING_NAME_1,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(result === undefined);
+      assert(internalResult === undefined);
     });
   });
 });
