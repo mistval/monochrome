@@ -126,7 +126,8 @@ function findParent(children, targetNode, previous) {
   return undefined;
 }
 
-function tryGoBack(hook, msg, monochrome, settingsNode, color, root, userIsServerAdmin) {
+function tryGoBack(hook, msg, monochrome, settingsNode, color, userIsServerAdmin) {
+  const root = monochrome.getSettings().getRawSettingsTree();
   if (msg.content.toLowerCase() === 'back') {
     const parent = findParent(monochrome.getSettings().getRawSettingsTree(), settingsNode, root);
     if (parent) {
@@ -162,23 +163,9 @@ function handleRootViewMsg(hook, monochrome, msg, color, userIsServerAdmin) {
 async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmin, setting, newUserFacingValue, locationString) {
   const settings = monochrome.getSettings();
 
-  const cancelResult = tryCancel(hook, msg);
-  if (cancelResult) {
-    return cancelResult;
-  }
-
-  const backResult = tryGoBack(
-    hook,
-    msg,
-    monochrome,
-    setting,
-    color,
-    monochrome.getSettings().getRawSettingsTree(),
-    userIsServerAdmin,
-  );
-
-  if (backResult) {
-    return backResult;
+  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting, userIsServerAdmin);
+  if (cancelBackResult) {
+    return cancelBackResult;
   }
 
   const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
@@ -262,23 +249,9 @@ function promptForSettingLocation(hook, msg, monochrome, settingNode, color, use
 async function handleSettingViewMsg(hook, monochrome, msg, color, setting, userIsServerAdmin) {
   assert(typeof userIsServerAdmin === 'boolean', 'userIsServerAdmin is not boolean');
 
-  const cancelResult = tryCancel(hook, msg);
-  if (cancelResult) {
-    return cancelResult;
-  }
-
-  const tryGoBackResult = tryGoBack(
-    hook,
-    msg,
-    monochrome,
-    setting,
-    color,
-    monochrome.getSettings().getRawSettingsTree(),
-    userIsServerAdmin,
-  );
-
-  if (tryGoBackResult) {
-    return tryGoBackResult;
+  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting, userIsServerAdmin);
+  if (cancelBackResult) {
+    return cancelBackResult;
   }
 
   const settings = monochrome.getSettings();
@@ -298,15 +271,7 @@ async function handleSettingViewMsg(hook, monochrome, msg, color, setting, userI
   }
 }
 
-function handleCategoryViewMsg(hook, monochrome, msg, color, category, userIsServerAdmin) {
-  const index = messageToIndex(msg);
-  const childNodes = category.children;
-  if (index < childNodes.length) {
-    const nextNode = childNodes[index];
-    hook.unregister();
-    return showNode(monochrome, msg, color, nextNode, userIsServerAdmin);
-  }
-
+function tryHandleCancelBack(hook, monochrome, msg, color, node, userIsServerAdmin) {
   const cancelResult = tryCancel(hook, msg);
   if (cancelResult) {
     return cancelResult;
@@ -316,11 +281,22 @@ function handleCategoryViewMsg(hook, monochrome, msg, color, category, userIsSer
     hook,
     msg,
     monochrome,
-    category,
+    node,
     color,
-    monochrome.getSettings().getRawSettingsTree(),
     userIsServerAdmin,
   );
+}
+
+function handleCategoryViewMsg(hook, monochrome, msg, color, category, userIsServerAdmin) {
+  const index = messageToIndex(msg);
+  const childNodes = category.children;
+  if (index < childNodes.length) {
+    const nextNode = childNodes[index];
+    hook.unregister();
+    return showNode(monochrome, msg, color, nextNode, userIsServerAdmin);
+  }
+
+  return tryHandleCancelBack(hook, monochrome, msg, color, category, userIsServerAdmin);
 }
 
 function showRoot(monochrome, msg, color, userIsServerAdmin) {
