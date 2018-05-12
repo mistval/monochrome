@@ -1,439 +1,100 @@
+const Settings = require('./../core/settings.js');
+const Persistence = require('./../core/persistence.js');
+const { SettingsConverters, SettingsValidators } = require('./../monochrome.js');
+const Logger = require('./mock_objects/mock_logger.js');
 const assert = require('assert');
-const AbstractSettingsElement = require('./../core/abstract_setting_element.js');
-const Setting = require('./../core/setting.js');
+const Storage = require('node-persist');
 
-class MockSettingsElementMissingFunction extends AbstractSettingsElement {
-  constructor() {
-    super();
-  }
+const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 
-  getChildForFullyQualifiedUserFacingName() {}
-  getFullyQualifiedUserFacingName() {}
-  getConfigurationInstructionsBotContent() {}
+const NO_SETTING_SERVER_ID_1 = 'server1_no_settings';
+const NO_SETTING_CHANNEL_ID_1 = 'channel1_no_settings';
+const NO_SETTING_USER_ID_1 = 'user1_no_settings';
+
+const logger = new Logger();
+
+const persistence = new Persistence();
+persistence.init({dir: './test/persistence'});
+
+Storage.clearSync();
+
+function createValidSettingSimple() {
+  return {
+    userFacingName: 'Answer time limit',
+    description: 'This setting controls how many seconds players have to answer a quiz question before I say time\'s up and move on to the next question.',
+    allowedValuesDescription: 'A number between 5 and 120 (in seconds)',
+    uniqueId: 'quiz/japanese/answer_time_limit2',
+    serverOnly: false,
+    defaultUserFacingValue: '16',
+    convertUserFacingValueToInternalValue: SettingsConverters.stringToFloat,
+    convertInternalValueToUserFacingValue: SettingsConverters.toString,
+    validateInternalValue: SettingsValidators.createRangeValidator(5, 120),
+  };
 }
 
-let validIntegerSetting = {
-  'type': 'SETTING',
-  'userFacingName': 'countdown_start',
-  'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
-  'valueType': 'INTEGER',
-  'defaultDatabaseFacingValue': 10,
-  'allowedDatabaseFacingValues': 'Range(1, 10)',
-};
-
-let validFloatSetting = {
-  'type': 'SETTING',
-  'userFacingName': 'Fraction',
-  'description': 'My favorite fraction',
-  'valueType': 'FLOAT',
-  'defaultDatabaseFacingValue': 1.0,
-  'allowedDatabaseFacingValues': [1.0, 2.0],
-};
-
-let validStringSetting = {
-  'type': 'SETTNG',
-  'userFacingName': 'name',
-  'description': 'My name.',
-  'valueType': 'STRING',
-  'defaultDatabaseFacingValue': 'Tom',
-};
-
-let validBooleanSetting = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'description': 'Whether I should act dumb or not.',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let defaultValueOutOfAllowedRangeSetting1 = {
-  'type': 'SETTING',
-  'userFacingName': 'Fraction',
-  'description': 'My favorite fraction',
-  'valueType': 'FLOAT',
-  'defaultDatabaseFacingValue': 3.0,
-  'allowedDatabaseFacingValues': [1.0, 2.0],
-};
-
-let defaultValueOutOfAllowedRangeSetting2 = {
-  'type': 'SETTING',
-  'userFacingName': 'countdown_start',
-  'description': 'This setting controls what number I\'ll count down from when you use the bot!countdown command.',
-  'valueType': 'INTEGER',
-  'defaultDatabaseFacingValue': 11,
-  'allowedDatabaseFacingValues': 'Range(1, 10)',
-};
-
-let invalidValueTypeSetting1 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'description': 'Whether I should act dumb or not.',
-  'valueType': 'BOOLrgrEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidValueTypeSetting2 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'description': 'Whether I should act dumb or not.',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidDescriptionSetting1 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'description': 5,
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidDescriptionSetting2 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidUserFacingName1 = {
-  'type': 'SETTING',
-  'description': 'description',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidUserFacingName2 = {
-  'type': 'SETTING',
-  'userFacingName': 5,
-  'description': 'description',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidUserFacingName3 = {
-  'type': 'SETTING',
-  'userFacingName': 'name.name',
-  'description': 'description',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidDatabaseFacingName1 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'databaseFacingName': 5,
-  'description': 'Whether I should act dumb or not.',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidDatabaseFacingName2 = {
-  'type': 'SETTING',
-  'userFacingName': 'act_dumb',
-  'databaseFacingName': 'lol.fe',
-  'description': 'Whether I should act dumb or not.',
-  'valueType': 'BOOLEAN',
-  'defaultDatabaseFacingValue': true,
-};
-
-let invalidDatabaseFacingValue1 = {
-  'type': 'SETTING',
-  'userFacingName': 'name',
-  'description': 'My name.',
-  'valueType': 'STRING',
-};
-
-let invalidDatabaseFacingValues1 = {
-  'type': 'SETTING',
-  'userFacingName': 'name',
-  'description': 'My name.',
-  'valueType': 'STRING',
-  'allowedDatabaseFacingValues': 5,
-};
-
-let invalidDatabaseFacingValues2 = {
-  'type': 'SETTING',
-  'userFacingName': 'name',
-  'description': 'My name.',
-  'valueType': 'STRING',
-  'allowedDatabaseFacingValues': 'Range(0, 10)',
-};
-
-let validSettings = [
-  validIntegerSetting,
-  validFloatSetting,
-  validStringSetting,
-  validBooleanSetting,
-];
-
-const MOCK_NON_EMPTY_QUALIFICATION_WO_NAME = 'categories';
-const SEPARATOR = '.';
-const SETTINGS_COMMAND_ALIAS = '!settings';
-const MOCK_CHANNEL_ID1 = '111';
-const MOCK_CHANNEL_ID2 = '222';
-const MOCK_CHANNEL_ID3 = '333';
-
-function createSetting(settingBlob) {
-  return new Setting(settingBlob, MOCK_NON_EMPTY_QUALIFICATION_WO_NAME, SEPARATOR, 0, SETTINGS_COMMAND_ALIAS);
+function createValidSettingCategorySimple() {
+  return {
+    userFacingName: 'Timing',
+    children: [
+      createValidSettingSimple(),
+    ],
+  };
 }
 
-describe('Abstract settings element', function() {
-  describe('constructor()', function() {
-    it('throws if child is missing a function', function() {
-      assert.throws(() => new MockSettingsElementMissingFunction());
+describe('Settings', function() {
+  describe('Constructor', function() {
+    it('Creates an empty settings tree if no file path is provided', function() {
+      const settings = new Settings(persistence, logger, undefined);
+      assert(settings.getRawSettingsTree().length === 0);
+    });
+    it('Creates an empty settings tree if an invalid file path is provided', function() {
+      const settings = new Settings(persistence, logger, 'rherhweh');
+      assert(settings.getRawSettingsTree().length === 0);
+    });
+    it('Accepts a valid settings tree', function() {
+      const settings = new Settings(persistence, logger, `${__dirname}/mock_settings/kotoba.js`);
+      settings.addNodeToRoot(createValidSettingSimple());
+    });
+    it('Rejects trees containing invalid fields', function() {
+      function deleteFieldFromSimpleAndTest(fieldName) {
+        const settings = new Settings(persistence, logger, undefined);
+        let setting = createValidSettingSimple();
+        delete setting[fieldName];
+        assert.throws(() => settings.addNodeToRoot(setting));
+      }
+
+      deleteFieldFromSimpleAndTest('userFacingName');
+      deleteFieldFromSimpleAndTest('uniqueId');
+      deleteFieldFromSimpleAndTest('defaultUserFacingValue');
+
+      const settings = new Settings(persistence, logger, undefined);
+      let category = createValidSettingCategorySimple();
+      delete category.children;
+      assert.throws(() => settings.addNodeToRoot(category));
     });
   });
-});
+  describe('Getting values', function() {
+    it('Gets default internal value correctly', async function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const result = await settings.getInternalSettingValue(
+        'quiz/japanese/unanswered_question_limit',
+        NO_SETTING_SERVER_ID_1,
+        NO_SETTING_CHANNEL_ID_1,
+        NO_SETTING_USER_ID_1
+      );
 
-describe('Setting', function() {
-  describe('constructor()', function() {
-    it('Constructs valid settings without throwing.', function() {
-      for (let setting of validSettings) {
-        createSetting(setting);
-      }
+      assert(result === 5);
     });
-    it('Throws if the value type is invalid', function() {
-      assert.throws(() => createSetting(invalidValueTypeSetting1));
-      assert.throws(() => createSetting(invalidValueTypeSetting2));
-    });
-    it('Throws for invalid setting description', function() {
-      assert.throws(() => createSetting(invalidDescriptionSetting1));
-      assert.throws(() => createSetting(invalidDescriptionSetting2));
-    });
-    it('Throws for invalid user facing name', function() {
-      assert.throws(() => createSetting(invalidUserFacingName1));
-      assert.throws(() => createSetting(invalidUserFacingName2));
-      assert.throws(() => createSetting(invalidUserFacingName3));
-    });
-    it('Throws for invalid database facing name', function() {
-      assert.throws(() => createSetting(invalidDatabaseFacingName1));
-      assert.throws(() => createSetting(invalidDatabaseFacingName2));
-    });
-    it('Throws for no database facing value', function() {
-      assert.throws(() => createSetting(invalidDatabaseFacingValue1));
-    });
-    it('Throws for invalid database facing values', function() {
-      assert.throws(() => createSetting(invalidDatabaseFacingValues1));
-      assert.throws(() => createSetting(invalidDatabaseFacingValues2));
-    });
-    it('Throws if the defaultDatabaseFacingValue is not in allowedDatabaseFacingValues', function() {
-      assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting1));
-      assert.throws(() => createSetting(defaultValueOutOfAllowedRangeSetting2));
-    });
-  });
-  describe('Resolution', function() {
-    it('Resolves or fails to resolve as appropriate', function() {
-      let userFacingName = 'name';
-      let settingData = {
-        'type': 'SETTING',
-        'userFacingName': userFacingName,
-        'description': 'My name.',
-        'valueType': 'STRING',
-        'defaultDatabaseFacingValue': 'Tom',
-      };
-      let setting = createSetting(settingData);
-      let settingName = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + userFacingName;
-      assert(setting.getFullyQualifiedUserFacingName() === settingName);
-      let notSettingName1 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + 'fff';
-      let notSettingName2 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR;
-      let notSettingName3 = SEPARATOR + userFacingName;
-      let notSettingName4 = userFacingName;
-      let notSettingName5 = userFacingName + SEPARATOR;
-      let notSettingName6 = MOCK_NON_EMPTY_QUALIFICATION_WO_NAME + SEPARATOR + userFacingName + SEPARATOR;
-      assert(setting.getChildForFullyQualifiedUserFacingName(settingName));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName1));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName2));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName3));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName4));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName5));
-      assert(!setting.getChildForFullyQualifiedUserFacingName(notSettingName6));
-    });
-  });
-  describe('Getting/setting value', function() {
-    it('Returns default value if nothing in database', function() {
-      let setting = createSetting(validIntegerSetting);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validIntegerSetting.defaultDatabaseFacingValue);
-      setting = createSetting(validStringSetting);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validStringSetting.defaultDatabaseFacingValue);
-      setting = createSetting(validFloatSetting);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validFloatSetting.defaultDatabaseFacingValue);
-      setting = createSetting(validBooleanSetting);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, {}) === validBooleanSetting.defaultDatabaseFacingValue);
-    });
-    it('Returns server setting value if no channel value', function() {
-      const serverSettingValue = 5;
-      let settings = {serverSettings: {}};
-      let testCases = [
-        {rawSetting: validIntegerSetting, serverValue: 5},
-        {rawSetting: validFloatSetting, serverValue: 3.5},
-        {rawSetting: validStringSetting, serverValue: 'test'},
-        {rawSetting: validBooleanSetting, serverValue: false},
-      ];
+    it('Gets default user-facing value correctly', async function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const result = await settings.getUserFacingSettingValue(
+        'quiz/japanese/unanswered_question_limit',
+        NO_SETTING_SERVER_ID_1,
+        NO_SETTING_CHANNEL_ID_1,
+        NO_SETTING_USER_ID_1
+      );
 
-      for (let testCase of testCases) {
-        let rawSetting = testCase.rawSetting;
-        let serverValue = testCase.serverValue;
-        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
-        let setting = createSetting(rawSetting);
-        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
-        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverValue);
-      }
-    });
-    it('Returns server setting value if no channel value for this channel', function() {
-      const serverSettingValue = 5;
-      let settings = {serverSettings: {}, channelSettings: {}};
-      const fakeChannelId = 'fake_channel';
-      settings.channelSettings[fakeChannelId] = {};
-      let testCases = [
-        {rawSetting: validIntegerSetting, serverValue: 5, channelValue: 1},
-        {rawSetting: validFloatSetting, serverValue: 3.5, channelValue: 3},
-        {rawSetting: validStringSetting, serverValue: 'test', channelValue: 'test2'},
-        {rawSetting: validBooleanSetting, serverValue: false, channelValue: true},
-      ];
-
-      for (let testCase of testCases) {
-        let rawSetting = testCase.rawSetting;
-        let serverValue = testCase.serverValue;
-        let fakeChannelValue = testCase.channelValue;
-        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
-        let setting = createSetting(rawSetting);
-        settings.channelSettings[fakeChannelId][setting.getFullyQualifiedUserFacingName()] = fakeChannelValue;
-        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
-        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === serverValue);
-      }
-    });
-    it('Returns channel setting value if it exists', function() {
-      const serverSettingValue = 5;
-      let settings = {serverSettings: {}, channelSettings: {}};
-      settings.channelSettings[MOCK_CHANNEL_ID1] = {};
-      let testCases = [
-        {rawSetting: validIntegerSetting, serverValue: 5, channelValue: 1},
-        {rawSetting: validFloatSetting, serverValue: 3.5, channelValue: 3},
-        {rawSetting: validStringSetting, serverValue: 'test', channelValue: 'test2'},
-        {rawSetting: validBooleanSetting, serverValue: false, channelValue: true},
-      ];
-
-      for (let testCase of testCases) {
-        let rawSetting = testCase.rawSetting;
-        let serverValue = testCase.serverValue;
-        let channelValue = testCase.channelValue;
-        assert(serverValue !== rawSetting.defaultDatabaseFacingValue);
-        let setting = createSetting(rawSetting);
-        settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] = channelValue;
-        settings.serverSettings[setting.getFullyQualifiedUserFacingName()] = serverValue;
-        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === channelValue);
-      }
-    });
-    it('Sets the channel value correctly for here', function() {
-      const newValue = 8;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'here');
-      assert(settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] === newValue);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
-      assert(setting.getCurrentDatabaseFacingValue('other_channel', settings) === validIntegerSetting.defaultDatabaseFacingValue);
-      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
-    });
-    it('Sets the channel value correctly for all', function() {
-      const newValue = 8;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
-      assert(Object.keys(settings.channelSettings).length === 0);
-    });
-    it('All overrides channel specific settings', function() {
-      const newServerValue = 8;
-      const newChannelValue = 7;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newChannelValue, 'here');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newChannelValue);
-      assert(Object.keys(settings.channelSettings[MOCK_CHANNEL_ID1]).length === 1);
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newServerValue, 'all');
-      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newServerValue);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newServerValue);
-      assert(Object.keys(settings.channelSettings[MOCK_CHANNEL_ID1]).length === 0);
-    });
-    it('Cancel cancels', function() {
-      const newServerValue = 8;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newServerValue, 'cancel');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validIntegerSetting.defaultDatabaseFacingValue);
-    });
-    it('Sets the channel value correctly for specified channels', function() {
-      const newValue = 8;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      let channelsInGuild = [MOCK_CHANNEL_ID1, MOCK_CHANNEL_ID2, MOCK_CHANNEL_ID3].map(id => { return {id: id}; });
-      let channelString = `<#${MOCK_CHANNEL_ID1}> <#${MOCK_CHANNEL_ID2}>`;
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, channelsInGuild, settings, newValue, channelString);
-      assert(settings.channelSettings[MOCK_CHANNEL_ID1][setting.getFullyQualifiedUserFacingName()] === newValue);
-      assert(settings.channelSettings[MOCK_CHANNEL_ID2][setting.getFullyQualifiedUserFacingName()] === newValue);
-      assert(!settings.channelSettings[MOCK_CHANNEL_ID3]);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID2, settings) === newValue);
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID3, settings) === validIntegerSetting.defaultDatabaseFacingValue);
-    });
-    it('Does not allow setting a value that\'s not in the allowedDatabaseFacingValues array, if there is one', function() {
-      const newValue = 999;
-      let setting = createSetting(validFloatSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validFloatSetting.defaultDatabaseFacingValue);
-      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
-    });
-    it('Does allow setting a value that\'s in the allowedDatabaseFacingValues array, if there is one', function() {
-      const newValue = validFloatSetting.allowedDatabaseFacingValues[1];
-      let setting = createSetting(validFloatSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
-      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
-    });
-    it('Does not allow setting a value that\'s not in the allowable range, if there is one', function() {
-      const newValue = 999;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validIntegerSetting.defaultDatabaseFacingValue);
-      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
-    });
-    it('Does allow setting a value that is in the allowable range, if there is one', function() {
-      const newValue = 5;
-      let setting = createSetting(validIntegerSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === newValue);
-      assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === newValue);
-    });
-    it('Does not allow non-boolean setting for boolean setting', function() {
-      const newValue = 'ffffff';
-      let setting = createSetting(validBooleanSetting);
-      let settings = {};
-      setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, newValue, 'all');
-      assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === validBooleanSetting.defaultDatabaseFacingValue);
-      assert(!settings.serverSettings[setting.getFullyQualifiedUserFacingName()]);
-    });
-    it('Does allow boolean setting for boolean setting', function() {
-      let values = [!validBooleanSetting.defaultDatabaseFacingValue, validBooleanSetting.defaultDatabaseFacingValue];
-      for (let value of values) {
-        let setting = createSetting(validBooleanSetting);
-        let settings = {};
-        setting.setNewValueFromUserFacingString(MOCK_CHANNEL_ID1, [], settings, value.toString(), 'all');
-        assert(setting.getCurrentDatabaseFacingValue(MOCK_CHANNEL_ID1, settings) === value);
-        assert(settings.serverSettings[setting.getFullyQualifiedUserFacingName()] === value);
-      }
-    });
-  });
-  describe('Configuration instructions', function() {
-    it('Creates embeds for configuration instructions', function() {
-      for (let settingData of validSettings) {
-        let setting = createSetting(settingData);
-        let botContent = setting.getConfigurationInstructionsBotContent(MOCK_CHANNEL_ID1, {}, setting.getFullyQualifiedUserFacingName());
-        assert(botContent.embed);
-      }
+      assert(result === '5');
     });
   });
 });

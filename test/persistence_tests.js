@@ -5,7 +5,6 @@ const Persistence = require('./../core/persistence.js');
 let persistence = new Persistence();
 persistence.init({dir: './test/persistence'});
 
-
 Storage.clearSync();
 
 function createNextEdit(index) {

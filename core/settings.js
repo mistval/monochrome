@@ -83,7 +83,7 @@ function getTreeNodeForUniqueId(settingsTree, settingUniqueId) {
       return element;
     }
     if (element.children) {
-      const childTreeResult = getTreeNodeForUniqueIdHelper(element.children, settingUniqueId);
+      const childTreeResult = getTreeNodeForUniqueId(element.children, settingUniqueId);
       if (childTreeResult) {
         return childTreeResult;
       }
@@ -120,7 +120,7 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   }
 
   treeNode.convertUserFacingValueToInternalValue = treeNode.convertUserFacingValueToInternalValue || (value => value);
-  treeNode.convertInternalValueToUserFacingValue = treeNode.convertUserFacingValueToInternalValue || (value => `${value}`);
+  treeNode.convertInternalValueToUserFacingValue = treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
 
   /**/
@@ -152,7 +152,7 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
 }
 
 class Settings {
-  constructor(persistence, settingsFilePath, logger) {
+  constructor(persistence, logger, settingsFilePath) {
     this.persistence_ = persistence;
     this.settingsTree_ = [];
 
@@ -168,7 +168,7 @@ class Settings {
   }
 
   addNodeToRoot(node) {
-    this.settingsTree_.shift(node);
+    this.settingsTree_.unshift(node);
     sanitizeAndValidateSettingsTree(this.settingsTree_);
   }
 
@@ -183,8 +183,8 @@ class Settings {
     }
 
     const [userData, serverData] = await Promise.all([
-      this.persistence_.getUserData(userId),
-      this.persistence_.getServerData(serverId),
+      this.persistence_.getDataForUser(userId),
+      this.persistence_.getDataForServer(serverId),
     ]);
 
     const userSetting = getUserSetting(userData, settingUniqueId);
@@ -288,3 +288,5 @@ class Settings {
     return createUpdateAcceptedResult(newUserFacingValue, newInternalValue, treeNode);
   }
 }
+
+module.exports = Settings;
