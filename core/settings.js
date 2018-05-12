@@ -170,12 +170,17 @@ class Settings {
   addNodeToRoot(node) {
     if (node) {
       this.settingsTree_.unshift(node);
-      sanitizeAndValidateSettingsTree(this.settingsTree_);  
+      sanitizeAndValidateSettingsTree(this.settingsTree_);
     }
   }
 
   getRawSettingsTree() {
     return this.settingsTree_;
+  }
+
+  async userFacingValueIsValidForSetting(setting, userFacingValue) {
+    const internalValue = await setting.convertUserFacingValueToInternalValue(userFacingValue);
+    return setting.validateInternalValue(internalValue);
   }
 
   async getInternalSettingValue(settingUniqueId, serverId, channelId, userId, converterParams) {

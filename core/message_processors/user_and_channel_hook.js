@@ -28,14 +28,22 @@ class Hook {
   unregister() {
     delete unreloadableDataStore.hookForUserAndChannel[this.getIdentifier_()];
     this.registered_ = false;
+    clearTimeout(this.timer_);
+    delete this.timer_;
   }
 
-  getIsRegistered() {
-    return this.registered_;
+  setExpirationInMs(expiration, timeoutCallback) {
+    clearTimeout(this.timer_);
+    delete this.timer_;
+    this.timer_ = setTimeout(() => {
+      this.unregister();
+      timeoutCallback();
+    },
+    expiration);
   }
 
-  callback(messageString) {
-    return this.callback_(messageString);
+  callback(msg, monochrome) {
+    return this.callback_(this, msg, monochrome);
   }
 
   getIdentifier_() {
@@ -53,7 +61,7 @@ module.exports = {
     let hookIdentifier = createHookIdentifier(msg.author.id, msg.channel.id);
     let correspondingHook = unreloadableDataStore.hookForUserAndChannel[hookIdentifier];
     if (correspondingHook) {
-      return correspondingHook.callback(msg.content);
+      return correspondingHook.callback(msg, monochrome);
     }
     return false;
   },
