@@ -72,29 +72,37 @@ function createFieldsForChildren(children) {
   return fields;
 }
 
-function createContentForRoot(children, color) {
+function createContentForRoot(children, color, iconUri) {
   return {
     embed: {
       title: 'Settings',
       description: CATEGORY_DESCRIPTION,
       fields: createFieldsForChildren(children),
       color: color,
+      footer: {
+        icon_url: iconUri,
+        text: 'Say \'cancel\' to cancel.',
+      },
     },
   };
 }
 
-function createContentForCategory(category, color) {
+function createContentForCategory(category, color, iconUri) {
   return {
     embed: {
       title: `Settings (${category.userFacingName})`,
       description: CATEGORY_DESCRIPTION,
       fields: createFieldsForChildren(category.children),
       color: color,
+      footer: {
+        icon_url: iconUri,
+        text: 'You can also say \'back\' or \'cancel\'.',
+      },
     },
   };
 }
 
-async function createContentForSetting(msg, settings, setting, color) {
+async function createContentForSetting(msg, settings, setting, color, iconUri) {
   return {
     embed: {
       title: `Settings (${setting.userFacingName})`,
@@ -120,6 +128,7 @@ async function createContentForSetting(msg, settings, setting, color) {
         }
       ],
       footer: {
+        icon_url: iconUri,
         text: 'To change the value, type in the new value. Or say \'back\' or \'cancel\'.',
       },
     },
@@ -330,7 +339,9 @@ function handleCategoryViewMsg(hook, monochrome, msg, color, category) {
 }
 
 function showRoot(monochrome, msg, color) {
-  const rootContent = createContentForRoot(monochrome.getSettings().getRawSettingsTree(), color);
+  const settingsTree = monochrome.getSettings().getRawSettingsTree();
+  const iconUri = monochrome.getConfig().settingsIconUri;
+  const rootContent = createContentForRoot(settingsTree, color, iconUri);
   const hook = Hook.registerHook(
     msg.author.id,
     msg.channel.id,
@@ -348,7 +359,8 @@ function showRoot(monochrome, msg, color) {
 }
 
 function showCategory(monochrome, msg, color, category) {
-  const categoryContent = createContentForCategory(category, color);
+  const iconUri = monochrome.getConfig().settingsIconUri;
+  const categoryContent = createContentForCategory(category, color, iconUri);
   const hook = Hook.registerHook(
     msg.author.id, msg.channel.id,
     (cbHook, cbMsg, monochrome) => handleCategoryViewMsg(
@@ -366,7 +378,9 @@ function showCategory(monochrome, msg, color, category) {
 }
 
 async function showSetting(monochrome, msg, color, setting) {
-  const settingContent = await createContentForSetting(msg, monochrome.getSettings(), setting, color);
+  const iconUri = monochrome.getConfig().settingsIconUri;
+  const settings = monochrome.getSettings();
+  const settingContent = await createContentForSetting(msg, settings, setting, color, iconUri);
   const hook = Hook.registerHook(
     msg.author.id, msg.channel.id,
     (cbHook, cbMsg, monochrome) => handleSettingViewMsg(
