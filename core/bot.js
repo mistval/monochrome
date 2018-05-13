@@ -181,6 +181,10 @@ class Monochrome {
     return this.settings_;
   }
 
+  getConfig() {
+    return this.config_;
+  }
+
   connect() {
     if (this.connected_) {
       return;

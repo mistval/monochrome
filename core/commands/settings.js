@@ -1,6 +1,7 @@
 const reload = require('require-reload')(require);
 const assert = require('assert');
 const Hook = reload('./../message_processors/user_and_channel_hook.js');
+const getUserIsServerAdmin = reload('./../util/user_is_server_admin.js');
 
 const CATEGORY_DESCRIPTION = 'The following subcategories and settings are available. Type the number of the one you want to see/change.';
 const HOOK_EXPIRATION_MS = 180000;
@@ -126,13 +127,13 @@ function findParent(children, targetNode, previous) {
   return undefined;
 }
 
-function tryGoBack(hook, msg, monochrome, settingsNode, color, userIsServerAdmin) {
+function tryGoBack(hook, msg, monochrome, settingsNode, color) {
   const root = monochrome.getSettings().getRawSettingsTree();
   if (msg.content.toLowerCase() === 'back') {
     const parent = findParent(monochrome.getSettings().getRawSettingsTree(), settingsNode, root);
     if (parent) {
       hook.unregister();
-      return showNode(monochrome, msg, color, parent, userIsServerAdmin);
+      return showNode(monochrome, msg, color, parent);
     }
   }
 
@@ -148,22 +149,23 @@ function tryCancel(hook, msg) {
   return false;
 }
 
-function handleRootViewMsg(hook, monochrome, msg, color, userIsServerAdmin) {
+function handleRootViewMsg(hook, monochrome, msg, color) {
   const index = messageToIndex(msg);
   const settingsNodes = monochrome.getSettings().getRawSettingsTree();
   if (index < settingsNodes.length) {
     const nextNode = settingsNodes[index];
     hook.unregister();
-    return showNode(monochrome, msg, color, nextNode, userIsServerAdmin);
+    return showNode(monochrome, msg, color, nextNode);
   }
 
   return tryCancel(hook, msg);
 }
 
-async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmin, setting, newUserFacingValue, locationString) {
+async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, locationString) {
   const settings = monochrome.getSettings();
+  const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
 
-  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting, userIsServerAdmin);
+  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting);
   if (cancelBackResult) {
     return cancelBackResult;
   }
@@ -219,12 +221,14 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmi
   return msg.channel.createMessage(resultString);
 }
 
-function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, userIsServerAdmin, newUserFacingValue) {
+function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, newUserFacingValue) {
+  const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
+
   if (!userIsServerAdmin) {
     if (setting.serverOnly) {
       return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
     } else {
-      return tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmin, setting, newUserFacingValue, 'me');
+      return tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, 'me');
     }
   }
 
@@ -240,7 +244,6 @@ function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, 
       monochrome,
       cbMsg,
       color,
-      userIsServerAdmin,
       settingNode,
       newUserFacingValue,
       cbMsg.content,
@@ -256,10 +259,8 @@ function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, 
   }
 }
 
-async function handleSettingViewMsg(hook, monochrome, msg, color, setting, userIsServerAdmin) {
-  assert(typeof userIsServerAdmin === 'boolean', 'userIsServerAdmin is not boolean');
-
-  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting, userIsServerAdmin);
+async function handleSettingViewMsg(hook, monochrome, msg, color, setting) {
+  const cancelBackResult = tryHandleCancelBack(hook, monochrome, msg, color, setting);
   if (cancelBackResult) {
     return cancelBackResult;
   }
@@ -272,10 +273,10 @@ async function handleSettingViewMsg(hook, monochrome, msg, color, setting, userI
     return msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.');
   }
 
-  return tryPromptForSettingLocation(hook, msg, monochrome, setting, color, userIsServerAdmin, newUserFacingValue);
+  return tryPromptForSettingLocation(hook, msg, monochrome, setting, color, newUserFacingValue);
 }
 
-function tryHandleCancelBack(hook, monochrome, msg, color, node, userIsServerAdmin) {
+function tryHandleCancelBack(hook, monochrome, msg, color, node) {
   const cancelResult = tryCancel(hook, msg);
   if (cancelResult) {
     return cancelResult;
@@ -287,23 +288,22 @@ function tryHandleCancelBack(hook, monochrome, msg, color, node, userIsServerAdm
     monochrome,
     node,
     color,
-    userIsServerAdmin,
   );
 }
 
-function handleCategoryViewMsg(hook, monochrome, msg, color, category, userIsServerAdmin) {
+function handleCategoryViewMsg(hook, monochrome, msg, color, category) {
   const index = messageToIndex(msg);
   const childNodes = category.children;
   if (index < childNodes.length) {
     const nextNode = childNodes[index];
     hook.unregister();
-    return showNode(monochrome, msg, color, nextNode, userIsServerAdmin);
+    return showNode(monochrome, msg, color, nextNode);
   }
 
-  return tryHandleCancelBack(hook, monochrome, msg, color, category, userIsServerAdmin);
+  return tryHandleCancelBack(hook, monochrome, msg, color, category);
 }
 
-function showRoot(monochrome, msg, color, userIsServerAdmin) {
+function showRoot(monochrome, msg, color) {
   const rootContent = createContentForRoot(monochrome.getSettings().getRawSettingsTree(), color);
   const hook = Hook.registerHook(
     msg.author.id,
@@ -313,7 +313,6 @@ function showRoot(monochrome, msg, color, userIsServerAdmin) {
       monochrome,
       cbMsg,
       color,
-      userIsServerAdmin,
     ),
     monochrome.getLogger(),
   );
@@ -322,7 +321,7 @@ function showRoot(monochrome, msg, color, userIsServerAdmin) {
   return msg.channel.createMessage(rootContent);
 }
 
-function showCategory(monochrome, msg, color, category, userIsServerAdmin) {
+function showCategory(monochrome, msg, color, category) {
   const categoryContent = createContentForCategory(category, color);
   const hook = Hook.registerHook(
     msg.author.id, msg.channel.id,
@@ -332,7 +331,6 @@ function showCategory(monochrome, msg, color, category, userIsServerAdmin) {
       cbMsg,
       color,
       category,
-      userIsServerAdmin,
     ),
     monochrome.getLogger(),
   );
@@ -341,7 +339,7 @@ function showCategory(monochrome, msg, color, category, userIsServerAdmin) {
   return msg.channel.createMessage(categoryContent);
 }
 
-async function showSetting(monochrome, msg, color, setting, userIsServerAdmin) {
+async function showSetting(monochrome, msg, color, setting) {
   const settingContent = await createContentForSetting(msg, monochrome.getSettings(), setting, color);
   const hook = Hook.registerHook(
     msg.author.id, msg.channel.id,
@@ -351,7 +349,6 @@ async function showSetting(monochrome, msg, color, setting, userIsServerAdmin) {
       cbMsg,
       color,
       setting,
-      userIsServerAdmin,
     ),
     monochrome.getLogger(),
   );
@@ -360,13 +357,13 @@ async function showSetting(monochrome, msg, color, setting, userIsServerAdmin) {
   return msg.channel.createMessage(settingContent);
 }
 
-function showNode(monochrome, msg, color, node, userIsServerAdmin) {
+function showNode(monochrome, msg, color, node) {
   if (Array.isArray(node)) {
-    return showRoot(monochrome, msg, color, userIsServerAdmin);
+    return showRoot(monochrome, msg, color);
   } else if (node.children) {
-    return showCategory(monochrome, msg, color, node, userIsServerAdmin);
+    return showCategory(monochrome, msg, color, node);
   } else {
-    return showSetting(monochrome, msg, color, node, userIsServerAdmin);
+    return showSetting(monochrome, msg, color, node);
   }
 }
 
@@ -379,17 +376,17 @@ function shortcut(monochrome, msg, suffix, color) {
     return msg.channel.createMessage(`I didn't find a setting with ID: ${uniqueId}`);
   }
   if (!value) {
-    return showNode(monochrome, msg, color, setting, msg.authorIsServerAdmin);
+    return showNode(monochrome, msg, color, setting);
   }
 
-  return tryPromptForSettingLocation(undefined, msg, monochrome, setting, color, msg.authorIsServerAdmin, value);
+  return tryPromptForSettingLocation(undefined, msg, monochrome, setting, color, value);
 }
 
 function execute(monochrome, msg, suffix, color) {
   if (suffix) {
     return shortcut(monochrome, msg, suffix, color);
   } else {
-    return showNode(monochrome, msg, color, monochrome.getSettings().getRawSettingsTree(), msg.authorIsServerAdmin);
+    return showNode(monochrome, msg, color, monochrome.getSettings().getRawSettingsTree());
   }
 }
 
@@ -398,7 +395,6 @@ class SettingsCommand {
     this.commandAliases = config.settingsCommandAliases;
     this.uniqueId = 'autoGeneratedSettings425654';
     this.canBeChannelRestricted = false;
-    this.attachIsServerAdmin = true;
 
     this.action = (erisBot, monochrome, msg, suffix) => execute(
       monochrome,
