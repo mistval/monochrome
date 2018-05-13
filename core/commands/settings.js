@@ -219,10 +219,18 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmi
   return msg.channel.createMessage(resultString);
 }
 
-function promptForSettingLocation(hook, msg, monochrome, settingNode, color, userIsServerAdmin, newUserFacingValue) {
-  assert(userIsServerAdmin, 'If the user isn\'t a server admin, we should automatically apply it as a user setting (skipping this function)');
+function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, userIsServerAdmin, newUserFacingValue) {
+  if (!userIsServerAdmin) {
+    if (setting.serverOnly) {
+      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
+    } else {
+      return tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmin, setting, newUserFacingValue, 'me');
+    }
+  }
 
-  hook.unregister();
+  if (hook) {
+    hook.unregister();
+  }
 
   hook = Hook.registerHook(
     msg.author.id,
@@ -264,13 +272,7 @@ async function handleSettingViewMsg(hook, monochrome, msg, color, setting, userI
     return msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.');
   }
 
-  if (userIsServerAdmin) {
-    return promptForSettingLocation(hook, msg, monochrome, setting, color, userIsServerAdmin, newUserFacingValue);
-  } else if (setting.serverOnly) {
-    return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
-  } else {
-    return tryApplyNewSetting(hook, monochrome, msg, color, userIsServerAdmin, setting, newUserFacingValue, 'me');
-  }
+  return tryPromptForSettingLocation(hook, msg, monochrome, setting, color, userIsServerAdmin, newUserFacingValue);
 }
 
 function tryHandleCancelBack(hook, monochrome, msg, color, node, userIsServerAdmin) {
@@ -368,8 +370,27 @@ function showNode(monochrome, msg, color, node, userIsServerAdmin) {
   }
 }
 
+function shortcut(monochrome, msg, suffix, color) {
+  const settings = monochrome.getSettings();
+  const [uniqueId, value] = suffix.split(' ');
+  const setting = settings.getTreeNodeForUniqueId(uniqueId);
+
+  if (!setting) {
+    return msg.channel.createMessage(`I didn't find a setting with ID: ${uniqueId}`);
+  }
+  if (!value) {
+    return showNode(monochrome, msg, color, setting, msg.authorIsServerAdmin);
+  }
+
+  return tryPromptForSettingLocation(undefined, msg, monochrome, setting, color, msg.authorIsServerAdmin, value);
+}
+
 function execute(monochrome, msg, suffix, color) {
-  return showNode(monochrome, msg, color, monochrome.getSettings().getRawSettingsTree(), msg.authorIsServerAdmin);
+  if (suffix) {
+    return shortcut(monochrome, msg, suffix, color);
+  } else {
+    return showNode(monochrome, msg, color, monochrome.getSettings().getRawSettingsTree(), msg.authorIsServerAdmin);
+  }
 }
 
 class SettingsCommand {

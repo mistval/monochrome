@@ -180,6 +180,10 @@ class Settings {
     return this.settingsTree_;
   }
 
+  getTreeNodeForUniqueId(uniqueId) {
+    return getTreeNodeForUniqueId(this.settingsTree_, uniqueId);
+  }
+
   async userFacingValueIsValidForSetting(setting, userFacingValue) {
     const internalValue = await setting.convertUserFacingValueToInternalValue(userFacingValue);
     return setting.validateInternalValue(internalValue);
