@@ -59,6 +59,9 @@ function sanitizeCommandData(commandData) {
   if (commandData.canBeChannelRestricted && (!commandData.uniqueId || typeof commandData.uniqueId !== typeof '')) {
     throw new Error(strings.validation.needsUniqueId);
   }
+  if (commandData.uniqueId && commandData.uniqueId.indexOf(' ') !== -1) {
+    throw new Error('uniqueId must not contain a space.');
+  }
 
   if (typeof commandData.requiredSettings === typeof '') {
     commandData.requiredSettings = [commandData.requiredSettings];

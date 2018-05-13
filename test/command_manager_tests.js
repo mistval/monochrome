@@ -62,11 +62,11 @@ describe('CommandManager', function() {
         assert(invokeResult);
       });
     });
-    it('Refuses to load command and complains if two commands have save uniqueId', function() {
+    it('Refuses to load command and complains if two commands have the same uniqueId', function() {
       let logger = new MockLogger();
       let commandManager = new CommandManager(null, null, logger, config, settings());
       return commandManager.load(__dirname + '/mock_commands/duplicate_unique_ids').then(() => {
-        assert(logger.failureMessage === strings.validation.createNonUniqueUniqueIdMessage('not unique'));
+        assert(logger.failureMessage === strings.validation.createNonUniqueUniqueIdMessage('not_unique'));
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
         let invokeResult2 = commandManager.processInput(null, MsgHelpCommand, config);
         assert(logger.failed === true);

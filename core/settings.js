@@ -107,6 +107,8 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
     errorMessage = 'There is already a setting with that uniqueId';
   } else if (treeNode.defaultUserFacingValue === undefined) {
     errorMessage = 'No defaultUserFacingValue property.';
+  } else if (treeNode.uniqueId.indexOf(' ') !== -1) {
+    errorMessage = 'Setting unique IDs must not contain spaces.';
   }
 
   if (errorMessage) {
