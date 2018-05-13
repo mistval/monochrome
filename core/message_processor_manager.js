@@ -5,7 +5,7 @@ const MessageProcessor = reload('./message_processor.js');
 const PublicError = reload('./../core/public_error.js');
 const strings = reload('./string_factory.js').messageProcessorManager;
 
-function handleError(msg, err, logger, config) {
+function handleError(msg, err, logger) {
   const loggerTitle = 'MESSAGE';
   let errorToOutput = err;
   if (!errorToOutput.output) {
