@@ -91,7 +91,6 @@ function findCloseMatchCommandForAlias(commands, alias) {
         }
 
         if (update) {
-          console.log(newCandidateAlias);
           currentCandidateAlias = newCandidateAlias;
           currentCandidateCommand = newCandidateCommand;
         }
