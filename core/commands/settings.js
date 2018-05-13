@@ -2,9 +2,35 @@ const reload = require('require-reload')(require);
 const assert = require('assert');
 const Hook = reload('./../message_processors/user_and_channel_hook.js');
 const getUserIsServerAdmin = reload('./../util/user_is_server_admin.js');
+const state = require('./../util/misc_unreloadable_data.js');
+
+if (!state.settingsCommand) {
+  state.settingsCommand = {
+    msgSentForKey: {},
+  };
+}
+
+const msgSentForKey = state.settingsCommand.msgSentForKey;
 
 const CATEGORY_DESCRIPTION = 'The following subcategories and settings are available. Type the number of the one you want to see/change.';
 const HOOK_EXPIRATION_MS = 180000;
+
+async function sendMessageUnique(responseToMsg, content) {
+  const key = responseToMsg.channel.id + responseToMsg.author.id;
+  if (msgSentForKey[key]) {
+    try {
+      await msgSentForKey[key].delete();
+    } catch (err) {
+      // Swallow
+    }
+  }
+
+  const sendMessagePromise = responseToMsg.channel.createMessage(content);
+  const sentMessage = await sendMessagePromise;
+  msgSentForKey[key] = sentMessage;
+
+  return sendMessagePromise;
+}
 
 function isCategory(settingsTreeNode) {
   return !!settingsTreeNode.children;
@@ -318,7 +344,7 @@ function showRoot(monochrome, msg, color) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return msg.channel.createMessage(rootContent);
+  return sendMessageUnique(msg, rootContent);
 }
 
 function showCategory(monochrome, msg, color, category) {
@@ -336,7 +362,7 @@ function showCategory(monochrome, msg, color, category) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return msg.channel.createMessage(categoryContent);
+  return sendMessageUnique(msg, categoryContent);
 }
 
 async function showSetting(monochrome, msg, color, setting) {
@@ -354,7 +380,7 @@ async function showSetting(monochrome, msg, color, setting) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return msg.channel.createMessage(settingContent);
+  return sendMessageUnique(msg, settingContent);
 }
 
 function showNode(monochrome, msg, color, node) {
