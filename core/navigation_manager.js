@@ -26,7 +26,7 @@ class NavigationManager {
   * @param {Eris.Message} msg - The message that the navigation is being created in response to.
   */
   register(navigation, expirationTimeInMs, msg) {
-    return implementation.register(this, navigation, expirationTimeInMs, msg, this.logger_);
+    return implementation.register(this, navigation, expirationTimeInMs, msg);
   }
 
   /** Handled a reaction being toggled.
