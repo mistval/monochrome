@@ -170,6 +170,15 @@ describe('Settings', function() {
       assert(!invalidSettingResult);
       assert(validSettingResult);
     });
+    it('Finds setting by uniqueId', function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const setting = require(KOTOBA_SETTINGS_PATH)[0].children[0].children[0];
+      assert(setting === settings.getTreeNodeForUniqueId(setting.uniqueId));
+    });
+    it('Returns undefined when searching for nonexistent uniqueId', function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      assert(!settings.getTreeNodeForUniqueId(NON_EXISTENT_SETTING_NAME_1));
+    });
   });
   describe('Setting values', function() {
     it('Handles trying to set non-existent setting', async function() {
