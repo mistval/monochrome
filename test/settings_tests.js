@@ -99,6 +99,12 @@ describe('Settings', function() {
     Storage.clearSync();
   });
   describe('Constructor', function() {
+    it('Doesn\'t allow settings to have spaces in their uniqueIds', function() {
+      const setting = createValidSetting1();
+      setting.uniqueId = 'ihavea space';
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      assert.throws(() => settings.addNodeToRoot(setting));
+    });
     it('Creates an empty settings tree if no file path is provided', function() {
       const settings = new Settings(persistence, logger, undefined);
       assert(settings.getRawSettingsTree().length === 0);
@@ -155,6 +161,14 @@ describe('Settings', function() {
     it('Returns the tree it was given', function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
       assert(settings.getRawSettingsTree() === require(KOTOBA_SETTINGS_PATH));
+    });
+    it('Provides validation', async function() {
+      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const setting = require(KOTOBA_SETTINGS_PATH)[0].children[0].children[0];
+      const invalidSettingResult = await settings.userFacingValueIsValidForSetting(setting, '4');
+      const validSettingResult = await settings.userFacingValueIsValidForSetting(setting, '5');
+      assert(!invalidSettingResult);
+      assert(validSettingResult);
     });
   });
   describe('Setting values', function() {
