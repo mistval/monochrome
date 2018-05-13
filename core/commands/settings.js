@@ -224,22 +224,20 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
     setResults = [await settings.setServerWideSettingValue(setting.uniqueId, serverId, newUserFacingValue, userIsServerAdmin)];
   } else {
     resultString = `The new setting has been applied to the channels: ${locationString}`;
-    const regex = /<#(.*?)>/g;
+    const channelStrings = locationString.split(/ +/);
     const channelIds = [];
 
-    let regexResult;
-    while (regexResult = regex.exec(locationString)) {
-      const channelId = regexResult[1];
-      if (!msg.channel.guild.channels.find(channel => channel.id === channelId)) {
-        return msg.channel.createMessage(`I didn\'t find a channel in this server called **${regexResult[0]}**. Please check that the channel exists and try again.`);
+    for (const channelString of channelStrings) {
+      const regexResult = /<#(.*?)>/.exec(channelString);
+      if (!regexResult || !msg.channel.guild.channels.find(channel => channel.id === regexResult[1])) {
+        return msg.channel.createMessage(`I didn\'t find a channel in this server called **${channelString}**. Please check that the channel exists and try again.`);
       }
-      channelIds.push(channelId);
+      channelIds.push(regexResult[1]);
     }
 
-    const promises = [];
-    for (const channelId of channelIds) {
-      promises.push(settings.setChannelSettingValue(setting.uniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin));
-    }
+    const promises = channelIds.map(channelId => {
+      return settings.setChannelSettingValue(setting.uniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin);
+    });
 
     setResults = await Promise.all(promises);
   }
