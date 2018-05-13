@@ -211,19 +211,19 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
   let resultString;
 
   if (locationStringLowerCase === 'me') {
-    resultString = 'The new setting has been applied as a user setting. It will take effect whenever you use the command.';
+    resultString = 'The new setting has been applied as a user setting. It will take effect whenever you use the command. The settings menu is now closed.';
     if (setting.serverOnly) {
       return msg.channel.createMessage('That setting cannot be set as a user setting. Please say **this channel**, **this server**, **cancel**, **back**, or provide a list of channels.');
     }
     setResults = [await settings.setUserSettingValue(setting.uniqueId, msg.author.id, newUserFacingValue)];
   } else if (locationStringLowerCase === 'this channel' || !msg.channel.guild) {
-    resultString = 'The new setting has been applied to this channel.';
+    resultString = 'The new setting has been applied to this channel. The settings menu is now closed.';
     setResults = [await settings.setChannelSettingValue(setting.uniqueId, serverId, msg.channel.id, newUserFacingValue, userIsServerAdmin)];
   } else if (locationStringLowerCase === 'this server') {
-    resultString = 'The new setting has been applied to all channels in this server.';
+    resultString = 'The new setting has been applied to all channels in this server. The settings menu is now closed.';
     setResults = [await settings.setServerWideSettingValue(setting.uniqueId, serverId, newUserFacingValue, userIsServerAdmin)];
   } else {
-    resultString = `The new setting has been applied to the channels: ${locationString}`;
+    resultString = `The new setting has been applied to the channels: ${locationString}.　The settings menu is now closed.`;
     const channelStrings = locationString.split(/ +/);
     const channelIds = [];
 
