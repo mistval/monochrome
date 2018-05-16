@@ -88,7 +88,9 @@ class PublicError extends Error {
       if (this.deleteAutomatically_) {
         ErisUtils.sendMessageAndDelete(msg, publicMessage);
       } else {
-        msg.channel.createMessage(publicMessage);
+        msg.channel.createMessage(publicMessage, undefined, msg).catch(err => {
+          logger.logFailure('PUBLIC ERROR', 'Error sending public error message for error.', err);
+        });
       }
     }
 

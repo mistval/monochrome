@@ -1,5 +1,5 @@
 class NavigationManagerImplementation {
-  static register(navigationManagerState, navigation, expirationTimeInMs, msg, logger) {
+  static register(navigationManagerState, navigation, expirationTimeInMs, msg) {
     return navigation.createMessage(msg, navigationManagerState.logger_).then(messageId => {
       navigationManagerState.navigationForMessageId_[messageId] = navigation;
       setTimeout(NavigationManagerImplementation.unregister_, expirationTimeInMs, navigationManagerState, messageId);

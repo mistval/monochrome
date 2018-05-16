@@ -22,11 +22,7 @@ module.exports.command = {
     needsUniqueId: 'Command has canBeChannelRestricted true (or undefined, defaulting to true), but does not have a uniqueId, or its uniqueId is not a string. Commands that can be channel restricted must have a uniqueId.',
     nonStringSetting: 'A required setting is not a string.',
     invalidRequiredSettings: 'Invalid value for requiredSettings. It must be a string or an array of strings.',
-    noSettingsCategorySeparator: 'No settings category separator was passed into the command constructor. Unless you\'re monkeying around constructing Commands by hand, this is an internal error. Please report it.',
     noEnabledCommandsCategoryName: 'No enabled commands settings category name was passed into the command constructor. Unless you\'re monkeying around constructing Commands by hand, this is an internal error. Please report it.',
-    createCannotContainCategorySeparatorString(separator) {
-      return `An alias contains the settings category separator (${separator}). It must not.`;
-    },
   },
   invokeFailure: {
     notCooledDownLogDescription: 'Not cooled down',
@@ -50,9 +46,6 @@ module.exports.command = {
     },
   },
   settings: {
-    createDatabaseFacingEnabledSettingName(uniqueId) {
-      return uniqueId + '_enabled';
-    },
     createEnabledSettingDescription(alias) {
       return `This setting controls whether the ${alias} command (and all of its aliases) is allowed to be used or not.`;
     },
