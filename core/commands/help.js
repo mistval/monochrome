@@ -194,7 +194,7 @@ class Help {
     let commandsToDisplayHelpFor = [];
     for (let command of this.commandsForTopLevelHelp_) {
       let enabledSettingName = command.getEnabledSettingUniqueId();
-      if (enabledSettingName && !settings[enabledSettingName]) {
+      if (settings[enabledSettingName] === false) {
         continue;
       }
       commandsToDisplayHelpFor.push(command);
