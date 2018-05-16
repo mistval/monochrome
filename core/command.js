@@ -177,7 +177,7 @@ class Command {
       return this.invokeAction_(bot, msg, suffix, settingsMap, extension, config);
     } else {
       let publicMessage = '';
-      if (!settings[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
+      if (!settingsMap[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
         publicMessage = strings.invokeFailure.commandDisabled;
       }
       throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.commandDisabledLog);
