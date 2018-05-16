@@ -101,6 +101,7 @@ class Command {
     this.settings_ = settings;
     this.requiredSettings_.push(this.getEnabledSettingUniqueId());
     this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
+    this.hidden = !!commandData.hidden;
     if (commandData.initialize) {
       commandData.initialize(this.monochrome_);
     }
