@@ -44,6 +44,9 @@ class Navigation {
   createMessage(msg, logger) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage(logger).then(navigationPage => {
+      if (!navigationPage) {
+        throw new Error('Navigation failed to create initial page.');
+      }
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
