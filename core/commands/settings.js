@@ -258,10 +258,10 @@ function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, 
   const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
 
   if (!userIsServerAdmin) {
-    if (setting.serverOnly) {
+    if (settingNode.serverOnly) {
       return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
     } else {
-      return tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, 'me');
+      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, 'me');
     }
   }
 
