@@ -268,6 +268,9 @@ class Monochrome {
 
   onMessageCreate_(msg) {
     try {
+      if (!this.ready_) {
+        return;
+      }
       if (!msg.author) {
         return; // Sometimes an empty message with no author appears. *shrug*
       }
