@@ -140,7 +140,6 @@ describe('CommandManager', function() {
       let settingsObj = settings();
       let commandManager = new CommandManager(null, null, logger, config, settingsObj);
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard').then(() => {
-        debugger;
         assert(settingsObj.getRawSettingsTree().length === 1);
         assert(settingsObj.getRawSettingsTree()[0].children.length === 6);
       });

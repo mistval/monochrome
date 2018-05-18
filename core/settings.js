@@ -238,7 +238,11 @@ class Settings {
         serverData.settings = serverData.settings || {};
         serverData.settings.serverSettings = serverData.settings.serverSettings || {};
         serverData.settings.serverSettings[settingUniqueId] = newSettingValidationResult.newInternalValue;
-        delete serverData.settings.channelSettings;
+
+        if (serverData.settings.channelSettings) {
+          delete serverData.settings.channelSettings[settingUniqueId];
+        }
+
         return serverData;
       });
     }
