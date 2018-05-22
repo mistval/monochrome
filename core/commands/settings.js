@@ -254,12 +254,20 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
   return msg.channel.createMessage(resultString);
 }
 
-function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, newUserFacingValue) {
+async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, newUserFacingValue) {
   const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
+  const settings = monochrome.getSettings();
+
+  const isValid = await settings.userFacingValueIsValidForSetting(settingNode, newUserFacingValue);
+  if (!isValid) {
+    await msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.');
+    return showSetting(monochrome, msg, color, settingNode);
+  }
 
   if (!userIsServerAdmin) {
     if (settingNode.serverOnly) {
-      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
+      await msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
+      return showSetting(monochrome, msg, color, settingNode);
     } else {
       return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, 'me');
     }
@@ -300,11 +308,6 @@ async function handleSettingViewMsg(hook, monochrome, msg, color, setting) {
 
   const settings = monochrome.getSettings();
   const newUserFacingValue = msg.content;
-
-  const isValid = await settings.userFacingValueIsValidForSetting(setting, newUserFacingValue);
-  if (!isValid) {
-    return msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.');
-  }
 
   return tryPromptForSettingLocation(hook, msg, monochrome, setting, color, newUserFacingValue);
 }
@@ -411,7 +414,7 @@ function shortcut(monochrome, msg, suffix, color) {
   const setting = settings.getTreeNodeForUniqueId(uniqueId);
 
   if (!setting) {
-    return msg.channel.createMessage(`I didn't find a setting with ID: ${uniqueId}`);
+    return msg.channel.createMessage(`I didn't find a setting with ID: **${uniqueId}**`);
   }
   if (!value) {
     return showNode(monochrome, msg, color, setting);
