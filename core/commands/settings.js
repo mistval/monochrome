@@ -439,7 +439,7 @@ class SettingsCommand {
     this.shortDescription = 'Configure my settings.';
     this.longDescription = 'Configure my settings. Server admins can configure my default settings on their server. Users can configure user settings.';
 
-    this.action = (erisBot, monochrome, msg, suffix) => execute(
+    this.action = (erisBot, msg, suffix, monochrome) => execute(
       monochrome,
       msg,
       suffix,

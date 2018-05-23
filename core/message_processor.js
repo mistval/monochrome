@@ -42,7 +42,7 @@ class MessageProcessor {
   *   Alternatively, an ActionResponse can be returned with an error string for logging.
   */
   handle(erisBot, msg) {
-    return this.action_(erisBot, this.monochrome_, msg);
+    return this.action_(erisBot, msg, this.monochrome_);
   }
 }
 

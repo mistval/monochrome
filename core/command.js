@@ -199,7 +199,7 @@ class Command {
       msg.authorIsServerAdmin = userIsServerAdmin(msg, config);
     }
 
-    return this.action_(bot, this.monochrome_, msg, suffix, settings, extension);
+    return this.action_(bot, msg, suffix, this.monochrome_, settings, extension);
   }
 
   getEnabledSettingUserFacingName_() {

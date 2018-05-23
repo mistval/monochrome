@@ -129,7 +129,7 @@ class Help {
     for (let command of this.commandsForTopLevelHelp_) {
       validateCommand(command);
     }
-    this.action = (erisBot, monochromeBot, msg, suffix, settings) => this.execute_(msg, suffix, settings);
+    this.action = (erisBot, msg, suffix, monochromeBot, settings) => this.execute_(msg, suffix, settings);
   }
 
   execute_(msg, suffix, settings) {

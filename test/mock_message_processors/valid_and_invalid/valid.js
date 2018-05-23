@@ -1,6 +1,6 @@
 module.exports = {
   name: 'Name',
-  action(bot, monochrome, msg) {
+  action(bot, msg, monochrome) {
     if (msg.content === 'hello') {
       this.invoked = true;
       return true;
