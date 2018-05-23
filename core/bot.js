@@ -185,6 +185,10 @@ class Monochrome {
     return this.config_;
   }
 
+  getCommandManager() {
+    return this.commandManager_;
+  }
+
   connect() {
     if (this.connected_) {
       return;
