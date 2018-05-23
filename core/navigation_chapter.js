@@ -98,6 +98,9 @@ class NavigationChapter {
     } else {
       try {
         return Promise.resolve(this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet)).then(page => {
+          if (!page.content) {
+            page = new NavigationPage(page);
+          }
           while (this.pages_.length <= pageToGet) {
             this.pages_.push(undefined);
           }
