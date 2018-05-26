@@ -13,7 +13,13 @@ const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
 
-function validateConfiguration(config, logger) {
+function sanitizeAndValidateConfiguration(config, logger) {
+  // For backwards compatibility with v1.1
+  if (config.serverSettingsCommandAliases) {
+    config.settingsCommandAliases = config.serverSettingsCommandAliases;
+    delete config.serverSettingsCommandAliases;
+  }
+
   let errorMessage;
   if (!config.botToken) {
     errorMessage = 'Invalid botToken value in configuration (should be non-empty string)';
@@ -154,7 +160,7 @@ class Monochrome {
     this.persistence_.init();
     this.config_ = reload(this.configFilePath_);
     this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
-    validateConfiguration(this.config_, this.logger_);
+    sanitizeAndValidateConfiguration(this.config_, this.logger_);
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
@@ -303,7 +309,7 @@ class Monochrome {
 
   reloadCore_() {
     this.config_ = reload(this.configFilePath_);
-    validateConfiguration(this.config_);
+    sanitizeAndValidateConfiguration(this.config_);
     this.logger_.reload();
     this.persistence_.reload();
     this.navigationManager_.reload();
