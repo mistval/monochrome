@@ -332,8 +332,6 @@ describe('Settings', function() {
     it('Successfully sets a value on one channel', async function() {
       const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
 
-      debugger;
-
       const setResult = await settings.setChannelSettingValue(
         serverOrChannelOnlySettingInfo.uniqueId,
         SERVER_ID_1,

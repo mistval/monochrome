@@ -1,4 +1,5 @@
 const reload = require('require-reload')(require);
+const assert = require('assert');
 
 const UpdateRejectionReason = {
   NOT_ADMIN: 'not admin',
@@ -117,6 +118,58 @@ function getTreeNodeForUniqueId(settingsTree, settingUniqueId) {
   return undefined;
 }
 
+function defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, newInternalValue) {
+  assert(userId);
+  return persistence.editDataForUser(userId, userData => {
+    userData.settings = userData.settings || {};
+    userData.settings.global = userData.settings.global || {};
+    userData.settings.global[settingUniqueId] = newInternalValue;
+    return userData;
+  });
+}
+
+function defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId, channelId, newInternalValue) {
+  assert(serverId);
+  assert(channelId);
+  return persistence.editDataForServer(serverId, serverData => {
+    serverData.settings = serverData.settings || {};
+    serverData.settings.channelSettings = serverData.settings.channelSettings || {};
+    serverData.settings.channelSettings[channelId] = serverData.settings.channelSettings[channelId] || {};
+    serverData.settings.channelSettings[channelId][settingUniqueId] = newInternalValue;
+    return serverData;
+  });
+}
+
+function defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serverId, newInternalValue) {
+  assert(serverId);
+  return persistence.editDataForServer(serverId, serverData => {
+    serverData.settings = serverData.settings || {};
+    serverData.settings.serverSettings = serverData.settings.serverSettings || {};
+    serverData.settings.serverSettings[settingUniqueId] = newInternalValue;
+
+    if (serverData.settings.channelSettings) {
+      delete serverData.settings.channelSettings[settingUniqueId];
+    }
+
+    return serverData;
+  });
+}
+
+function defaultUpdateSetting(persistence, settingUniqueId, serverId, channelId, userId, newInternalValue, settingScope) {
+  assert(
+    settingScope === SettingScope.SERVER
+    || settingScope === SettingScope.CHANNEL
+    || settingScope === SettingScope.USER);
+
+  if (settingScope === SettingScope.SERVER) {
+    return defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serverId, newInternalValue);
+  } else if (settingScope === SettingScope.CHANNEL) {
+    return defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId, channelId, newInternalValue);
+  } else if (settingScope === SettingScope.USER) {
+    return defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, newInternalValue);
+  }
+}
+
 function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   const uniqueId = treeNode.uniqueId;
   let errorMessage = '';
@@ -156,6 +209,7 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   treeNode.convertUserFacingValueToInternalValue = treeNode.convertUserFacingValueToInternalValue || (value => value);
   treeNode.convertInternalValueToUserFacingValue = treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
+  treeNode.updateSetting = treeNode.updateSetting || defaultUpdateSetting;
 
   /**/
 
@@ -221,7 +275,7 @@ class Settings {
     return setting.validateInternalValue(internalValue);
   }
 
-  async getInternalSettingValue(settingUniqueId, serverId, channelId, userId, converterParams) {
+  async getInternalSettingValue(settingUniqueId, serverId, channelId, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
       return undefined;
@@ -247,71 +301,53 @@ class Settings {
     }
 
     const defaultUserFacingValue = treeNode.defaultUserFacingValue;
-    const defaultInternalValue = await treeNode.convertUserFacingValueToInternalValue(defaultUserFacingValue, converterParams);
+    const defaultInternalValue = await treeNode.convertUserFacingValueToInternalValue(defaultUserFacingValue);
     return defaultInternalValue;
   }
 
-  async getUserFacingSettingValue(settingUniqueId, serverId, channelId, userId, converterParams) {
+  async getUserFacingSettingValue(settingUniqueId, serverId, channelId, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
       return undefined;
     }
 
-    const internalValue = await this.getInternalSettingValue(settingUniqueId, serverId, channelId, userId, converterParams);
-    const userFacingValue = await treeNode.convertInternalValueToUserFacingValue(internalValue, converterParams);
+    const internalValue = await this.getInternalSettingValue(settingUniqueId, serverId, channelId, userId);
+    const userFacingValue = await treeNode.convertInternalValueToUserFacingValue(internalValue);
 
     return userFacingValue;
   }
 
-  async setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, SettingScope.SERVER, params);
+  setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin) {
+    return this.setSettingValue_(settingUniqueId, serverId, undefined, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.SERVER);
+  }
+
+  setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin) {
+    return this.setSettingValue_(settingUniqueId, serverId, channelId, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.CHANNEL);
+  }
+
+  setUserSettingValue(settingUniqueId, userId, newUserFacingValue) {
+    return this.setSettingValue_(settingUniqueId, undefined, undefined, userId, newUserFacingValue, false, SettingScope.USER);
+  }
+
+  async setSettingValue_(settingUniqueId, serverId, channelId, userId, newUserFacingValue, userIsServerAdmin, settingScope) {
+    const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, settingScope);
     if (newSettingValidationResult.accepted) {
-      await this.persistence_.editDataForServer(serverId, serverData => {
-        serverData.settings = serverData.settings || {};
-        serverData.settings.serverSettings = serverData.settings.serverSettings || {};
-        serverData.settings.serverSettings[settingUniqueId] = newSettingValidationResult.newInternalValue;
-
-        if (serverData.settings.channelSettings) {
-          delete serverData.settings.channelSettings[settingUniqueId];
-        }
-
-        return serverData;
-      });
+      await treeNode.updateSetting(
+        this.persistence_,
+        settingUniqueId,
+        serverId,
+        channelId,
+        userId,
+        newSettingValidationResult.newInternalValue,
+        settingScope,
+      );
     }
 
     return newSettingValidationResult;
   }
 
-  async setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, SettingScope.CHANNEL, params);
-    if (newSettingValidationResult.accepted) {
-      await this.persistence_.editDataForServer(serverId, serverData => {
-        serverData.settings = serverData.settings || {};
-        serverData.settings.channelSettings = serverData.settings.channelSettings || {};
-        serverData.settings.channelSettings[channelId] = serverData.settings.channelSettings[channelId] || {};
-        serverData.settings.channelSettings[channelId][settingUniqueId] = newSettingValidationResult.newInternalValue;
-        return serverData;
-      });
-    }
-
-    return newSettingValidationResult;
-  }
-
-  async setUserSettingValue(settingUniqueId, userId, newUserFacingValue, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, SettingScope.USER, params);
-    if (newSettingValidationResult.accepted) {
-      await this.persistence_.editDataForUser(userId, userData => {
-        userData.settings = userData.settings || {};
-        userData.settings.global = userData.settings.global || {};
-        userData.settings.global[settingUniqueId] = newSettingValidationResult.newInternalValue;
-        return userData;
-      });
-    }
-
-    return newSettingValidationResult;
-  }
-
-  async validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, settingScope, params) {
+  async validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, settingScope) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
 
     if (!treeNode) {
@@ -330,8 +366,8 @@ class Settings {
       return createUpdateRejectionResultNotForUser(treeNode);
     }
 
-    const newInternalValue = await treeNode.convertUserFacingValueToInternalValue(newUserFacingValue, params);
-    const newValueIsValid = await treeNode.validateInternalValue(newInternalValue, params);
+    const newInternalValue = await treeNode.convertUserFacingValueToInternalValue(newUserFacingValue);
+    const newValueIsValid = await treeNode.validateInternalValue(newInternalValue);
 
     if (!newValueIsValid) {
       return createUpdateRejectionResultValueInvalid(newUserFacingValue, treeNode);
@@ -343,3 +379,4 @@ class Settings {
 
 module.exports = Settings;
 module.exports.UpdateRejectionReason = UpdateRejectionReason;
+module.exports.SettingScope = SettingScope;

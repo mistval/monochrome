@@ -141,7 +141,7 @@ class Help {
     const enabledNonHiddenCommands = await helpCommandHelper.getEnabledNonHiddenCommands(msg);
     const commandsToDisplayHelpFor = getCommandsForTopLevelHelpInOrder(
       enabledNonHiddenCommands,
-      this.commandGenerationOrder_
+      this.commandGenerationOrder_,
     );
 
     let helpText = createTopLevelHelpTextForCommands(commandsToDisplayHelpFor, this.commandAliases[0]);
