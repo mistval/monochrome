@@ -148,7 +148,9 @@ describe('Settings', function() {
       const node = createValidSettingNoOptionalFields();
       settings.addNodeToRoot(node);
 
-      assert(node.serverOnly === false);
+      assert(node.serverSetting === true);
+      assert(node.channelSetting === true);
+      assert(node.userSetting === true);
       assert(node.convertUserFacingValueToInternalValue);
       assert(node.convertInternalValueToUserFacingValue);
       assert(node.validateInternalValue);
@@ -239,7 +241,7 @@ describe('Settings', function() {
       );
 
       assert(result.accepted === false);
-      assert(result.reason === Settings.UpdateRejectionReason.SERVER_ONLY);
+      assert(result.reason === Settings.UpdateRejectionReason.NOT_ALLOWED_FOR_USER);
     });
     it('Successfully sets a value server-wide', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);

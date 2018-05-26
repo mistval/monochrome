@@ -4,7 +4,15 @@ const UpdateRejectionReason = {
   NOT_ADMIN: 'not admin',
   INVALID_VALUE: 'invalid value',
   SETTING_DOES_NOT_EXIST: 'that setting doesn\'t exist',
-  SERVER_ONLY: 'that setting cannot be set per-user (only per server or per channel)',
+  NOT_ALLOWED_IN_SERVER: 'that setting cannot be set per-server',
+  NOT_ALLOWED_IN_CHANNEL: 'that setting cannot be set per-channel',
+  NOT_ALLOWED_FOR_USER: 'that setting cannot be set per-user',
+};
+
+const SettingScope = {
+  SERVER: 'server',
+  CHANNEL: 'channel',
+  USER: 'user',
 };
 
 function createUpdateRejectionResultUserNotAdmin(treeNode) {
@@ -32,10 +40,26 @@ function createUpdateRejectionResultNoSuchSetting(settingUniqueId) {
   };
 }
 
-function createUpdateRejectionResultServerOnly(treeNode) {
+function createUpdateRejectionResultNotInServer(treeNode) {
   return {
     accepted: false,
-    reason: UpdateRejectionReason.SERVER_ONLY,
+    reason: UpdateRejectionReason.NOT_ALLOWED_IN_SERVER,
+    setting: treeNode,
+  };
+}
+
+function createUpdateRejectionResultNotInChannel(treeNode) {
+  return {
+    accepted: false,
+    reason: UpdateRejectionReason.NOT_ALLOWED_IN_CHANNEL,
+    setting: treeNode,
+  };
+}
+
+function createUpdateRejectionResultNotForUser(treeNode) {
+  return {
+    accepted: false,
+    reason: UpdateRejectionReason.NOT_ALLOWED_FOR_USER,
     setting: treeNode,
   };
 }
@@ -117,8 +141,16 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
 
   /* Provide defaults */
 
-  if (treeNode.serverOnly === undefined) {
-    treeNode.serverOnly = false;
+  if (treeNode.serverSetting === undefined) {
+    treeNode.serverSetting = true;
+  }
+
+  if (treeNode.channelSetting === undefined) {
+    treeNode.channelSetting = true;
+  }
+
+  if (treeNode.userSetting === undefined) {
+    treeNode.userSetting = true;
   }
 
   treeNode.convertUserFacingValueToInternalValue = treeNode.convertUserFacingValueToInternalValue || (value => value);
@@ -232,7 +264,7 @@ class Settings {
   }
 
   async setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, false, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, SettingScope.SERVER, params);
     if (newSettingValidationResult.accepted) {
       await this.persistence_.editDataForServer(serverId, serverData => {
         serverData.settings = serverData.settings || {};
@@ -251,7 +283,7 @@ class Settings {
   }
 
   async setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, SettingScope.CHANNEL, params);
     if (newSettingValidationResult.accepted) {
       await this.persistence_.editDataForServer(serverId, serverData => {
         serverData.settings = serverData.settings || {};
@@ -266,7 +298,7 @@ class Settings {
   }
 
   async setUserSettingValue(settingUniqueId, userId, newUserFacingValue, params) {
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, true, params);
+    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, false, SettingScope.USER, params);
     if (newSettingValidationResult.accepted) {
       await this.persistence_.editDataForUser(userId, userData => {
         userData.settings = userData.settings || {};
@@ -279,17 +311,23 @@ class Settings {
     return newSettingValidationResult;
   }
 
-  async validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, isUserSetting, params) {
+  async validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, settingScope, params) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
 
     if (!treeNode) {
       return createUpdateRejectionResultNoSuchSetting(settingUniqueId);
     }
-    if (!isUserSetting && !userIsServerAdmin) {
+    if (settingScope !== SettingScope.USER && !userIsServerAdmin) {
       return createUpdateRejectionResultUserNotAdmin(treeNode);
     }
-    if (isUserSetting && treeNode.serverOnly) {
-      return createUpdateRejectionResultServerOnly(treeNode);
+    if (!treeNode.serverSetting && settingScope === SettingScope.SERVER) {
+      return createUpdateRejectionResultNotInServer(treeNode);
+    }
+    if (!treeNode.channelSetting && settingScope === SettingScope.CHANNEL) {
+      return createUpdateRejectionResultNotInChannel(treeNode);
+    }
+    if (!treeNode.userSetting && settingScope === SettingScope.USER) {
+      return createUpdateRejectionResultNotForUser(treeNode);
     }
 
     const newInternalValue = await treeNode.convertUserFacingValueToInternalValue(newUserFacingValue, params);
