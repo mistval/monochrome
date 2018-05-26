@@ -78,7 +78,7 @@ class HelpCommandHelper {
     });
 
     const enabledArray = await Promise.all(promises);
-    return this.nonHiddenCommands_.filter((command, i) => enabledArray[i]);
+    return this.nonHiddenCommands_.filter((command, i) => enabledArray[i] === true || enabledArray[i] === undefined);
   }
 }
 
