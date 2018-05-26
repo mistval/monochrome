@@ -14,6 +14,7 @@ const serverOnlySettingInfo = {
   defaultInternalValue: 5,
   validNonDefaultUserFacingValue: '10',
   invalidUserFacingValue: '1000',
+  settingsPath: KOTOBA_SETTINGS_PATH,
 };
 
 const userSettableSettingInfo = {
@@ -22,6 +23,7 @@ const userSettableSettingInfo = {
   defaultInternalValue: 10,
   validNonDefaultUserFacingValue: '30',
   invalidUserFacingValue: '-1',
+  settingsPath: KOTOBA_SETTINGS_PATH,
 };
 
 const NON_EXISTENT_SETTING_NAME_1 = 'rherrhweth';
@@ -196,7 +198,7 @@ describe('Settings', function() {
       assert(result.reason === Settings.UpdateRejectionReason.SETTING_DOES_NOT_EXIST);
     });
     it('Handles non-admin trying to set server setting', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.setServerWideSettingValue(
         serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
@@ -208,7 +210,7 @@ describe('Settings', function() {
       assert(result.reason === Settings.UpdateRejectionReason.NOT_ADMIN);
     });
     it('Handles non-admin trying to set channel setting', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.setChannelSettingValue(
         serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
@@ -221,7 +223,7 @@ describe('Settings', function() {
       assert(result.reason === Settings.UpdateRejectionReason.NOT_ADMIN);
     });
     it('Handles trying to set an invalid value', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.setServerWideSettingValue(
         serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
@@ -233,7 +235,7 @@ describe('Settings', function() {
       assert(result.reason === Settings.UpdateRejectionReason.INVALID_VALUE);
     });
     it('Handles trying to set a server only setting as a user setting', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.setUserSettingValue(
         serverOnlySettingInfo.uniqueId,
         USER_ID_1,
@@ -244,7 +246,7 @@ describe('Settings', function() {
       assert(result.reason === Settings.UpdateRejectionReason.NOT_ALLOWED_FOR_USER);
     });
     it('Successfully sets a value server-wide', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setResult = await settings.setServerWideSettingValue(
         serverOnlySettingInfo.uniqueId,
@@ -275,7 +277,7 @@ describe('Settings', function() {
       assert(getResultOtherServer === serverOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one channel', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setResult = await settings.setChannelSettingValue(
         serverOnlySettingInfo.uniqueId,
@@ -339,7 +341,7 @@ describe('Settings', function() {
   });
   describe('Getting values', function() {
     it('Gets default internal value correctly', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.getInternalSettingValue(
         serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
@@ -350,7 +352,7 @@ describe('Settings', function() {
       assert(result === serverOnlySettingInfo.defaultInternalValue);
     });
     it('Gets default user-facing value correctly', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
       const result = await settings.getUserFacingSettingValue(
         serverOnlySettingInfo.uniqueId,
         SERVER_ID_1,
@@ -408,7 +410,7 @@ describe('Settings', function() {
     }
 
     it('Setting a server wide value for one setting doesn\'t interfere with another', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setSettingResult1 = await setOnServer(settings, serverOnlySettingInfo);
       assert(setSettingResult1.accepted);
@@ -421,7 +423,7 @@ describe('Settings', function() {
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
     it('Setting a channel value for one setting doesn\'t interfere with another', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setSettingResult1 = await setOnChannel(settings, serverOnlySettingInfo);
       assert(setSettingResult1.accepted);
@@ -434,7 +436,7 @@ describe('Settings', function() {
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
     it('Setting a channel value for one setting doesn\'t interfere with the existing server value for another', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setSettingResult1 = await setOnServer(settings, serverOnlySettingInfo);
       assert(setSettingResult1.accepted);
@@ -447,7 +449,7 @@ describe('Settings', function() {
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);;
     });
     it('Setting a server value for one setting doesn\'t interfere with the existing channel value of another', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
 
       const setSettingResult1 = await setOnChannel(settings, serverOnlySettingInfo);
       assert(setSettingResult1.accepted);
