@@ -7,15 +7,7 @@ const Storage = require('node-persist');
 
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 const NON_ARRAY_SETTINGS_PATH = `${__dirname}/mock_settings/non_array.js`;
-
-const serverOnlySettingInfo = {
-  uniqueId: 'quiz/japanese/unanswered_question_limit',
-  defaultUserFacingValue: '5',
-  defaultInternalValue: 5,
-  validNonDefaultUserFacingValue: '10',
-  invalidUserFacingValue: '1000',
-  settingsPath: KOTOBA_SETTINGS_PATH,
-};
+const SCOPE_RESTRICTED_SETTINGS_PATH = `${__dirname}/mock_settings/scope_restricted.js`;
 
 const userSettableSettingInfo = {
   uniqueId: 'quiz/japanese/score_limit',
@@ -24,6 +16,42 @@ const userSettableSettingInfo = {
   validNonDefaultUserFacingValue: '30',
   invalidUserFacingValue: '-1',
   settingsPath: KOTOBA_SETTINGS_PATH,
+};
+
+const serverOrChannelOnlySettingInfo = {
+  uniqueId: 'quiz/japanese/unanswered_question_limit',
+  defaultUserFacingValue: '5',
+  defaultInternalValue: 5,
+  validNonDefaultUserFacingValue: '10',
+  invalidUserFacingValue: '1000',
+  settingsPath: KOTOBA_SETTINGS_PATH,
+};
+
+const serverOnlySettingInfo = {
+  uniqueId: 'server_only',
+  defaultUserFacingValue: '16',
+  defaultInternalValue: 16,
+  validNonDefaultUserFacingValue: '30',
+  invalidUserFacingValue: '-1',
+  settingsPath: SCOPE_RESTRICTED_SETTINGS_PATH,
+};
+
+const channelOnlySettingInfo = {
+  uniqueId: 'channel_only',
+  defaultUserFacingValue: '16',
+  defaultInternalValue: 16,
+  validNonDefaultUserFacingValue: '30',
+  invalidUserFacingValue: '-1',
+  settingsPath: SCOPE_RESTRICTED_SETTINGS_PATH,
+};
+
+const userOnlySettingInfo = {
+  uniqueId: 'user_only',
+  defaultUserFacingValue: '16',
+  defaultInternalValue: 16,
+  validNonDefaultUserFacingValue: '30',
+  invalidUserFacingValue: '-1',
+  settingsPath: SCOPE_RESTRICTED_SETTINGS_PATH,
 };
 
 const NON_EXISTENT_SETTING_NAME_1 = 'rherrhweth';
@@ -234,16 +262,41 @@ describe('Settings', function() {
       assert(result.accepted === false);
       assert(result.reason === Settings.UpdateRejectionReason.INVALID_VALUE);
     });
-    it('Handles trying to set a server only setting as a user setting', async function() {
+    it('Handles trying to set a server only setting as a channel setting', async function() {
       const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
-      const result = await settings.setUserSettingValue(
+      const result = await settings.setChannelSettingValue(
         serverOnlySettingInfo.uniqueId,
-        USER_ID_1,
+        SERVER_ID_1,
+        CHANNEL_ID_1,
         serverOnlySettingInfo.validNonDefaultUserFacingValue,
+        true,
+      );
+
+      assert(result.accepted === false);
+      assert(result.reason === Settings.UpdateRejectionReason.NOT_ALLOWED_IN_CHANNEL);
+    });
+    it('Handles trying to set a channel only setting as a user setting', async function() {
+      const settings = new Settings(persistence, logger, channelOnlySettingInfo.settingsPath);
+      const result = await settings.setUserSettingValue(
+        channelOnlySettingInfo.uniqueId,
+        USER_ID_1,
+        channelOnlySettingInfo.validNonDefaultUserFacingValue,
       );
 
       assert(result.accepted === false);
       assert(result.reason === Settings.UpdateRejectionReason.NOT_ALLOWED_FOR_USER);
+    });
+    it('Handles trying to set a user only setting as a server setting', async function() {
+      const settings = new Settings(persistence, logger, userOnlySettingInfo.settingsPath);
+      const result = await settings.setServerWideSettingValue(
+        userOnlySettingInfo.uniqueId,
+        SERVER_ID_1,
+        userOnlySettingInfo.validNonDefaultUserFacingValue,
+        true,
+      );
+
+      assert(result.accepted === false);
+      assert(result.reason === Settings.UpdateRejectionReason.NOT_ALLOWED_IN_SERVER);
     });
     it('Successfully sets a value server-wide', async function() {
       const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
@@ -277,36 +330,38 @@ describe('Settings', function() {
       assert(getResultOtherServer === serverOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one channel', async function() {
-      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
+      const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
+
+      debugger;
 
       const setResult = await settings.setChannelSettingValue(
-        serverOnlySettingInfo.uniqueId,
+        serverOrChannelOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
-        serverOnlySettingInfo.validNonDefaultUserFacingValue,
+        serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue,
         true,
       );
 
       assert(setResult.accepted === true);
 
       const getResultThatChannel = await settings.getUserFacingSettingValue(
-        serverOnlySettingInfo.uniqueId,
+        serverOrChannelOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_1,
         USER_ID_1,
       );
 
-      assert(getResultThatChannel === serverOnlySettingInfo.validNonDefaultUserFacingValue);
+      assert(getResultThatChannel === serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue);
 
       const getResultOtherChannel = await settings.getUserFacingSettingValue(
-        serverOnlySettingInfo.uniqueId,
+        serverOrChannelOnlySettingInfo.uniqueId,
         SERVER_ID_1,
         CHANNEL_ID_2,
         USER_ID_1,
       );
 
       assert(getResultOtherChannel !== getResultThatChannel);
-      assert(getResultOtherChannel === serverOnlySettingInfo.defaultUserFacingValue);
+      assert(getResultOtherChannel === serverOrChannelOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one user', async function() {
       const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
@@ -410,54 +465,54 @@ describe('Settings', function() {
     }
 
     it('Setting a server wide value for one setting doesn\'t interfere with another', async function() {
-      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
+      const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
 
-      const setSettingResult1 = await setOnServer(settings, serverOnlySettingInfo);
+      const setSettingResult1 = await setOnServer(settings, serverOrChannelOnlySettingInfo);
       assert(setSettingResult1.accepted);
       const setSettingResult2 = await setOnServer(settings, userSettableSettingInfo);
       assert(setSettingResult2.accepted);
 
-      const getSettingResult1 = await getSetting(settings, serverOnlySettingInfo);
-      assert(getSettingResult1 === serverOnlySettingInfo.validNonDefaultUserFacingValue);
+      const getSettingResult1 = await getSetting(settings, serverOrChannelOnlySettingInfo);
+      assert(getSettingResult1 === serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue);
       const getSettingResult2 = await getSetting(settings, userSettableSettingInfo);
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
     it('Setting a channel value for one setting doesn\'t interfere with another', async function() {
-      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
+      const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
 
-      const setSettingResult1 = await setOnChannel(settings, serverOnlySettingInfo);
+      const setSettingResult1 = await setOnChannel(settings, serverOrChannelOnlySettingInfo);
       assert(setSettingResult1.accepted);
       const setSettingResult2 = await setOnChannel(settings, userSettableSettingInfo);
       assert(setSettingResult2.accepted);
 
-      const getSettingResult1 = await getSetting(settings, serverOnlySettingInfo);
-      assert(getSettingResult1 === serverOnlySettingInfo.validNonDefaultUserFacingValue);
+      const getSettingResult1 = await getSetting(settings, serverOrChannelOnlySettingInfo);
+      assert(getSettingResult1 === serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue);
       const getSettingResult2 = await getSetting(settings, userSettableSettingInfo);
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
     it('Setting a channel value for one setting doesn\'t interfere with the existing server value for another', async function() {
-      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
+      const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
 
-      const setSettingResult1 = await setOnServer(settings, serverOnlySettingInfo);
+      const setSettingResult1 = await setOnServer(settings, serverOrChannelOnlySettingInfo);
       assert(setSettingResult1.accepted);
       const setSettingResult2 = await setOnChannel(settings, userSettableSettingInfo);
       assert(setSettingResult2.accepted);
 
-      const getSettingResult1 = await getSetting(settings, serverOnlySettingInfo);
-      assert(getSettingResult1 === serverOnlySettingInfo.validNonDefaultUserFacingValue);
+      const getSettingResult1 = await getSetting(settings, serverOrChannelOnlySettingInfo);
+      assert(getSettingResult1 === serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue);
       const getSettingResult2 = await getSetting(settings, userSettableSettingInfo);
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);;
     });
     it('Setting a server value for one setting doesn\'t interfere with the existing channel value of another', async function() {
-      const settings = new Settings(persistence, logger, serverOnlySettingInfo.settingsPath);
+      const settings = new Settings(persistence, logger, serverOrChannelOnlySettingInfo.settingsPath);
 
-      const setSettingResult1 = await setOnChannel(settings, serverOnlySettingInfo);
+      const setSettingResult1 = await setOnChannel(settings, serverOrChannelOnlySettingInfo);
       assert(setSettingResult1.accepted);
       const setSettingResult2 = await setOnServer(settings, userSettableSettingInfo);
       assert(setSettingResult2.accepted);
 
-      const getSettingResult1 = await getSetting(settings, serverOnlySettingInfo);
-      assert(getSettingResult1 === serverOnlySettingInfo.validNonDefaultUserFacingValue);
+      const getSettingResult1 = await getSetting(settings, serverOrChannelOnlySettingInfo);
+      assert(getSettingResult1 === serverOrChannelOnlySettingInfo.validNonDefaultUserFacingValue);
       const getSettingResult2 = await getSetting(settings, userSettableSettingInfo);
       assert(getSettingResult2 === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
