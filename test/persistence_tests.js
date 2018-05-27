@@ -89,4 +89,17 @@ describe('Persistence', function() {
       });
     });
   });
+  describe('Prefixes', function() {
+    const serverId = 'server1';
+    it('Returns prefixes in config if they haven\'t been customized', function() {
+      const prefixes = persistence.getPrefixesForServerId(serverId);
+      assert(JSON.stringify(prefixes) === JSON.stringify(config.prefixes));
+    });
+    it('Returns customiz prefixes if they exist', async function() {
+      const customPrefixes = ['a'];
+      await persistence.editPrefixesForServerId(serverId, customPrefixes);
+      const prefixes = persistence.getPrefixesForServerId(serverId);
+      assert(JSON.stringify(prefixes) === JSON.stringify(customPrefixes));
+    });
+  });
 });

@@ -135,17 +135,6 @@ class Persistence {
       return data;
     });
   }
-
-  /**
-  * Get the prefixes for the given server ID. For performance reasons, this does not
-  * return a promise. If it is called before the server prefixes have a chance to load, the
-  * default prefixes will be returned.
-  * @param {String} serverId - The id of the server to get prefixes for.
-  * @returns {Array<String>} An array of prefixes.
-  */
-  getPrefixesForServerId(serverId) {
-    return state.persistence.prefixesForServerId[serverId] || this.defaultPrefixes_;
-  }
 }
 
 module.exports = Persistence;
