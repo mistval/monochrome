@@ -165,9 +165,34 @@ function defaultUpdateSetting(persistence, settingUniqueId, serverId, channelId,
     return defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serverId, newInternalValue);
   } else if (settingScope === SettingScope.CHANNEL) {
     return defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId, channelId, newInternalValue);
-  } else if (settingScope === SettingScope.USER) {
+  } else {
     return defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, newInternalValue);
   }
+}
+
+async function defaultGetInternalSettingValue(persistence, setting, serverId, channelId, userId) {
+  const [userData, serverData] = await Promise.all([
+    persistence.getDataForUser(userId),
+    persistence.getDataForServer(serverId),
+  ]);
+
+  const userSetting = getUserSetting(userData, setting.uniqueId);
+  const channelSetting = getChannelSetting(serverData, channelId, setting.uniqueId);
+  const serverSetting = getServerSetting(serverData, setting.uniqueId);
+
+  if (userSetting !== undefined) {
+    return userSetting;
+  }
+  if (channelSetting !== undefined) {
+    return channelSetting;
+  }
+  if (serverSetting !== undefined) {
+    return serverSetting;
+  }
+
+  const defaultUserFacingValue = setting.defaultUserFacingValue;
+  const defaultInternalValue = await setting.convertUserFacingValueToInternalValue(defaultUserFacingValue);
+  return defaultInternalValue;
 }
 
 function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
@@ -210,6 +235,7 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   treeNode.convertInternalValueToUserFacingValue = treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
   treeNode.updateSetting = treeNode.updateSetting || defaultUpdateSetting;
+  treeNode.getInternalSettingValue = treeNode.getInternalSettingValue || defaultGetInternalSettingValue;
 
   /**/
 
@@ -275,34 +301,13 @@ class Settings {
     return setting.validateInternalValue(internalValue);
   }
 
-  async getInternalSettingValue(settingUniqueId, serverId, channelId, userId) {
+  getInternalSettingValue(settingUniqueId, serverId, channelId, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
       return undefined;
     }
 
-    const [userData, serverData] = await Promise.all([
-      this.persistence_.getDataForUser(userId),
-      this.persistence_.getDataForServer(serverId),
-    ]);
-
-    const userSetting = getUserSetting(userData, settingUniqueId);
-    const channelSetting = getChannelSetting(serverData, channelId, settingUniqueId);
-    const serverSetting = getServerSetting(serverData, settingUniqueId);
-
-    if (userSetting !== undefined) {
-      return userSetting;
-    }
-    if (channelSetting !== undefined) {
-      return channelSetting;
-    }
-    if (serverSetting !== undefined) {
-      return serverSetting;
-    }
-
-    const defaultUserFacingValue = treeNode.defaultUserFacingValue;
-    const defaultInternalValue = await treeNode.convertUserFacingValueToInternalValue(defaultUserFacingValue);
-    return defaultInternalValue;
+    return treeNode.getInternalSettingValue(this.persistence_, treeNode, serverId, channelId, userId);
   }
 
   async getUserFacingSettingValue(settingUniqueId, serverId, channelId, userId) {
