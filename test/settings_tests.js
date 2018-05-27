@@ -8,6 +8,7 @@ const Storage = require('node-persist');
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 const NON_ARRAY_SETTINGS_PATH = `${__dirname}/mock_settings/non_array.js`;
 const SCOPE_RESTRICTED_SETTINGS_PATH = `${__dirname}/mock_settings/scope_restricted.js`;
+const CUSTOM_GETTER_AND_SETTER_SETTINGS_PATH = `${__dirname}/mock_settings/custom_getter_and_setter.js`;
 
 const userSettableSettingInfo = {
   uniqueId: 'quiz/japanese/score_limit',
@@ -52,6 +53,15 @@ const userOnlySettingInfo = {
   validNonDefaultUserFacingValue: '30',
   invalidUserFacingValue: '-1',
   settingsPath: SCOPE_RESTRICTED_SETTINGS_PATH,
+};
+
+const customGetterAndSetterSettingInfo = {
+  uniqueId: 'custom',
+  defaultUserFacingValue: '16',
+  defaultInternalValue: 16,
+  validNonDefaultUserFacingValue: '30',
+  invalidUserFacingValue: '-1',
+  settingsPath: CUSTOM_GETTER_AND_SETTER_SETTINGS_PATH,
 };
 
 const NON_EXISTENT_SETTING_NAME_1 = 'rherrhweth';
@@ -362,7 +372,7 @@ describe('Settings', function() {
       assert(getResultOtherChannel === serverOrChannelOnlySettingInfo.defaultUserFacingValue);
     });
     it('Successfully sets a value on one user', async function() {
-      const settings = new Settings(persistence, logger, KOTOBA_SETTINGS_PATH);
+      const settings = new Settings(persistence, logger, userSettableSettingInfo.settingsPath);
 
       const setResult = await settings.setUserSettingValue(
         userSettableSettingInfo.uniqueId,
@@ -390,6 +400,26 @@ describe('Settings', function() {
 
       assert(getResultOtherUser !== getResultThatUser);
       assert(getResultOtherUser === userSettableSettingInfo.defaultUserFacingValue);
+    });
+    it('Properly uses provided custom getter and setting functions', async function() {
+      const settings = new Settings(persistence, logger, customGetterAndSetterSettingInfo.settingsPath);
+
+      const setResult = await settings.setUserSettingValue(
+        customGetterAndSetterSettingInfo.uniqueId,
+        USER_ID_1,
+        customGetterAndSetterSettingInfo.validNonDefaultUserFacingValue,
+      );
+
+      assert(setResult.accepted === true);
+
+      const getResultThatUser = await settings.getUserFacingSettingValue(
+        customGetterAndSetterSettingInfo.uniqueId,
+        SERVER_ID_1,
+        CHANNEL_ID_1,
+        USER_ID_1,
+      );
+
+      assert(getResultThatUser === userSettableSettingInfo.validNonDefaultUserFacingValue);
     });
   });
   describe('Getting values', function() {
