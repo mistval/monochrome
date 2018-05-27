@@ -7,6 +7,7 @@ const state = require('./../util/misc_unreloadable_data.js');
 if (!state.settingsCommand) {
   state.settingsCommand = {
     msgSentForKey: {},
+    itemIdSentForKey: {},
   };
 }
 
@@ -17,14 +18,20 @@ const Location = {
 };
 
 const msgSentForKey = state.settingsCommand.msgSentForKey;
+const itemIdSentForKey = state.settingsCommand.itemIdSentForKey;
 
 const CATEGORY_DESCRIPTION = 'The following subcategories and settings are available. Type the number of the one you want to see/change.';
 const HOOK_EXPIRATION_MS = 180000;
 const CANCEL = 'cancel';
 const BACK = 'back';
 
-async function sendMessageUnique(responseToMsg, content) {
+async function sendMessageUnique(responseToMsg, content, itemId) {
   const key = responseToMsg.channel.id + responseToMsg.author.id;
+
+  // Don't delete and send the same message.
+  if (itemIdSentForKey[key] === itemId) {
+    return undefined;
+  }
   if (msgSentForKey[key]) {
     try {
       await msgSentForKey[key].delete();
@@ -36,6 +43,7 @@ async function sendMessageUnique(responseToMsg, content) {
   const sendMessagePromise = responseToMsg.channel.createMessage(content);
   const sentMessage = await sendMessagePromise;
   msgSentForKey[key] = sentMessage;
+  itemIdSentForKey[key] = itemId;
 
   return sendMessagePromise;
 }
@@ -467,7 +475,7 @@ function showRoot(monochrome, msg, color) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return sendMessageUnique(msg, rootContent);
+  return sendMessageUnique(msg, rootContent, 'root');
 }
 
 function showCategory(monochrome, msg, color, category) {
@@ -486,7 +494,7 @@ function showCategory(monochrome, msg, color, category) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return sendMessageUnique(msg, categoryContent);
+  return sendMessageUnique(msg, categoryContent, `category:${category.userFacingName}`);
 }
 
 async function showSetting(monochrome, msg, color, setting) {
@@ -506,7 +514,7 @@ async function showSetting(monochrome, msg, color, setting) {
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  return sendMessageUnique(msg, settingContent);
+  return sendMessageUnique(msg, settingContent, setting.uniqueId);
 }
 
 function showNode(monochrome, msg, color, node) {
