@@ -4,11 +4,14 @@ const { SettingsConverters, SettingsValidators } = require('./../monochrome.js')
 const Logger = require('./mock_objects/mock_logger.js');
 const assert = require('assert');
 const Storage = require('node-persist');
+const MockConfig = require('./mock_objects/mock_config.js');
 
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 const NON_ARRAY_SETTINGS_PATH = `${__dirname}/mock_settings/non_array.js`;
 const SCOPE_RESTRICTED_SETTINGS_PATH = `${__dirname}/mock_settings/scope_restricted.js`;
 const CUSTOM_GETTER_AND_SETTER_SETTINGS_PATH = `${__dirname}/mock_settings/custom_getter_and_setter.js`;
+
+const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
 const userSettableSettingInfo = {
   uniqueId: 'quiz/japanese/score_limit',
@@ -75,8 +78,7 @@ const USER_ID_2 = 'user2';
 
 const logger = new Logger();
 
-const persistence = new Persistence();
-persistence.init({dir: './test/persistence'});
+const persistence = new Persistence({dir: './test/persistence'}, config);
 
 function createValidSetting1() {
   return {

@@ -16,8 +16,7 @@ const MsgIsBotAndServerAdmin = new MockMessage('channel1', 'bot-admin-id', 'User
 const MsgDM = new MockMessage('channel1', 'not-bot-admin', 'Username');
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
-let persistence = new Persistence();
-persistence.init({dir: './test/persistence'});
+const persistence = new Persistence({dir: './test/persistence'}, config);
 
 Storage.clearSync();
 

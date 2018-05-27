@@ -156,9 +156,9 @@ class Monochrome {
     this.logger_ = new Logger();
 
     this.botMentionString_ = '';
-    this.persistence_ = new Persistence();
-    this.persistence_.init();
     this.config_ = reload(this.configFilePath_);
+    this.persistence_ = new Persistence(undefined, this.config_);
+    this.persistence_.init();
     this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     sanitizeAndValidateConfiguration(this.config_, this.logger_);
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);

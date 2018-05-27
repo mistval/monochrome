@@ -1,10 +1,17 @@
 const storage = require('node-persist');
+const state = require('./misc_unreloadable_data.js');
+
+if (!state.persistenceAtomic) {
+  state.persistenceAtomic = {
+    editLockForKey: {},
+  };
+}
 
 let storageInit;
 
 /* This is a wrapper around node-persist that supports atomic edits (reading and then writing) */
 
-const editLockForKey = {};
+const editLockForKey = state.persistenceAtomic.editLockForKey;
 
 class EditLock {
   constructor(key) {
@@ -73,7 +80,9 @@ function checkInit() {
 }
 
 module.exports.init = function(options) {
-  storageInit = storage.init(options);
+  if (!storageInit) {
+    storageInit = storage.init(options);
+  }
 };
 
 module.exports.editItem = function(itemKey, editFunction) {

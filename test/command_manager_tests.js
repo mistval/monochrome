@@ -10,11 +10,10 @@ const Settings = require('./../core/settings.js');
 const Persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
 
-const persistence = new Persistence();
-persistence.init({dir: './test/persistence'});
+const config = new MockConfig('Server Admin', ['bot-admin-id']);
+const persistence = new Persistence({dir: './test/persistence'}, config);
 Storage.clearSync();
 
-const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
 const MsgAboutCommandExtension = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!aboutextension suffix');
 const MsgHelpCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!help');

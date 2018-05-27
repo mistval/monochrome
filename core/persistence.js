@@ -1,31 +1,56 @@
 'use strict'
 const reload = require('require-reload')(require);
-const storage = require('./util/node_persist_atomic.js');
+const storage = reload('./util/node_persist_atomic.js');
+const state = require('./util/misc_unreloadable_data.js');
 
-let implementation;
+const USER_DATA_KEY_PREFIX = 'User';
+const SERVER_DATA_KEY_PREFIX = 'Server';
+const GLOBAL_DATA_KEY = 'Global';
+
+function getData(key) {
+  return storage.getItem(key).then(data => {
+    if (data) {
+      return data;
+    } else {
+      return {};
+    }
+  });
+}
+
+function editData(key, editFunction) {
+  return storage.editItem(key, data => {
+    if (!data) {
+      data = {};
+    }
+    return editFunction(data);
+  });
+}
+
+function keyForUserId(userId) {
+  return USER_DATA_KEY_PREFIX + userId;
+}
+
+function keyForServerId(serverId) {
+  return SERVER_DATA_KEY_PREFIX + serverId;
+}
 
 /**
 * A utility to help with persisting data. Singleton.
 */
 class Persistence {
-  constructor() {
-    this.reload();
-  }
-
-  /**
-  * Init persistence. Should only be called once at process launch, so do it synchronously to cut down on complexity.
-  * @param {Object} options - The options to pass into the node-persist initializer.
-  */
-  init(options) {
+  constructor(options, config) {
     storage.init(options);
-    this.initialized_ = true;
-  }
+    this.defaultPrefixes_ = config.prefixes || [];
 
-  /**
-  * Reload the class' main implementation. Since this class is a singleton and holds a file handle that we don't want to close, we do not want to reload this file.
-  */
-  reload() {
-    implementation = reload('./implementations/persistence_implementation.js');
+    if (!state.persistence) {
+      state.persistence = {
+        prefixesForServerId: {},
+      };
+
+      this.getGlobalData().then(data => {
+        prefixesForServerId = data.persistence.prefixes;
+      });
+    }
   }
 
   /**
@@ -34,7 +59,7 @@ class Persistence {
   * @returns {Promise} a promise that will be fulfilled with the user data object.
   */
   getDataForUser(userId) {
-    return implementation.getDataForUser(userId, this);
+    return getData(keyForUserId(userId));
   }
 
   /**
@@ -43,7 +68,7 @@ class Persistence {
   * @returns {Promise} a promise that will be fulfilled with the server data object.
   */
   getDataForServer(serverId) {
-    return implementation.getDataForServer(serverId, this);
+    return getData(keyForServerId(serverId));
   }
 
   /**
@@ -51,7 +76,18 @@ class Persistence {
   * @returns {Promise} a promise that will be fulfilled with the global data object.
   */
   getGlobalData() {
-    return implementation.getGlobalData(this);
+    return getData(GLOBAL_DATA_KEY);
+  }
+
+  /**
+  * Get the prefixes for the given server ID. For performance reasons, this does not
+  * return a promise. If it is called before the server prefixes have a chance to load, the
+  * default prefixes will be returned.
+  * @param {String} serverId - The id of the server to get prefixes for.
+  * @returns {Array<String>} An array of prefixes.
+  */
+  getPrefixesForServerId(serverId) {
+    return state.persistence.prefixesForServerId[serverId] || this.defaultPrefixes_;
   }
 
   /**
@@ -60,8 +96,9 @@ class Persistence {
   * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
   * @returns {Promise} a promise that will be fulfilled when the data has been edited.
   */
-  editDataForUser(userId, editFunction) {
-    return implementation.editDataForUser(userId, editFunction, this);
+  editDataForUser(userId, editDataFunction) {
+    let key = keyForUserId(userId);
+    return editData(key, editDataFunction);
   }
 
   /**
@@ -70,8 +107,9 @@ class Persistence {
   * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
   * @returns {Promise} a promise that will be fulfilled when the data has been edited.
   */
-  editDataForServer(serverId, editFunction) {
-    return implementation.editDataForServer(serverId, editFunction, this);
+  editDataForServer(serverId, editDataFunction) {
+    let key = keyForServerId(serverId);
+    return editData(key, editDataFunction);
   }
 
   /**
@@ -79,8 +117,34 @@ class Persistence {
   * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
   * @returns {Promise} a promise that will be fulfilled when the data has been edited.
   */
-  editGlobalData(editFunction) {
-    return implementation.editGlobalData(editFunction, this);
+  editGlobalData(editDataFunction) {
+    return editData(GLOBAL_DATA_KEY, editDataFunction);
+  }
+
+  /**
+  * Edit the prefixes for a server
+  * @param {String} serverId - The id of the server to get prefixes for.
+  * @param {Array<String>} prefixes - The new prefixes.
+  * @returns {Promise} a promise that will be fulfilled when the prefixes have been edited.
+  */
+  editPrefixesForServerId(serverId, prefixes) {
+    state.persistence.prefixesForServerId[serverId] = prefixes;
+    return editData(GLOBAL_DATA_KEY, data => {
+      data.prefixes = data.prefixes || {};
+      data.prefixes[serverId] = prefixes;
+      return data;
+    });
+  }
+
+  /**
+  * Get the prefixes for the given server ID. For performance reasons, this does not
+  * return a promise. If it is called before the server prefixes have a chance to load, the
+  * default prefixes will be returned.
+  * @param {String} serverId - The id of the server to get prefixes for.
+  * @returns {Array<String>} An array of prefixes.
+  */
+  getPrefixesForServerId(serverId) {
+    return state.persistence.prefixesForServerId[serverId] || this.defaultPrefixes_;
   }
 }
 
