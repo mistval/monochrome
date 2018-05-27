@@ -419,7 +419,7 @@ describe('Settings', function() {
         USER_ID_1,
       );
 
-      assert(getResultThatUser === userSettableSettingInfo.validNonDefaultUserFacingValue);
+      assert(getResultThatUser === customGetterAndSetterSettingInfo.validNonDefaultUserFacingValue);
     });
   });
   describe('Getting values', function() {
