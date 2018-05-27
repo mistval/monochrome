@@ -10,10 +10,18 @@ if (!state.settingsCommand) {
   };
 }
 
+const Location = {
+  ME: 'me',
+  THIS_SERVER: 'this server',
+  THIS_CHANNEL: 'this channel',
+};
+
 const msgSentForKey = state.settingsCommand.msgSentForKey;
 
 const CATEGORY_DESCRIPTION = 'The following subcategories and settings are available. Type the number of the one you want to see/change.';
 const HOOK_EXPIRATION_MS = 180000;
+const CANCEL = 'cancel';
+const BACK = 'back';
 
 async function sendMessageUnique(responseToMsg, content) {
   const key = responseToMsg.channel.id + responseToMsg.author.id;
@@ -57,7 +65,7 @@ function createFieldsForChildren(children) {
 
   const settingsString = settings.map(setting => {
     optionNumber += 1;
-    const adminOnlyString = setting.serverOnly ? ' (*admin only*)' : '';
+    const adminOnlyString = !setting.userSetting ? ' (*server admin only*)' : '';
     return `${optionNumber}. ${setting.userFacingName}${adminOnlyString}`;
   }).join('\n');
 
@@ -115,7 +123,7 @@ async function createContentForSetting(msg, settings, setting, color, iconUri) {
         },
         {
           name: 'Can be changed by',
-          value: setting.serverOnly ? 'Server admin' : 'Anyone',
+          value: setting.userSetting ? 'Anyone' : 'Server admin',
         },
         {
           name: 'Current value',
@@ -196,6 +204,112 @@ function handleRootViewMsg(hook, monochrome, msg, color) {
   return tryCancel(hook, msg);
 }
 
+function getChannelStringsFromLocationString(locationString) {
+  return locationString.split(/ +/);
+}
+
+// If there's an invalid channel string, returns that string.
+// Otherwise returns an array of channel ids.
+function getChannelIds(locationString, msg) {
+  const channelStrings = locationString.split(/ +/);
+  const channelIds = [];
+
+  for (const channelString of channelStrings) {
+    const regexResult = /<#(.*?)>/.exec(channelString);
+    if (!regexResult || !msg.channel.guild.channels.find(channel => channel.id === regexResult[1])) {
+      return channelString;
+    }
+    channelIds.push(regexResult[1]);
+  }
+
+  return channelIds;
+}
+
+function createLocationPromptString(settingNode) {
+  if (settingNode.serverSetting && settingNode.userSetting && settingNode.channelSetting) {
+    return `Where should the new setting be applied? You can say **${Location.ME}**, **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
+  }
+  if (settingNode.serverSetting && settingNode.channelSetting) {
+    return `Where should the new setting be applied? You can say **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
+  }
+  if (settingNode.serverSetting && settingNode.userSetting) {
+    return `Where should the new setting be applied? You can say **${Location.ME}** or **${Location.THIS_SERVER}**. You can also say **${CANCEL}** or **${BACK}**.`
+  }
+  if (setting.userSetting && setting.channelSetting) {
+    return `Where should the new setting be applied? You can say **${Location.ME}**, **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
+  }
+  if (setting.userSetting) {
+    throw new Error('If the setting is only a user setting, we shouldn\'t be prompting for location.');
+  }
+  if (setting.serverSetting) {
+    throw new Error('If the setting is only a server setting, we shouldn\'t be prompting for location.');
+  }
+  if (setting.channelSetting) {
+    return `Where should the new setting be applied? You can say **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
+  }
+  throw new Error('Unexpected fallthrough');
+}
+
+function tryCreateLocationErrorString(locationString, msg, setting) {
+  if (locationString === Location.ME) {
+    if (!setting.userSetting) {
+      if (setting.serverSetting && setting.channelSetting) {
+        return `That setting cannot be set as a user setting. You can say **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+      }
+      if (setting.serverSetting) {
+        throw new Error('If the setting is only a server setting, we shouldn\'t be prompting for location.');
+      }
+      if (setting.channelSetting) {
+        return `That setting cannot be set as a user setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+      }
+      throw new Error('Unexpected fallthrough');
+    }
+
+    return undefined;
+  }
+  if (locationString === Location.THIS_SERVER) {
+    if (!setting.serverSetting) {
+      if (setting.userSetting && setting.channelSetting) {
+        return `That setting cannot be set as a server setting. You can say **${Location.ME}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+      }
+      if (setting.userSetting) {
+        throw new Error('If the setting is only a user setting, we shouldn\'t be prompting for location.');
+      }
+      if (setting.channelSetting) {
+        return `That setting cannot be set as a server setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+      }
+      throw new Error('Unexpected fallthrough');
+    }
+
+    return undefined;
+  }
+  if (locationString === Location.THIS_CHANNEL) {
+    if (!setting.channelSetting) {
+      if (setting.userSetting && setting.serverSetting) {
+        return `That setting cannot be set as a channel setting. You can say **${Location.ME}**, **${Location.THIS_SERVER}**, **${CANCEL}**, or **${BACK}**.`;
+      }
+      if (setting.userSetting) {
+        throw new Error('If the setting is only a user setting, we shouldn\'t be prompting for location.');
+      }
+      if (setting.serverSetting) {
+        throw new Error('If the setting is only a server setting, we shouldn\'t be prompting for location.');
+      }
+      throw new Error('Unexpected fallthrough');
+    }
+
+    return undefined;
+  }
+
+  // If we're here, then we are treating the location string as a list of channels.
+  const channelIds = getChannelIds(locationString, msg);
+  if (typeof channelIds === typeof '') {
+    return `I didn\'t find a channel in this server called **${channelIds}**. Please check that the channel exists and try again.`;
+  }
+
+  // No error
+  return undefined;
+}
+
 async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, locationString) {
   const settings = monochrome.getSettings();
   const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
@@ -205,16 +319,18 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
     return cancelBackResult;
   }
 
+  const locationErrorString = tryCreateLocationErrorString(locationString, msg, setting);
+  if (locationErrorString) {
+    return msg.channel.createMessage(locationErrorString);
+  }
+
   const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
   const locationStringLowerCase = locationString.toLowerCase();
   let setResults;
   let resultString;
 
-  if (locationStringLowerCase === 'me') {
+  if (locationStringLowerCase === Location.ME) {
     resultString = 'The new setting has been applied as a user setting. It will take effect whenever you use the command. The settings menu is now closed.';
-    if (setting.serverOnly) {
-      return msg.channel.createMessage('That setting cannot be set as a user setting. Please say **this channel**, **this server**, **cancel**, **back**, or provide a list of channels.');
-    }
     setResults = [await settings.setUserSettingValue(setting.uniqueId, msg.author.id, newUserFacingValue)];
   } else if (locationStringLowerCase === 'this channel' || !msg.channel.guild) {
     resultString = 'The new setting has been applied to this channel. The settings menu is now closed.';
@@ -223,17 +339,9 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
     resultString = 'The new setting has been applied to all channels in this server. The settings menu is now closed.';
     setResults = [await settings.setServerWideSettingValue(setting.uniqueId, serverId, newUserFacingValue, userIsServerAdmin)];
   } else {
-    resultString = `The new setting has been applied to the channels: ${locationString}.　The settings menu is now closed.`;
+    resultString = `The new setting has been applied to the channels: ${locationString}. The settings menu is now closed.`;
     const channelStrings = locationString.split(/ +/);
-    const channelIds = [];
-
-    for (const channelString of channelStrings) {
-      const regexResult = /<#(.*?)>/.exec(channelString);
-      if (!regexResult || !msg.channel.guild.channels.find(channel => channel.id === regexResult[1])) {
-        return msg.channel.createMessage(`I didn\'t find a channel in this server called **${channelString}**. Please check that the channel exists and try again.`);
-      }
-      channelIds.push(regexResult[1]);
-    }
+    const channelIds = getChannelIds(locationString, msg);
 
     const promises = channelIds.map(channelId => {
       return settings.setChannelSettingValue(setting.uniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin);
@@ -265,12 +373,18 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
   }
 
   if (!userIsServerAdmin) {
-    if (settingNode.serverOnly) {
+    if (!settingNode.userSetting) {
       await msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
       return showSetting(monochrome, msg, color, settingNode);
     } else {
-      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, 'me');
+      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
     }
+  }
+  if (settingNode.serverSetting && !settingNode.userSetting && !settingNode.serverSetting) {
+    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
+  }
+  if (settingNode.userSetting && !settingNode.channelSetting && !settingNode.serverSetting) {
+    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
   }
 
   if (hook) {
@@ -293,11 +407,8 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
   );
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
-  if (settingNode.serverOnly) {
-    return msg.channel.createMessage('Where should the new setting be applied? You can say **this server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
-  } else {
-    return msg.channel.createMessage('Where should the new setting be applied? You can say **me**, **this server**, **this channel**, or list channels, for example: **#general #bot #quiz**. You can also say **cancel** or **back**.');
-  }
+
+  return msg.channel.createMessage(createLocationPromptString(settingNode));
 }
 
 async function handleSettingViewMsg(hook, monochrome, msg, color, setting) {

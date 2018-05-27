@@ -134,7 +134,7 @@ class Command {
       allowedValuesDescription: '**Enabled** or **Disabled**',
       defaultUserFacingValue: 'Enabled',
       uniqueId: this.getEnabledSettingUniqueId(),
-      serverOnly: true,
+      userSetting: false,
       convertUserFacingValueToInternalValue: SettingsConverters.createStringToBooleanConverter('enabled', 'disabled'),
       convertInternalValueToUserFacingValue: SettingsConverters.createBooleanToStringConverter('Enabled', 'Disabled'),
       validateInternalValue: SettingsValidators.isBoolean,

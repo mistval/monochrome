@@ -48,7 +48,7 @@ function createDisabledCommandsFailSilentlySetting() {
     defaultUserFacingValue: 'Disabled',
     allowedValuesDescription: '**Enabled** or **Disabled**',
     uniqueId: Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID,
-    serverOnly: true,
+    userSetting: false,
     convertUserFacingValueToInternalValue: SettingsConverters.createStringToBooleanConverter('enabled', 'disabled'),
     convertInternalValueToUserFacingValue: SettingsConverters.createBooleanToStringConverter('Enabled', 'Disabled'),
     validateInternalValue: SettingsValidators.isBoolean,
