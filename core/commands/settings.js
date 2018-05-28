@@ -25,14 +25,24 @@ const HOOK_EXPIRATION_MS = 180000;
 const CANCEL = 'cancel';
 const BACK = 'back';
 
+function createKeyForMsg(msg) {
+  return msg.channel.id + msg.author.id;
+}
+
 function tryUnregisterHook(hook) {
   if (hook) {
     return hook.unregister();
   }
 }
 
+function clearStateForMsg(msg) {
+  const key = createKeyForMsg(msg);
+  delete state.settingsCommand.msgSentForKey[key];
+  delete state.settingsCommand.itemIdSentForKey[key];
+}
+
 async function sendMessageUnique(responseToMsg, content, itemId) {
-  const key = responseToMsg.channel.id + responseToMsg.author.id;
+  const key = createKeyForMsg(responseToMsg);
 
   // Don't delete and send the same message.
   if (itemIdSentForKey[key] === itemId) {
@@ -240,7 +250,13 @@ function getChannelIds(locationString, msg) {
   return channelIds;
 }
 
-function createLocationPromptString(settingNode) {
+function createLocationPromptString(settingNode, isDm) {
+  if (isDm) {
+    if (settingNode.userSetting && (settingNode.serverSetting || settingNode.channelSetting)) {
+      return `Where should the new setting be applied? You can say **${Location.ME}** or **${Location.THIS_SERVER}**. You can also say **${CANCEL}** or **${BACK}**.`
+    }
+    throw new Error('If we\'re in a DM and the setting isn\'t a userSetting and either a server or channel setting, we shouldn\'t prompt for location.');
+  }
   if (settingNode.serverSetting && settingNode.userSetting && settingNode.channelSetting) {
     return `Where should the new setting be applied? You can say **${Location.ME}**, **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
   }
@@ -419,22 +435,24 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
     return showSetting(monochrome, msg, color, settingNode);
   }
 
-  if (isDm) {
+  if (isDm && (settingNode.serverSetting || settingNode.channelSetting) && !settingNode.userSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
   }
-  if (!userIsServerAdmin) {
-    if (!settingNode.userSetting) {
-      await msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
-      return showSetting(monochrome, msg, color, settingNode);
-    } else {
-      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
-    }
+  if (isDm && settingNode.userSetting && !settingNode.serverSetting && !settingNode.channelSetting) {
+    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
   }
   if (settingNode.serverSetting && !settingNode.userSetting && !settingNode.channelSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
   }
   if (settingNode.userSetting && !settingNode.channelSetting && !settingNode.serverSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
+  }
+  if (!userIsServerAdmin) {
+    if (!settingNode.userSetting) {
+      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
+    } else {
+      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
+    }
   }
 
   if (hook) {
@@ -458,7 +476,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
 
-  return msg.channel.createMessage(createLocationPromptString(settingNode));
+  return msg.channel.createMessage(createLocationPromptString(settingNode, isDm));
 }
 
 async function handleSettingViewMsg(hook, monochrome, msg, color, setting) {
@@ -585,6 +603,7 @@ function shortcut(monochrome, msg, suffix, color) {
 }
 
 function execute(monochrome, msg, suffix, color) {
+  clearStateForMsg(msg);
   if (suffix) {
     return shortcut(monochrome, msg, suffix, color);
   } else {
