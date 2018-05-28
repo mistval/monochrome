@@ -40,7 +40,7 @@ function keyForServerId(serverId) {
 class Persistence {
   constructor(options, config) {
     storage.init(options);
-    this.defaultPrefixes_ = config.prefixes || [];
+    this.defaultPrefixes_ = config.prefixes || [''];
 
     if (!state.persistence) {
       state.persistence = {
@@ -48,7 +48,7 @@ class Persistence {
       };
 
       this.getGlobalData().then(data => {
-        state.persistence.prefixesForServerId = data.prefixes;
+        state.persistence.prefixesForServerId = data.prefixes || {};
       });
     }
   }

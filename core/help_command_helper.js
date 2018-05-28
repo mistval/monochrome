@@ -1,9 +1,10 @@
 const HelpCommand = require('./commands/help.js');
 
 class HelpCommandHelper {
-  constructor(commands, config, settings) {
+  constructor(commands, config, settings, persistence) {
     this.config_ = config;
     this.settings_ = settings;
+    this.persistence_ = persistence;
     this.nonHiddenCommands_ = commands.filter(command => !command.hidden);
   }
 
@@ -15,10 +16,14 @@ class HelpCommandHelper {
     return this.nonHiddenCommands_;
   }
 
-  findCommandForAlias(alias) {
+  findCommandForAlias(alias, serverId) {
+    const prefix = this.persistence_.getPrefixesForServerId(serverId)[0];
     const commands = this.getNonHiddenCommands();
 
-    const exactMatch = commands.find(command => command.aliases.indexOf(alias) !== -1);
+    const exactMatch =
+      commands.find(command => command.aliases.indexOf(alias) !== -1)
+      || commands.find(command => command.aliases.indexOf(`${prefix}${alias}`) !== -1);
+
     if (exactMatch) {
       return exactMatch;
     }
@@ -27,16 +32,17 @@ class HelpCommandHelper {
     let currentCandidateAlias;
     for (let newCandidateCommand of commands) {
       for (let newCandidateAlias of newCandidateCommand.aliases) {
-        if (newCandidateAlias.indexOf(alias) !== -1) {
+        const prefixedNewCandidateAlias = `${prefix}${newCandidateAlias}`;
+        if (prefixedNewCandidateAlias.indexOf(alias) !== -1) {
           let update = false;
           if (!currentCandidateCommand) {
             update = true;
           } else {
-            let currentStartsWithAlias = currentCandidateAlias.startsWith(alias);
-            let newStartsWithAlias = newCandidateAlias.startsWith(alias);
-            let currentContainsAliasNotAtStart = !currentStartsWithAlias || currentCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
-            let newContainsAliasNotAtStart = !newStartsWithAlias || newCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
-            let newIsShorter = newCandidateAlias.length < currentCandidateAlias.length;
+            let currentStartsWithAlias = prefixedCurrentCandidateAlias.startsWith(alias);
+            let newStartsWithAlias = prefixedNewCandidateAlias.startsWith(alias);
+            let currentContainsAliasNotAtStart = !currentStartsWithAlias || prefixedCurrentCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
+            let newContainsAliasNotAtStart = !newStartsWithAlias || prefixedNewCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
+            let newIsShorter = prefixedNewCandidateAlias.length < prefixedCurrentCandidateAlias.length;
             if (currentStartsWithAlias && newStartsWithAlias) {
               // They both start with the alias.
               if (currentContainsAliasNotAtStart && newContainsAliasNotAtStart) {
@@ -53,12 +59,12 @@ class HelpCommandHelper {
               update = currentStartsWithAlias;
             } else {
               // They both contain the alias, but not at the start. Update if new is shorter.
-              update = newCandidateAlias.length < currentCandidateAlias.length;
+              update = prefixedNewCandidateAlias.length < prefixedCurrentCandidateAlias.length;
             }
           }
 
           if (update) {
-            currentCandidateAlias = newCandidateAlias;
+            prefixedCurrentCandidateAlias = prefixedNewCandidateAlias;
             currentCandidateCommand = newCandidateCommand;
           }
         }

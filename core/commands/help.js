@@ -3,6 +3,9 @@ const reload = require('require-reload')(require);
 const ErisUtils = reload('./../util/eris_utils.js');
 const PublicError = reload('./../public_error.js');
 const strings = reload('./../string_factory.js').help;
+const constants = reload('./../constants.js');
+
+const prefixReplaceRegex = new RegExp(constants.PREFIX_REPLACE_PATTERN, 'g');
 
 function validateCommand(command) {
   let commandName = command.aliases[0];
@@ -17,14 +20,19 @@ function validateCommand(command) {
   }
 }
 
-function createTopLevelHelpTextForCommand(command) {
+function prefixAliases(aliases, prefix) {
+  return aliases.map(alias => `${prefix}${alias}`);
+}
+
+function createTopLevelHelpTextForCommand(command, prefix) {
   validateCommand(command);
   let aliases = command.aliasesForHelp || command.aliases;
-  let firstAlias = aliases[0];
-  let otherAliases = aliases.slice(1);
-  let helpText = firstAlias;
-  if (otherAliases.length > 0) {
-    helpText += ` (aliases: ${otherAliases.join(', ')})`;
+  let prefixedAliases = prefixAliases(aliases, prefix);
+  let firstPrefixedAlias = prefixedAliases[0];
+  let otherPrefixedAliases = prefixedAliases.slice(1);
+  let helpText = firstPrefixedAlias;
+  if (otherPrefixedAliases.length > 0) {
+    helpText += ` (aliases: ${otherPrefixedAliases.join(', ')})`;
   }
   if (command.shortDescription || command.usageExample) {
     helpText += '\n    # ';
@@ -33,21 +41,21 @@ function createTopLevelHelpTextForCommand(command) {
     helpText += command.shortDescription + ' ';
   }
   if (command.usageExample) {
-    helpText += 'Example: ' + command.usageExample;
+    helpText += 'Example: ' + command.usageExample.replace(prefixReplaceRegex, prefix);
   }
 
   return helpText;
 }
 
-function createTopLevelHelpTextForCommands(commands, helpCommandAlias) {
+function createTopLevelHelpTextForCommands(commands, helpCommandAlias, prefix) {
   if (commands.length === 0) {
     return;
   }
   let helpText = '```glsl\n';
   for (let command of commands) {
-    helpText += createTopLevelHelpTextForCommand(command) + '\n';
+    helpText += createTopLevelHelpTextForCommand(command, prefix) + '\n';
   }
-  helpText += `\nSay ${helpCommandAlias} [command name] to see more help for a command. Example: ${helpCommandAlias} ${commands[0].aliases[0]}\n\`\`\``;
+  helpText += `\nSay ${prefix}${helpCommandAlias} [command name] to see more help for a command. Example: ${prefix}${helpCommandAlias} ${commands[0].aliases[0]}\n\`\`\``;
   return helpText;
 }
 
@@ -92,17 +100,19 @@ class Help {
 
   execute_(erisBot, msg, suffix, monochromeBot) {
     const helpCommandHelper = monochromeBot.getCommandManager().getHelpCommandHelper();
+    const persistence = monochromeBot.getPersistence();
+    const prefix = persistence.getPrefixesForServerId(msg.channel.guild ? msg.channel.guild.id : msg.channel.id)[0];
     if (suffix) {
-      return this.showAdvancedHelp_(msg, suffix, helpCommandHelper);
+      return this.showAdvancedHelp_(msg, suffix, helpCommandHelper, prefix);
     } else {
-      return this.showGeneralHelp_(msg, helpCommandHelper);
+      return this.showGeneralHelp_(msg, helpCommandHelper, prefix);
     }
   }
 
-  showAdvancedHelp_(msg, targetAlias, helpCommandHelper) {
-    const command = helpCommandHelper.findCommandForAlias(targetAlias);
+  showAdvancedHelp_(msg, targetAlias, helpCommandHelper, prefix) {
+    const command = helpCommandHelper.findCommandForAlias(targetAlias, msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
     if (!command) {
-      return this.showGeneralHelp_(msg);
+      return this.showGeneralHelp_(msg, helpCommandHelper, prefix);
     }
 
     let fields = [];
@@ -122,12 +132,12 @@ class Help {
     }
     fields.push({name: 'Required permissions', value: permissionsString, inline: true});
     if (command.usageExample) {
-      fields.push({name: 'Usage example', value: command.usageExample});
+      fields.push({name: 'Usage example', value: command.usageExample.replace(prefixReplaceRegex, prefix)});
     }
 
     let botContent = {
       embed: {
-        title: command.aliases[0],
+        title: `${prefix}${command.aliases[0]}`,
         description: command.longDescription || command.shortDescription,
         color: this.embedColor_,
         fields: fields,
@@ -137,14 +147,14 @@ class Help {
     return msg.channel.createMessage(botContent, null, msg);
   }
 
-  async showGeneralHelp_(msg, helpCommandHelper) {
+  async showGeneralHelp_(msg, helpCommandHelper, prefix) {
     const enabledNonHiddenCommands = await helpCommandHelper.getEnabledNonHiddenCommands(msg);
     const commandsToDisplayHelpFor = getCommandsForTopLevelHelpInOrder(
       enabledNonHiddenCommands,
       this.commandGenerationOrder_,
     );
 
-    let helpText = createTopLevelHelpTextForCommands(commandsToDisplayHelpFor, this.commandAliases[0]);
+    let helpText = createTopLevelHelpTextForCommands(commandsToDisplayHelpFor, this.commandAliases[0], prefix);
     if (helpText) {
       return msg.channel.createMessage(helpText, null, msg);
     } else {

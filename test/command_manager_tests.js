@@ -32,8 +32,8 @@ function testReloadCommand(msg, callback) {
   let reloadLamba = () => {
     reloaded = true;
   };
-  let commandManager = new CommandManager(reloadLamba, null, logger, config, settings());
-  commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings').then(() => {
+  let commandManager = new CommandManager(reloadLamba, null, logger, config, settings(), persistence);
+  return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings').then(() => {
     commandManager.processInput(null, msg, config);
     setTimeout(
       () => {
@@ -46,7 +46,7 @@ describe('CommandManager', function() {
   describe('Load', function() {
     it('Refuses to load the command and complains in the logger if there is a bad command', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/mock_commands/invalid_and_valid').then(() => {
         assert(logger.failed === true);
         let invokeResult = commandManager.processInput(null, MsgHelpCommand, config);
@@ -55,7 +55,7 @@ describe('CommandManager', function() {
     });
     it('Loads good commands even if it encounters bad ones', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/mock_commands/invalid_and_valid').then(() => {
         let invokeResult = commandManager.processInput(null, MsgAboutCommand, config);
         assert(invokeResult);
@@ -63,7 +63,7 @@ describe('CommandManager', function() {
     });
     it('Refuses to load command and complains if two commands have the same uniqueId', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/mock_commands/duplicate_unique_ids').then(() => {
         assert(logger.failureMessage === strings.validation.createNonUniqueUniqueIdMessage('not_unique'));
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
@@ -74,7 +74,7 @@ describe('CommandManager', function() {
     });
     it('Refuses to load command and complains if two commands have the same alias', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/mock_commands/duplicate_aliases').then(() => {
         assert(logger.failureMessage === strings.validation.createNonUniqueAliasMessage(undefined, 'duplicate'));
         let invokeResult1 = commandManager.processInput(null, MsgAboutCommand, config);
@@ -85,7 +85,7 @@ describe('CommandManager', function() {
     });
     it('Errors trying to load commands from nonexistent directory', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/nonexistent_directory').then(() => {
         assert(logger.failureMessage === strings.validation.genericError);
         assert(logger.failed === true);
@@ -93,7 +93,7 @@ describe('CommandManager', function() {
     });
     it('Gracefully handles command that throws', function() {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       return commandManager.load(__dirname + '/mock_commands/valid_throws').then(() => {
         commandManager.processInput(null, MsgAboutCommand, config);
         setTimeout(
@@ -105,7 +105,7 @@ describe('CommandManager', function() {
     });
     it('Converts string return values into failures and logs them', function(done) {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       commandManager.load(__dirname + '/mock_commands/valid_returns_string').then(() => {
         commandManager.processInput(null, MsgAboutCommand, config);
         setTimeout(
@@ -120,7 +120,7 @@ describe('CommandManager', function() {
     });
     it('Invokes command with extension', function(done) {
       let logger = new MockLogger();
-      let commandManager = new CommandManager(null, null, logger, config, settings());
+      let commandManager = new CommandManager(null, null, logger, config, settings(), persistence);
       commandManager.load(__dirname + '/mock_commands/valid_has_extension').then(() => {
         commandManager.processInput(null, MsgAboutCommandExtension, config);
         setTimeout(
@@ -139,8 +139,8 @@ describe('CommandManager', function() {
       let settingsObj = settings();
       let commandManager = new CommandManager(null, null, logger, config, settingsObj);
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard').then(() => {
-        assert(settingsObj.getRawSettingsTree().length === 2);
-        assert(settingsObj.getRawSettingsTree()[1].children.length === 6);
+        assert(settingsObj.getRawSettingsTree().length === 1);
+        assert(settingsObj.getRawSettingsTree()[0].children.length === 6);
       });
     });
     it('Doesn\'t create enabled commands category if no commands are allowed to be restricted', function() {
@@ -148,7 +148,7 @@ describe('CommandManager', function() {
       let settingsObj = settings();
       let commandManager = new CommandManager(null, null, logger, config, settingsObj);
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings').then(() => {
-        assert(settingsObj.getRawSettingsTree().length === 1);
+        assert(settingsObj.getRawSettingsTree().length === 0);
       });
     });
     it('Reload command works for bot admin', function(done) {
@@ -178,7 +178,7 @@ describe('CommandManager', function() {
     it('Creates and invokes help command', async function() {
       let logger = new MockLogger();
       let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], ['bot!help'], ['1']);
-      let commandManager = new CommandManager(null, null, logger, privateConfig, settings());
+      let commandManager = new CommandManager(null, null, logger, privateConfig, settings(), persistence);
       await commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard');
       let executedCommand = await commandManager.processInput(null, MsgHelpCommand, config);
       assert(executedCommand.aliases[0] === 'bot!help');
@@ -186,7 +186,7 @@ describe('CommandManager', function() {
     it('Does not create help command if no commands to show help for', async function() {
       let logger = new MockLogger();
       let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], ['bot!help'], []);
-      let commandManager = new CommandManager(null, null, logger, privateConfig, settings());
+      let commandManager = new CommandManager(null, null, logger, privateConfig, settings(), persistence);
       await commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard')
       let executedCommand = commandManager.processInput(null, MsgHelpCommand, config);
       assert(!executedCommand);
@@ -194,7 +194,7 @@ describe('CommandManager', function() {
     it('Does not create help command if no aliases for help', async function() {
       let logger = new MockLogger();
       let privateConfig = new MockConfig('Server Admin', ['bot-admin-id'], [], ['1']);
-      let commandManager = new CommandManager(null, null, logger, privateConfig, settings());
+      let commandManager = new CommandManager(null, null, logger, privateConfig, settings(), persistence);
       await commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard')
       let executedCommand = await commandManager.processInput(null, MsgHelpCommand, config);
       assert(!executedCommand);

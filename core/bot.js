@@ -326,6 +326,7 @@ class Monochrome {
       this.logger_,
       this.config_,
       this.settings_,
+      this.persistence_,
     );
 
     this.commandManager_.load(this.commandsDirectoryPath_, this);
