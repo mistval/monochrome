@@ -374,6 +374,7 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
 async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, newUserFacingValue) {
   const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
   const settings = monochrome.getSettings();
+  const isDm = !msg.channel.guild;
 
   const isValid = await settings.userFacingValueIsValidForSetting(settingNode, newUserFacingValue);
   if (!isValid) {
@@ -381,6 +382,9 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
     return showSetting(monochrome, msg, color, settingNode);
   }
 
+  if (isDm) {
+    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
+  }
   if (!userIsServerAdmin) {
     if (!settingNode.userSetting) {
       await msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
