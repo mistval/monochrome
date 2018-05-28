@@ -56,7 +56,7 @@ async function sendMessageUnique(responseToMsg, content, itemId) {
     }
   }
 
-  const sendMessagePromise = responseToMsg.channel.createMessage(content);
+  const sendMessagePromise = responseToMsg.channel.createMessage(content, null, responseToMsg);
   const sentMessage = await sendMessagePromise;
   msgSentForKey[key] = sentMessage;
   itemIdSentForKey[key] = itemId;
@@ -174,7 +174,7 @@ function messageToIndex(msg) {
 }
 
 function handleExpiration(msg) {
-  return msg.channel.createMessage('The settings menu has closed due to inactivity.');
+  return msg.channel.createMessage('The settings menu has closed due to inactivity.', null, msg);
 }
 
 function findParent(children, targetNode, previous) {
@@ -211,7 +211,7 @@ function tryGoBack(hook, msg, monochrome, settingsNode, color) {
 function tryCancel(hook, msg) {
   if (msg.content.toLowerCase() === 'cancel') {
     tryUnregisterHook(hook);
-    return msg.channel.createMessage('The settings menu has been closed.');
+    return msg.channel.createMessage('The settings menu has been closed.', null, msg);
   }
 
   return false;
@@ -357,7 +357,7 @@ async function requestConfirmation(hook, monochrome, msg, color, setting, newUse
       if (contentLowerCase === 'confirm') {
         return tryApplyNewSetting(cbHook, monochrome, cbMsg, color, setting, newUserFacingValue, locationString, true);
       } else {
-        return msg.channel.createMessage('I don\'t understand that response. You can say **confirm** to confirm, or **cancel** to cancel.');
+        return msg.channel.createMessage('I don\'t understand that response. You can say **confirm** to confirm, or **cancel** to cancel.', null, msg);
       }
     },
     monochrome.getLogger(),
@@ -365,7 +365,7 @@ async function requestConfirmation(hook, monochrome, msg, color, setting, newUse
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
 
-  return msg.channel.createMessage(`You are changing the value of **${setting.userFacingName}** to **${newUserFacingValue}**. Is this correct? Say **confirm** to confirm, or **cancel** to cancel.`);
+  return msg.channel.createMessage(`You are changing the value of **${setting.userFacingName}** to **${newUserFacingValue}**. Is this correct? Say **confirm** to confirm, or **cancel** to cancel.`, null, msg);
 }
 
 async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, locationString, confirmationSupplied) {
@@ -379,7 +379,7 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
 
   const locationErrorString = tryCreateLocationErrorString(locationString, msg, setting);
   if (locationErrorString) {
-    return msg.channel.createMessage(locationErrorString);
+    return msg.channel.createMessage(locationErrorString, null, msg);
   }
 
   if (setting.requireConfirmation && !confirmationSupplied) {
@@ -417,11 +417,11 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
   for (const result of setResults) {
     if (!result.accepted) {
       monochrome.getLogger().logFailure('SETTINGS', `Unexpected setting update rejection. Reason: ${result.reason}`);
-      return msg.channel.createMessage('There was an error updating that setting. Sorry. I\'ll look into it!');
+      return msg.channel.createMessage('There was an error updating that setting. Sorry. I\'ll look into it!', null, msg);
     }
   }
 
-  return msg.channel.createMessage(resultString);
+  return msg.channel.createMessage(resultString, null, msg);
 }
 
 async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, color, newUserFacingValue) {
@@ -431,7 +431,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
 
   const isValid = await settings.userFacingValueIsValidForSetting(settingNode, newUserFacingValue);
   if (!isValid) {
-    await msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.');
+    await msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.', null, msg);
     return showSetting(monochrome, msg, color, settingNode);
   }
 
@@ -449,7 +449,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
   }
   if (!userIsServerAdmin) {
     if (!settingNode.userSetting) {
-      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.');
+      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.', null, msg);
     } else {
       return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
     }
@@ -476,7 +476,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
 
   hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
 
-  return msg.channel.createMessage(createLocationPromptString(settingNode, isDm));
+  return msg.channel.createMessage(createLocationPromptString(settingNode, isDm), null, msg);
 }
 
 async function handleSettingViewMsg(hook, monochrome, msg, color, setting) {
@@ -593,7 +593,7 @@ function shortcut(monochrome, msg, suffix, color) {
   const setting = settings.getTreeNodeForUniqueId(uniqueId);
 
   if (!setting) {
-    return msg.channel.createMessage(`I didn't find a setting with ID: **${uniqueId}**`);
+    return msg.channel.createMessage(`I didn't find a setting with ID: **${uniqueId}**`, null, msg);
   }
   if (!value) {
     return showNode(monochrome, msg, color, setting);
