@@ -48,7 +48,7 @@ class Persistence {
       };
 
       this.getGlobalData().then(data => {
-        prefixesForServerId = data.persistence.prefixes;
+        state.persistence.prefixesForServerId = data.prefixes;
       });
     }
   }
