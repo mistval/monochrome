@@ -60,6 +60,7 @@ function createPrefixesSetting(defaultPrefixes) {
     uniqueId: PREFIXES_SETTING_UNIQUE_ID,
     userSetting: false,
     channelSetting: false,
+    requireConfirmation: true,
     convertUserFacingValueToInternalValue: SettingsConverters.createStringToStringArrayConverter(' '),
     convertInternalValueToUserFacingValue: SettingsConverters.createStringArrayToStringConverter(' '),
     validateInternalValue: SettingsValidators.isStringArray,

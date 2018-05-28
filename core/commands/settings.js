@@ -25,6 +25,12 @@ const HOOK_EXPIRATION_MS = 180000;
 const CANCEL = 'cancel';
 const BACK = 'back';
 
+function tryUnregisterHook(hook) {
+  if (hook) {
+    return hook.unregister();
+  }
+}
+
 async function sendMessageUnique(responseToMsg, content, itemId) {
   const key = responseToMsg.channel.id + responseToMsg.author.id;
 
@@ -184,7 +190,7 @@ function tryGoBack(hook, msg, monochrome, settingsNode, color) {
   if (msg.content.toLowerCase() === 'back') {
     const parent = findParent(monochrome.getSettings().getRawSettingsTree(), settingsNode, root);
     if (parent) {
-      hook.unregister();
+      tryUnregisterHook(hook);
       return showNode(monochrome, msg, color, parent);
     }
   }
@@ -194,7 +200,7 @@ function tryGoBack(hook, msg, monochrome, settingsNode, color) {
 
 function tryCancel(hook, msg) {
   if (msg.content.toLowerCase() === 'cancel') {
-    hook.unregister();
+    tryUnregisterHook(hook);
     return msg.channel.createMessage('The settings menu has been closed.');
   }
 
@@ -206,7 +212,7 @@ function handleRootViewMsg(hook, monochrome, msg, color) {
   const settingsNodes = monochrome.getSettings().getRawSettingsTree();
   if (index < settingsNodes.length) {
     const nextNode = settingsNodes[index];
-    hook.unregister();
+    tryUnregisterHook(hook);
     return showNode(monochrome, msg, color, nextNode);
   }
 
@@ -319,7 +325,34 @@ function tryCreateLocationErrorString(locationString, msg, setting) {
   return undefined;
 }
 
-async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, locationString) {
+async function requestConfirmation(hook, monochrome, msg, color, setting, newUserFacingValue, locationString) {
+  tryUnregisterHook(hook);
+
+  hook = Hook.registerHook(
+    msg.author.id,
+    msg.channel.id,
+    (cbHook, cbMsg, monochrome) => {
+      const cancelBackResult = tryHandleCancelBack(cbHook, monochrome, cbMsg, color, setting);
+      if (cancelBackResult) {
+        return cancelBackResult;
+      }
+
+      const contentLowerCase = cbMsg.content.toLowerCase();
+      if (contentLowerCase === 'confirm') {
+        return tryApplyNewSetting(cbHook, monochrome, cbMsg, color, setting, newUserFacingValue, locationString, true);
+      } else {
+        return msg.channel.createMessage('I don\'t understand that response. You can say **confirm** to confirm, or **cancel** to cancel.');
+      }
+    },
+    monochrome.getLogger(),
+  );
+
+  hook.setExpirationInMs(HOOK_EXPIRATION_MS, () => handleExpiration(msg));
+
+  return msg.channel.createMessage(`You are changing the value of **${setting.userFacingName}** to **${newUserFacingValue}**. Is this correct? Say **confirm** to confirm, or **cancel** to cancel.`);
+}
+
+async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUserFacingValue, locationString, confirmationSupplied) {
   const settings = monochrome.getSettings();
   const userIsServerAdmin = getUserIsServerAdmin(msg, monochrome.getConfig());
 
@@ -331,6 +364,10 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
   const locationErrorString = tryCreateLocationErrorString(locationString, msg, setting);
   if (locationErrorString) {
     return msg.channel.createMessage(locationErrorString);
+  }
+
+  if (setting.requireConfirmation && !confirmationSupplied) {
+    return requestConfirmation(hook, monochrome, msg, color, setting, newUserFacingValue, locationString);
   }
 
   const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
@@ -359,7 +396,7 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
     setResults = await Promise.all(promises);
   }
 
-  hook.unregister();
+  tryUnregisterHook(hook);
 
   for (const result of setResults) {
     if (!result.accepted) {
@@ -401,7 +438,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
   }
 
   if (hook) {
-    hook.unregister();
+    tryUnregisterHook(hook);
   }
 
   hook = Hook.registerHook(
@@ -456,7 +493,7 @@ function handleCategoryViewMsg(hook, monochrome, msg, color, category) {
   const childNodes = category.children;
   if (index < childNodes.length) {
     const nextNode = childNodes[index];
-    hook.unregister();
+    tryUnregisterHook(hook);
     return showNode(monochrome, msg, color, nextNode);
   }
 

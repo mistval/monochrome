@@ -231,6 +231,10 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
     treeNode.userSetting = true;
   }
 
+  if (treeNode.requireConfirmation === undefined) {
+    treeNode.requireConfirmation = false;
+  }
+
   treeNode.convertUserFacingValueToInternalValue = treeNode.convertUserFacingValueToInternalValue || (value => value);
   treeNode.convertInternalValueToUserFacingValue = treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
