@@ -158,7 +158,6 @@ class Monochrome {
     this.botMentionString_ = '';
     this.config_ = reload(this.configFilePath_);
     this.persistence_ = new Persistence(undefined, this.config_);
-    this.persistence_.init();
     this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
     sanitizeAndValidateConfiguration(this.config_, this.logger_);
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
@@ -311,7 +310,6 @@ class Monochrome {
     this.config_ = reload(this.configFilePath_);
     sanitizeAndValidateConfiguration(this.config_);
     this.logger_.reload();
-    this.persistence_.reload();
     this.navigationManager_.reload();
 
     const MessageProcessorManager = reload('./message_processor_manager.js');

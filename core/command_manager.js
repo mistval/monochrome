@@ -14,6 +14,8 @@ const SettingsValidators = require('./settings_validators.js');
 
 const COMMAND_CATEGORY_NAME = 'Enabled commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail silently';
+const PREFIXES_SETTING_NAME = 'Command prefixes';
+const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
 
 function handleCommandError(msg, err, config, logger) {
   const loggerTitle = 'COMMAND';
@@ -39,6 +41,31 @@ function createSettingsForCommands(userCommands) {
   return userCommands
     .map(command => command.createEnabledSetting())
     .filter(setting => !!setting);
+}
+
+function savePrefixes(persistence, settingUniqueId, serverId, channelId, userId, newInternalValue) {
+  return persistence.editPrefixesForServerId(serverId, newInternalValue);
+}
+
+function getPrefixes(persistence, setting, serverId) {
+  return persistence.getPrefixesForServerId(serverId);
+}
+
+function createPrefixesSetting(defaultPrefixes) {
+  return {
+    userFacingName: PREFIXES_SETTING_NAME,
+    description: 'This setting controls what command prefix(es) I will respond to.',
+    defaultUserFacingValue: defaultPrefixes.join(' '),
+    allowedValuesDescription: 'A **space separated** list of prefixes',
+    uniqueId: PREFIXES_SETTING_UNIQUE_ID,
+    userSetting: false,
+    channelSetting: false,
+    convertUserFacingValueToInternalValue: SettingsConverters.createStringToStringArrayConverter(' '),
+    convertInternalValueToUserFacingValue: SettingsConverters.createStringArrayToStringConverter(' '),
+    validateInternalValue: SettingsValidators.isStringArray,
+    updateSetting: savePrefixes,
+    getInternalSettingValue: getPrefixes,
+  };
 }
 
 function createDisabledCommandsFailSilentlySetting() {
@@ -144,6 +171,11 @@ class CommandManager {
 
       const settingsCategory = createSettingsCategoryForCommands(this.commands_);
       this.settings_.addNodeToRoot(settingsCategory);
+
+      if (this.config_.prefixes && this.config_.prefixes.length > 0) {
+        const prefixesSetting = createPrefixesSetting(this.config_.prefixes);
+        this.settings_.addNodeToRoot(prefixesSetting);
+      }
     } catch (err) {
       this.logger_.logFailure(loggerTitle, strings.validation.genericError, err);
     }

@@ -26,6 +26,14 @@ function createStringToBooleanConverter(trueValue, falseValue) {
   };
 }
 
+function createStringToStringArrayConverter(separator) {
+  return value => value.split(separator);
+}
+
+function createStringArrayToStringConverter(separator) {
+  return value => value.join(separator);
+}
+
 function createBooleanToStringConverter(trueValue, falseValue) {
   return value => value ? trueValue : falseValue;
 }
@@ -41,4 +49,6 @@ module.exports = {
   createStringToBooleanConverter,
   createBooleanToStringConverter,
   toStringLowercase,
+  createStringToStringArrayConverter,
+  createStringArrayToStringConverter,
 };

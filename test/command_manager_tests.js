@@ -139,16 +139,16 @@ describe('CommandManager', function() {
       let settingsObj = settings();
       let commandManager = new CommandManager(null, null, logger, config, settingsObj);
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_standard').then(() => {
-        assert(settingsObj.getRawSettingsTree().length === 1);
-        assert(settingsObj.getRawSettingsTree()[0].children.length === 6);
+        assert(settingsObj.getRawSettingsTree().length === 2);
+        assert(settingsObj.getRawSettingsTree()[1].children.length === 6);
       });
     });
-    it('Returns empty array if no commands are allowed to be restricted', function() {
+    it('Doesn\'t create enabled commands category if no commands are allowed to be restricted', function() {
       let logger = new MockLogger();
       let settingsObj = settings();
       let commandManager = new CommandManager(null, null, logger, config, settingsObj);
       return commandManager.load(__dirname + '/mock_commands/settings_category_test_commands_no_settings').then(() => {
-        assert(settingsObj.getRawSettingsTree().length === 0);
+        assert(settingsObj.getRawSettingsTree().length === 1);
       });
     });
     it('Reload command works for bot admin', function(done) {

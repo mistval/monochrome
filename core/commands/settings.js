@@ -66,23 +66,24 @@ function createFieldsForChildren(children) {
 
   let optionNumber = 0;
 
-  const categoriesString = categories.map(category => {
-    optionNumber += 1;
-    return `${optionNumber}. ${category.userFacingName}`;
-  }).join('\n');
-
   const settingsString = settings.map(setting => {
     optionNumber += 1;
     const adminOnlyString = !setting.userSetting ? ' (*server admin only*)' : '';
     return `${optionNumber}. ${setting.userFacingName}${adminOnlyString}`;
   }).join('\n');
 
+  const categoriesString = categories.map(category => {
+    optionNumber += 1;
+    return `${optionNumber}. ${category.userFacingName}`;
+  }).join('\n');
+
   const fields = [];
-  if (categoriesString) {
-    fields.push({ name: 'Subcategories', value: categoriesString });
-  }
+
   if (settingsString) {
     fields.push({ name: 'Settings', value: settingsString });
+  }
+  if (categoriesString) {
+    fields.push({ name: 'Subcategories', value: categoriesString });
   }
 
   return fields;
@@ -243,16 +244,16 @@ function createLocationPromptString(settingNode) {
   if (settingNode.serverSetting && settingNode.userSetting) {
     return `Where should the new setting be applied? You can say **${Location.ME}** or **${Location.THIS_SERVER}**. You can also say **${CANCEL}** or **${BACK}**.`
   }
-  if (setting.userSetting && setting.channelSetting) {
+  if (settingNode.userSetting && setting.channelSetting) {
     return `Where should the new setting be applied? You can say **${Location.ME}**, **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
   }
-  if (setting.userSetting) {
+  if (settingNode.userSetting) {
     throw new Error('If the setting is only a user setting, we shouldn\'t be prompting for location.');
   }
-  if (setting.serverSetting) {
+  if (settingNode.serverSetting) {
     throw new Error('If the setting is only a server setting, we shouldn\'t be prompting for location.');
   }
-  if (setting.channelSetting) {
+  if (settingNode.channelSetting) {
     return `Where should the new setting be applied? You can say **${Location.THIS_CHANNEL}**, or list channels, for example: **#general #bot #quiz**. You can also say **${CANCEL}** or **${BACK}**.`
   }
   throw new Error('Unexpected fallthrough');
@@ -340,10 +341,10 @@ async function tryApplyNewSetting(hook, monochrome, msg, color, setting, newUser
   if (locationStringLowerCase === Location.ME) {
     resultString = 'The new setting has been applied as a user setting. It will take effect whenever you use the command. The settings menu is now closed.';
     setResults = [await settings.setUserSettingValue(setting.uniqueId, msg.author.id, newUserFacingValue)];
-  } else if (locationStringLowerCase === 'this channel' || !msg.channel.guild) {
+  } else if (locationStringLowerCase === Location.THIS_CHANNEL) {
     resultString = 'The new setting has been applied to this channel. The settings menu is now closed.';
     setResults = [await settings.setChannelSettingValue(setting.uniqueId, serverId, msg.channel.id, newUserFacingValue, userIsServerAdmin)];
-  } else if (locationStringLowerCase === 'this server') {
+  } else if (locationStringLowerCase === Location.THIS_SERVER) {
     resultString = 'The new setting has been applied to all channels in this server. The settings menu is now closed.';
     setResults = [await settings.setServerWideSettingValue(setting.uniqueId, serverId, newUserFacingValue, userIsServerAdmin)];
   } else {
@@ -388,7 +389,7 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
       return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
     }
   }
-  if (settingNode.serverSetting && !settingNode.userSetting && !settingNode.serverSetting) {
+  if (settingNode.serverSetting && !settingNode.userSetting && !settingNode.channelSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
   }
   if (settingNode.userSetting && !settingNode.channelSetting && !settingNode.serverSetting) {

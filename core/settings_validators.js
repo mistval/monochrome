@@ -18,8 +18,13 @@ function createDiscreteOptionValidator(optionsArray) {
   return value => optionsArray.indexOf(value) !== -1;
 }
 
+function isStringArray(stringArray) {
+  return Array.isArray(stringArray) && stringArray.every(str => typeof str === typeof '');
+}
+
 module.exports = {
   createRangeValidator,
   isBoolean,
   createDiscreteOptionValidator,
+  isStringArray,
 };
