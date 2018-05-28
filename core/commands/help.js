@@ -5,8 +5,6 @@ const PublicError = reload('./../public_error.js');
 const strings = reload('./../string_factory.js').help;
 const constants = reload('./../constants.js');
 
-const prefixReplaceRegex = new RegExp(constants.PREFIX_REPLACE_PATTERN, 'g');
-
 function validateCommand(command) {
   let commandName = command.aliases[0];
   if (command.shortDescription && typeof command.shortDescription !== typeof '') {
@@ -41,7 +39,7 @@ function createTopLevelHelpTextForCommand(command, prefix) {
     helpText += command.shortDescription + ' ';
   }
   if (command.usageExample) {
-    helpText += 'Example: ' + command.usageExample.replace(prefixReplaceRegex, prefix);
+    helpText += 'Example: ' + command.usageExample.replace(constants.PREFIX_REPLACE_REGEX, prefix);
   }
 
   return helpText;

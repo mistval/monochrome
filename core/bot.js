@@ -6,6 +6,7 @@ const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
+const constants = require('./constants.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -425,6 +426,8 @@ class Monochrome {
     try {
       let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, '<@' + msg.author.id + '>');
       reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
+      const prefix = this.persistence_.getPrefixesForMessage(msg)[0];
+      reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       return reply;
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Couldn\'t create DM or mention reply', err);

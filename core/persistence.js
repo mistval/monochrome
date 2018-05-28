@@ -91,6 +91,15 @@ class Persistence {
   }
 
   /**
+  * Convenience method to get get prefixes based on a message instead of server ID.
+  * @param {Message} msg - A message sent on the server you want to get the prefixes for.
+  * @returns {Array<String>} An array of prefixes.
+  */
+  getPrefixesForMessage(msg) {
+    return this.getPrefixesForServerId(msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
+  }
+
+  /**
   * Edit data associated with a userId
   * @param {String} userId - The id of the user to set data associated with.
   * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
