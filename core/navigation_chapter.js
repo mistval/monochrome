@@ -74,10 +74,10 @@ class NavigationChapter {
   * @returns {Promise<NavigationPage>} The previous page of the navigation, if it exists and is not errored.
   * If it does not exist or is errored, the Promise resolves with undefined.
   */
-  flipToPreviousPage() {
+  flipToPreviousPage(logger) {
     if (this.currentPageIndex_ > 0) {
       --this.currentPageIndex_;
-      return this.getCurrentPage();
+      return this.getCurrentPage(logger);
     }
     return Promise.resolve(undefined);
   }
@@ -86,9 +86,9 @@ class NavigationChapter {
   * @returns {Promise<NavigationPage>} The next page of the navigation, if it exists and is not errored.
   * If it does not exist or is errored, the Promise resolves with undefined.
   */
-  flipToNextPage() {
+  flipToNextPage(logger) {
     ++this.currentPageIndex_;
-    return this.getCurrentPage();
+    return this.getCurrentPage(logger);
   }
 
   getCurrentPageFromPreparedData_(logger) {
@@ -111,15 +111,15 @@ class NavigationChapter {
             return Promise.resolve(page);
           } else {
             this.pages_[pageToGet] = undefined;
-            return this.flipToPreviousPage().then(() => undefined);
+            return this.flipToPreviousPage(logger).then(() => undefined);
           }
         }).catch(err => {
           logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
-          return this.flipToPreviousPage().then(() => undefined);
+          return this.flipToPreviousPage(logger).then(() => undefined);
         });
       } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
-        return this.flipToPreviousPage().then(() => undefined);
+        return this.flipToPreviousPage(logger).then(() => undefined);
       }
     }
   }

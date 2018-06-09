@@ -92,10 +92,10 @@ class Navigation {
       let desiredEmojiName = emoji.name;
 
       if (this.showPageArrows_ && emoji.name === '⬅') {
-        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToPreviousPage();
+        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToPreviousPage(logger);
         desiredEmojiName = this.currentEmojiName_;
       } else if (this.showPageArrows_ && emoji.name === '➡') {
-        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToNextPage();
+        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToNextPage(logger);
         desiredEmojiName = this.currentEmojiName_;
       } else {
         let chapter = this.getChapterForEmojiName_(emoji.name);
@@ -103,7 +103,7 @@ class Navigation {
           return;
         }
         this.currentEmojiName_ = emoji.name;
-        pagePromise = chapter.getCurrentPage();
+        pagePromise = chapter.getCurrentPage(logger);
       }
 
       pagePromise.then(navigationPage => {
