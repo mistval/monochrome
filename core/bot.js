@@ -287,6 +287,7 @@ class Monochrome {
       if (msg.author.bot) {
         return;
       }
+      msg.locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
       if (this.commandManager_.processInput(this.bot_, msg)) {
         return;
       }

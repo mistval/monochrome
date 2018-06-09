@@ -91,6 +91,15 @@ class Persistence {
   }
 
   /**
+  * Get the first prefix for the location where a message is sent.
+  * @param {Eris.Message} msg - The message.
+  * @returns {String} The primary prefix.
+  */
+  getPrimaryPrefixFromMsg(msg) {
+    return this.getPrefixesForServerId(msg.locationId)[0];
+  }
+
+  /**
   * Convenience method to get get prefixes based on a message instead of server ID.
   * @param {Message} msg - A message sent on the server you want to get the prefixes for.
   * @returns {Array<String>} An array of prefixes.
