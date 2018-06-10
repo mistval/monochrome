@@ -36,7 +36,7 @@ function createTopLevelHelpTextForCommand(command, prefix) {
     helpText += '\n    # ';
   }
   if (command.shortDescription) {
-    helpText += command.shortDescription + ' ';
+    helpText += `${command.shortDescription.replace(constants.PREFIX_REPLACE_REGEX, prefix)} `;
   }
   if (command.usageExample) {
     helpText += 'Example: ' + command.usageExample.replace(constants.PREFIX_REPLACE_REGEX, prefix);
@@ -130,13 +130,16 @@ class Help {
     }
     fields.push({name: 'Required permissions', value: permissionsString, inline: true});
     if (command.usageExample) {
-      fields.push({name: 'Usage example', value: command.usageExample.replace(prefixReplaceRegex, prefix)});
+      fields.push({name: 'Usage example', value: command.usageExample.replace(constants.PREFIX_REPLACE_REGEX, prefix)});
     }
+
+    const unprefixedDescription = command.longDescription || command.shortDescription;
+    const prefixedDescription = unprefixedDescription.replace(constants.PREFIX_REPLACE_REGEX, prefix);
 
     let botContent = {
       embed: {
         title: `${prefix}${command.aliases[0]}`,
-        description: command.longDescription || command.shortDescription,
+        description: prefixedDescription,
         color: this.embedColor_,
         fields: fields,
       }
