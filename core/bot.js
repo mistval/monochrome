@@ -310,7 +310,7 @@ class Monochrome {
 
   reloadCore_() {
     this.config_ = reload(this.configFilePath_);
-    sanitizeAndValidateConfiguration(this.config_);
+    sanitizeAndValidateConfiguration(this.config_, this.logger_);
     this.logger_.reload();
     this.navigationManager_.reload();
 
