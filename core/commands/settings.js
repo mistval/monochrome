@@ -285,13 +285,13 @@ function tryCreateLocationErrorString(locationString, msg, setting) {
   if (locationString === Location.ME) {
     if (!setting.userSetting) {
       if (setting.serverSetting && setting.channelSetting) {
-        return `That setting cannot be set as a user setting. You can say **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+        return `That setting cannot be set as a user setting. You can say **${Location.THIS_SERVER}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provide a list of channels separated by spaces, for example: **#general #bot**`;
       }
       if (setting.serverSetting) {
         throw new Error('If the setting is only a server setting, we shouldn\'t be prompting for location.');
       }
       if (setting.channelSetting) {
-        return `That setting cannot be set as a user setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+        return `That setting cannot be set as a user setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provide a list of channels separated by spaces, for example: **#general #bot**`;
       }
       throw new Error('Unexpected fallthrough');
     }
@@ -301,13 +301,13 @@ function tryCreateLocationErrorString(locationString, msg, setting) {
   if (locationString === Location.THIS_SERVER) {
     if (!setting.serverSetting) {
       if (setting.userSetting && setting.channelSetting) {
-        return `That setting cannot be set as a server setting. You can say **${Location.ME}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+        return `That setting cannot be set as a server setting. You can say **${Location.ME}**, **${Location.THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provide a list of channels separated by spaces, for example: **#general #bot**`;
       }
       if (setting.userSetting) {
         throw new Error('If the setting is only a user setting, we shouldn\'t be prompting for location.');
       }
       if (setting.channelSetting) {
-        return `That setting cannot be set as a server setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provided a list of channels separated by spaces, for example: **#general #bot**`;
+        return `That setting cannot be set as a server setting, it can only be set per channel. You can say **${THIS_CHANNEL}**, **${CANCEL}**, **${BACK}**, or provide a list of channels separated by spaces, for example: **#general #bot**`;
       }
       throw new Error('Unexpected fallthrough');
     }
@@ -429,31 +429,38 @@ async function tryPromptForSettingLocation(hook, msg, monochrome, settingNode, c
   const settings = monochrome.getSettings();
   const isDm = !msg.channel.guild;
 
+  if (!userIsServerAdmin && !settingNode.userSetting) {
+    return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.', null, msg);
+  }
+
   const isValid = await settings.userFacingValueIsValidForSetting(settingNode, newUserFacingValue);
   if (!isValid) {
     await msg.channel.createMessage('That isn\'t a valid value for that setting. Please check the **Allowed values** and try again. You can also say **back** or **cancel**.', null, msg);
     return showSetting(monochrome, msg, color, settingNode);
   }
 
+  // If the user is not a server admin, we can shortcut to applying the setting to ME.
+  if (!userIsServerAdmin && settingNode.userSetting) {
+    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
+  }
+
+  // If the message is a DM and the setting is not a user setting but is either a server or channel setting,
+  // we can shortcut to setting on this server.
   if (isDm && (settingNode.serverSetting || settingNode.channelSetting) && !settingNode.userSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
   }
-  if (isDm && settingNode.userSetting && !settingNode.serverSetting && !settingNode.channelSetting) {
+
+  // If the message is only a user setting, we can shortcut.
+  if (settingNode.userSetting && !settingNode.serverSetting && !settingNode.channelSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
   }
+
+  // If the message is only a server setting, we can shortcut.
   if (settingNode.serverSetting && !settingNode.userSetting && !settingNode.channelSetting) {
     return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.THIS_SERVER);
   }
-  if (settingNode.userSetting && !settingNode.channelSetting && !settingNode.serverSetting) {
-    return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
-  }
-  if (!userIsServerAdmin) {
-    if (!settingNode.userSetting) {
-      return msg.channel.createMessage('Only a server admin can set that setting. You can say **back** or **cancel**.', null, msg);
-    } else {
-      return tryApplyNewSetting(hook, monochrome, msg, color, settingNode, newUserFacingValue, Location.ME);
-    }
-  }
+
+  // If we're here, we couldn't shortcut. Prompt for location.
 
   if (hook) {
     tryUnregisterHook(hook);
