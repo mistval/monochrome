@@ -589,7 +589,8 @@ function showNode(monochrome, msg, color, node) {
 
 function shortcut(monochrome, msg, suffix, color) {
   const settings = monochrome.getSettings();
-  const [uniqueId, value] = suffix.split(' ');
+  const [uniqueId] = suffix.split(' ');
+  const value = suffix.split(' ').slice(1).join(' ');
   const setting = settings.getTreeNodeForUniqueId(uniqueId);
 
   if (!setting) {
