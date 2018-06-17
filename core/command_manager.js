@@ -4,7 +4,6 @@ const Command = reload('./command.js');
 const FileSystemUtils = reload('./util/file_system_utils.js');
 const ReloadCommand = reload('./commands/reload.js');
 const ShutdownCommand = reload('./commands/shutdown.js');
-const SettingsCommand = reload('./commands/settings.js');
 const PublicError = reload('./public_error.js');
 const HelpCommandHelper = reload('./help_command_helper.js');
 const strings = reload('./string_factory.js').commandManager;
@@ -148,11 +147,6 @@ class CommandManager {
         this.commands_.push(command);
       }
 
-      if (this.config_.settingsCommandAliases && this.config_.settingsCommandAliases.length > 0) {
-        let settingsCommandData = new SettingsCommand(this.config_);
-        let settingsCommand = new Command(settingsCommandData, this.settings_, monochrome);
-        this.commands_.push(settingsCommand);
-      }
       if (this.reloadAction_) {
         let reloadCommandData = new ReloadCommand(this.reloadAction_);
         let reloadCommand = new Command(reloadCommandData, this.settings_, monochrome);

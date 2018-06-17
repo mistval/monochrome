@@ -7,3 +7,6 @@ module.exports.NavigationChapter = reload('./core/navigation_chapter.js');
 module.exports.Navigation = reload('./core/navigation.js');
 module.exports.SettingsConverters = reload('./core/settings_converters.js');
 module.exports.SettingsValidators = reload('./core/settings_validators.js');
+module.exports.util = {
+  userIsServerAdmin: reload('./core/util/user_is_server_admin.js'),
+};
