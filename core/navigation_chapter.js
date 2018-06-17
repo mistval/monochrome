@@ -51,19 +51,14 @@ class NavigationChapter {
   /**
   * @returns {Promise<NavigationPage>} The current page of the navigation.
   */
-  getCurrentPage(logger) {
+  async getCurrentPage(logger) {
     if (!this.preparedData_) {
       try {
-        return Promise.resolve(this.dataSource_.prepareData(this.prepareDataArgument_)).then((preparedData) => {
-          this.preparedData_ = preparedData;
-          return this.getCurrentPageFromPreparedData_(logger);
-        }).catch(err => {
-          logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
-          throw err;
-        });
+        this.preparedData_ = await this.dataSource_.prepareData(this.prepareDataArgument_);
+        return this.getCurrentPageFromPreparedData_(logger);
       } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
-        return Promise.reject(err);
+        throw err;
       }
     } else {
       return this.getCurrentPageFromPreparedData_(logger);
@@ -91,35 +86,33 @@ class NavigationChapter {
     return this.getCurrentPage(logger);
   }
 
-  getCurrentPageFromPreparedData_(logger) {
+  async getCurrentPageFromPreparedData_(logger) {
     let pageToGet = this.currentPageIndex_;
     if (this.pages_[pageToGet]) {
-      return Promise.resolve(this.pages_[pageToGet]);
+      return this.pages_[pageToGet];
     } else {
       try {
-        return Promise.resolve(this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet)).then(page => {
-          while (this.pages_.length <= pageToGet) {
-            this.pages_.push(undefined);
-          }
-          if (!this.pages_[pageToGet]) {
-            this.pages_[pageToGet] = page;
-          }
-          if (page && !page.content) {
-            page = new NavigationPage(page);
-          }
-          if (page && page.content) {
-            return Promise.resolve(page);
-          } else {
-            this.pages_[pageToGet] = undefined;
-            return this.flipToPreviousPage(logger).then(() => undefined);
-          }
-        }).catch(err => {
-          logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
-          return this.flipToPreviousPage(logger).then(() => undefined);
-        });
+        const page = await this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet);
+        while (this.pages_.length <= pageToGet) {
+          this.pages_.push(undefined);
+        }
+        if (!this.pages_[pageToGet]) {
+          this.pages_[pageToGet] = page;
+        }
+        if (page && !page.content) {
+          page = new NavigationPage(page);
+        }
+        if (page && page.content) {
+          return page;
+        } else {
+          this.pages_[pageToGet] = undefined;
+          await this.flipToPreviousPage(logger);
+          return undefined;
+        }
       } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
-        return this.flipToPreviousPage(logger).then(() => undefined);
+        await this.flipToPreviousPage(logger);
+        return undefined;
       }
     }
   }
