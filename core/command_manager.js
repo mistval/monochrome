@@ -131,7 +131,7 @@ class CommandManager {
         try {
           command = new Command(commandData, this.settings_, monochrome);
         } catch (err) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId), err);
+          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId || (commandData.commandAliases ? commandData.commandAliases[0] : undefined)), err);
           continue;
         }
         if (commandData.uniqueId && this.commands_.find(cmd => cmd.uniqueId === commandData.uniqueId)) {
