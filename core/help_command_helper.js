@@ -1,15 +1,9 @@
-const HelpCommand = require('./commands/help.js');
-
 class HelpCommandHelper {
   constructor(commands, config, settings, persistence) {
     this.config_ = config;
     this.settings_ = settings;
     this.persistence_ = persistence;
     this.nonHiddenCommands_ = commands.filter(command => !command.hidden);
-  }
-
-  generateHelpCommandData() {
-    return new HelpCommand(this, this.config_);
   }
 
   getNonHiddenCommands() {
