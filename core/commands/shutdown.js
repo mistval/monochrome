@@ -14,6 +14,7 @@ class Reload {
     this.commandAliases = ['}shutdown'];
     this.canBeChannelRestricted = false;
     this.botAdminOnly = true;
+    this.uniqueId = 'shutdown',
     this.action = (erisBot, msg) => this.execute_(msg, shutdownAction);
   }
 

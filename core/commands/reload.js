@@ -14,6 +14,7 @@ class Reload {
     this.commandAliases = ['}reload'];
     this.canBeChannelRestricted = false;
     this.botAdminOnly = true;
+    this.uniqueId = 'reload',
     this.action = (erisBot, msg, suffix, monochromeBot) => this.execute_(msg, suffix, reloadAction);
   }
 
