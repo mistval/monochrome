@@ -57,8 +57,8 @@ function sanitizeCommandData(commandData) {
   } else if (commandData.cooldown < 0) {
     throw new Error(strings.validation.negativeCooldown);
   }
-  if (commandData.canBeChannelRestricted && (!commandData.uniqueId || typeof commandData.uniqueId !== typeof '')) {
-    throw new Error(strings.validation.needsUniqueId);
+  if (!commandData.uniqueId || typeof commandData.uniqueId !== typeof '') {
+    throw new Error('The command needs to have a uniqueId');
   }
   if (commandData.uniqueId && commandData.uniqueId.indexOf(' ') !== -1) {
     throw new Error('uniqueId must not contain a space.');
