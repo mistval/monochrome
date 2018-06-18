@@ -92,15 +92,15 @@ class NavigationChapter {
       return this.pages_[pageToGet];
     } else {
       try {
-        const page = await this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet);
+        let page = await this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet);
+        if (page && !page.content) {
+          page = new NavigationPage(page);
+        }
         while (this.pages_.length <= pageToGet) {
           this.pages_.push(undefined);
         }
         if (!this.pages_[pageToGet]) {
           this.pages_[pageToGet] = page;
-        }
-        if (page && !page.content) {
-          page = new NavigationPage(page);
         }
         if (page && page.content) {
           return page;
