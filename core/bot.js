@@ -156,7 +156,7 @@ class Monochrome {
     this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
-    this.reloadCore_();
+    this.reload();
   }
 
   getErisBot() {
@@ -185,6 +185,36 @@ class Monochrome {
 
   getCommandManager() {
     return this.commandManager_;
+  }
+
+  reload() {
+    this.config_ = reload(this.configFilePath_);
+    sanitizeAndValidateConfiguration(this.config_, this.logger_);
+    this.logger_.reload();
+    this.navigationManager_.reload();
+
+    const MessageProcessorManager = reload('./message_processor_manager.js');
+    const Settings = reload('./settings.js');
+    const CommandManager = reload('./command_manager.js');
+    const RepeatingQueue = reload('./repeating_queue.js');
+
+    this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
+    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
+    this.settings_ = new Settings(this.persistence_, this.logger_, this.settingsFilePath_);
+    this.commandManager_ = new CommandManager(
+      () => this.shutdown_(),
+      this.logger_,
+      this.config_,
+      this.settings_,
+      this.persistence_,
+    );
+
+    this.commandManager_.load(this.commandsDirectoryPath_, this);
+    this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_, this);
+
+    if (this.ready_) {
+      this.loadExtensions_();
+    }
   }
 
   connect() {
@@ -297,37 +327,6 @@ class Monochrome {
       if (this.config_.genericErrorMessage) {
         msg.channel.createMessage(this.config_.genericErrorMessage);
       }
-    }
-  }
-
-  reloadCore_() {
-    this.config_ = reload(this.configFilePath_);
-    sanitizeAndValidateConfiguration(this.config_, this.logger_);
-    this.logger_.reload();
-    this.navigationManager_.reload();
-
-    const MessageProcessorManager = reload('./message_processor_manager.js');
-    const Settings = reload('./settings.js');
-    const CommandManager = reload('./command_manager.js');
-    const RepeatingQueue = reload('./repeating_queue.js');
-
-    this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
-    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
-    this.settings_ = new Settings(this.persistence_, this.logger_, this.settingsFilePath_);
-    this.commandManager_ = new CommandManager(
-      () => this.reloadCore_(),
-      () => this.shutdown_(),
-      this.logger_,
-      this.config_,
-      this.settings_,
-      this.persistence_,
-    );
-
-    this.commandManager_.load(this.commandsDirectoryPath_, this);
-    this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_, this);
-
-    if (this.ready_) {
-      this.loadExtensions_();
     }
   }
 

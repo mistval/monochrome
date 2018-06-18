@@ -2,7 +2,6 @@
 const reload = require('require-reload')(require);
 const Command = reload('./command.js');
 const FileSystemUtils = reload('./util/file_system_utils.js');
-const ReloadCommand = reload('./commands/reload.js');
 const ShutdownCommand = reload('./commands/shutdown.js');
 const PublicError = reload('./public_error.js');
 const HelpCommandHelper = reload('./help_command_helper.js');
@@ -95,10 +94,9 @@ function createSettingsCategoryForCommands(userCommands) {
 }
 
 class CommandManager {
-  constructor(reloadAction, shutdownAction, logger, config, settings, persistence) {
+  constructor(shutdownAction, logger, config, settings, persistence) {
     this.commands_ = [];
     this.settings_ = settings;
-    this.reloadAction_ = reloadAction;
     this.shutdownAction_ = shutdownAction;
     this.logger_ = logger;
     this.config_ = config;
@@ -147,11 +145,6 @@ class CommandManager {
         this.commands_.push(command);
       }
 
-      if (this.reloadAction_) {
-        let reloadCommandData = new ReloadCommand(this.reloadAction_);
-        let reloadCommand = new Command(reloadCommandData, this.settings_, monochrome);
-        this.commands_.push(reloadCommand);
-      }
       if (this.shutdownAction_) {
         let shutdownCommandData = new ShutdownCommand(this.shutdownAction_);
         let shutdownCommand = new Command(shutdownCommandData, this.settings_, monochrome);
