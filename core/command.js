@@ -195,7 +195,7 @@ class Command {
     this.cooldown_ * 1000);
 
     if (this.attachIsServerAdmin_) {
-      msg.authorIsServerAdmin = userIsServerAdmin(msg, config);
+      msg.authorIsServerAdmin = this.monochrome_.userIsServerAdmin(msg, config);
     }
 
     return this.action_(bot, msg, suffix, this.monochrome_, settings, extension);
