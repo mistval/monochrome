@@ -151,7 +151,7 @@ class CommandManager {
       const settingsCategory = createSettingsCategoryForCommands(this.commands_);
       this.settings_.addNodeToRoot(settingsCategory);
 
-      if (this.config_.prefixes && this.config_.prefixes.length > 0) {
+      if (this.config_.prefixes && (this.config_.prefixes.length > 1 || !!this.config_.prefixes[0])) {
         const prefixesSetting = createPrefixesSetting(this.config_.prefixes);
         this.settings_.addNodeToRoot(prefixesSetting);
       }
