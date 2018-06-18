@@ -109,15 +109,18 @@ class CommandManager {
     const loggerTitle = 'COMMAND MANAGER';
     let commandDatasToLoad = [];
     this.commands_ = [];
+
     try {
-      const commandFiles = await FileSystemUtils.getFilesInDirectory(directory);
-      for (let commandFile of commandFiles) {
-        try {
-          let commandData = reload(commandFile);
-          commandDatasToLoad.push(commandData);
-        } catch (e) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
-          continue;
+      if (directory) {
+        const commandFiles = await FileSystemUtils.getFilesInDirectory(directory);
+        for (let commandFile of commandFiles) {
+          try {
+            let commandData = reload(commandFile);
+            commandDatasToLoad.push(commandData);
+          } catch (e) {
+            this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
+            continue;
+          }
         }
       }
 

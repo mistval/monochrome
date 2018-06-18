@@ -7,6 +7,7 @@ class RepeatingQueue {
   * @param {array<Object>} array - The objects to queue.
   */
   constructor(array) {
+    array = array || [];
     this.array_ = array.slice(0);
     this.index_ = 0;
   }

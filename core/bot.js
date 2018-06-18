@@ -14,46 +14,6 @@ const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
 
-function sanitizeAndValidateConfiguration(config, logger) {
-  // For backwards compatibility with v1.1
-  if (config.serverSettingsCommandAliases) {
-    config.settingsCommandAliases = config.serverSettingsCommandAliases;
-    delete config.serverSettingsCommandAliases;
-  }
-
-  let errorMessage;
-  if (!config.botToken) {
-    errorMessage = 'Invalid botToken value in configuration (should be non-empty string)';
-  } else if (typeof config.serverAdminRoleName !== typeof '') {
-    errorMessage = 'Invalid serverAdminRoleName value in configuration (should be string, use empty string for no server entry message)';
-  } else if (!config.botAdminIds || !Array.isArray(config.botAdminIds)) {
-    errorMessage = 'Invalid botAdminIds value in configuration (should be array of strings)';
-  } else if (typeof config.genericErrorMessage !== typeof '') {
-    errorMessage = 'Invalid genericErrorMessage value in configuration (should be string, use empty string for no error message)';
-  } else if (typeof config.genericDMReply !== typeof '') {
-    errorMessage = 'Invalid genericDMReply value in configuration (should be string, use empty string for no DM reply message)';
-  } else if (typeof config.genericMentionReply !== typeof '') {
-    errorMessage = 'Invalid genericMentionReply value in configuration (should be string, use empty string for no reply message)';
-  } else if (typeof config.discordBotsDotOrgAPIKey !== typeof '') {
-    errorMessage = 'Invalid discordBotsDotOrgAPIKey value in configuration (should be string, use empty string for no key)';
-  } else if (typeof config.useANSIColorsInLogFiles !== typeof true) {
-    errorMessage = 'Invalid useANSIColorsInLogFiles value in configuration (should be boolean)';
-  } else if (!config.statusRotation || !Array.isArray(config.statusRotation)) {
-    errorMessage = 'Invalid statusRotation value in configuration (should be array, use empty array for no status. 1 value array for no rotation.)';
-  } else if (typeof config.statusRotationIntervalInSeconds !== typeof 2) {
-    errorMessage = 'Invalid statusRotationIntervalInSeconds value in configuration (should be a number of seconds (not a string))';
-  } else if (config.botAdminIds.some(id => typeof id !== typeof '')) {
-    errorMessage = 'Invalid botAdminId in configuration (should be a string (not a number! put quotes around it))';
-  } else if (config.statusRotation.some(status => typeof status !== typeof '')) {
-    errorMessage = 'Invalid status in configuration (should be a string)';
-  }
-
-  if (errorMessage) {
-    logger.logFailure('CONFIG', errorMessage);
-    throw new Error(errorMessage);
-  }
-}
-
 function updateDiscordBotsDotOrg(config, bot, logger) {
   if (!config.discordBotsDotOrgAPIKey) {
     return;
@@ -113,45 +73,54 @@ function stringContainsInviteLink(str) {
   return str.indexOf('discord.gg') !== -1;
 }
 
-function validateOptions(options) {
-  let errorMessage = '';
+function validateAndSanitizeOptions(options) {
   if (!options || typeof options !== 'object') {
     throw new Error('Either nothing was passed to the Monochrome bot constructor, or something was but it\'s not an object. The interface changed since version 1.1. Please review the readme.');
-  } else if (!options.configFilePath) {
-    throw new Error('No configuration file path specified');
-  } else if (!options.commandsDirectoryPath) {
-    throw new Error('No commands directory path specified (it can be an empty directory, but must exist)');
-  } else if (!options.messageProcessorsDirectoryPath) {
-    throw new Error('No message processor directory path specified (it can be an empty directory, but must exist)');
   }
+
+  if (!options.botToken) {
+    throw new Error('No botToken specified');
+  }
+
+  if (options.statusRotation) {
+    if (!Array.isArray(options.statusRotation)) {
+      throw new Error('If provided, statusRotation must be an array');
+    }
+    if (!options.statusRotationIntervalInSeconds && options.statusRotation.length > 1) {
+      throw new Error('If statusRotation is provided and has more than one status, statusRotationIntervalInSeconds must also be provided');
+    }
+  }
+
+  if (options.botAdminIds && !Array.isArray(options.botAdminIds)) {
+    options.botAdminIds = [options.botAdminIds];
+  }
+  if (!options.botAdminIds) {
+    options.botAdminIds = [];
+  }
+
+  if (options.prefixes && !Array.isArray(options.prefixes)) {
+    options.prefixes = [options.prefixes];
+  }
+  if (!options.prefixes || !options.prefixes[0]) {
+    options.prefixes = [''];
+  }
+
+  if (typeof options.useANSIColorsInLogFiles !== 'boolean') {
+    options.useANSIColorsInLogFiles = true;
+  }
+
+  return options;
 }
 
 class Monochrome {
   constructor(options) {
-    validateOptions(options);
-
-    const {
-      configFilePath,
-      commandsDirectoryPath,
-      messageProcessorsDirectoryPath,
-      settingsFilePath,
-      logDirectoryPath,
-      extensionsDirectoryPath,
-    } = options;
-
-    this.configFilePath_ = configFilePath;
-    this.commandsDirectoryPath_ = commandsDirectoryPath;
-    this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
-    this.settingsFilePath_ = settingsFilePath;
-    this.extensionsDirectoryPath_ = extensionsDirectoryPath;
+    this.options_ = validateAndSanitizeOptions(options, this.logger_);
     this.logger_ = new Logger();
 
     this.botMentionString_ = '';
-    this.config_ = reload(this.configFilePath_);
-    this.persistence_ = new Persistence(undefined, this.config_);
-    this.logger_.initialize(logDirectoryPath, this.config_.useANSIColorsInLogFiles);
-    sanitizeAndValidateConfiguration(this.config_, this.logger_);
-    this.bot_ = new Eris(this.config_.botToken, this.config_.erisOptions);
+    this.persistence_ = new Persistence(undefined, this.options_);
+    this.logger_.initialize(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
+    this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
     this.reload();
@@ -178,7 +147,7 @@ class Monochrome {
   }
 
   getConfig() {
-    return this.config_;
+    return this.options_;
   }
 
   getCommandManager() {
@@ -186,8 +155,6 @@ class Monochrome {
   }
 
   reload() {
-    this.config_ = reload(this.configFilePath_);
-    sanitizeAndValidateConfiguration(this.config_, this.logger_);
     this.logger_.reload();
     this.navigationManager_.reload();
 
@@ -196,18 +163,18 @@ class Monochrome {
     const CommandManager = reload('./command_manager.js');
     const RepeatingQueue = reload('./repeating_queue.js');
 
-    this.statusQueue_ = new RepeatingQueue(this.config_.statusRotation);
+    this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
     this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
-    this.settings_ = new Settings(this.persistence_, this.logger_, this.settingsFilePath_);
+    this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
     this.commandManager_ = new CommandManager(
       this.logger_,
-      this.config_,
+      this.options_,
       this.settings_,
       this.persistence_,
     );
 
-    this.commandManager_.load(this.commandsDirectoryPath_, this);
-    this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_, this);
+    this.commandManager_.load(this.options_.commandsDirectoryPath, this);
+    this.messageProcessorManager_.load(this.options_.messageProcessorsDirectoryPath, this);
 
     if (this.ready_) {
       this.loadExtensions_();
@@ -289,7 +256,7 @@ class Monochrome {
   }
 
   loadExtensions_() {
-    if (this.extensionsDirectoryPath_) {
+    if (this.options_.extensionsDirectoryPath_) {
       this.extensionManager_ = new (reload('./extension_manager.js'))();
       this.extensionManager_.load(this.extensionsDirectoryPath_, this);
     }
@@ -321,8 +288,8 @@ class Monochrome {
       }
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
-      if (this.config_.genericErrorMessage) {
-        msg.channel.createMessage(this.config_.genericErrorMessage);
+      if (this.options_.genericErrorMessage) {
+        msg.channel.createMessage(this.options_.genericErrorMessage);
       }
     }
   }
@@ -331,10 +298,10 @@ class Monochrome {
     if (this.updateStatsTimeoutHandle_) {
       return;
     }
-    if (this.config_.discordBotsDotOrgAPIKey || this.config_.botsDotDiscordDotPwAPIKey) {
+    if (this.options_.discordBotsDotOrgAPIKey || this.options_.botsDotDiscordDotPwAPIKey) {
       this.updateStatsTimeoutHandle_ = setTimeout(() => {
-        updateStats(this.config_, this.bot_, this.logger_);
-        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.config_, this.bot_, this.logger_);
+        updateStats(this.options_, this.bot_, this.logger_);
+        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.options_, this.bot_, this.logger_);
       }, UPDATE_STATS_INITIAL_DELAY_IN_MS);
     }
   }
@@ -344,9 +311,9 @@ class Monochrome {
       if (this.rotateStatusesTimeoutHandle_) {
         clearTimeout(this.rotateStatusesTimeoutHandle_);
       }
-      if (this.config_.statusRotation.length > 0) {
-        if (this.config_.statusRotation.length > 1) {
-          this.rotateStatusesTimeoutHandle_ = setTimeout(() => this.rotateStatuses_(), this.config_.statusRotationIntervalInSeconds * 1000);
+      if (this.options_.statusRotation) {
+        if (this.options_.statusRotation.length > 1) {
+          this.rotateStatusesTimeoutHandle_ = setTimeout(() => this.rotateStatuses_(), this.options_.statusRotationIntervalInSeconds * 1000);
         }
 
         let nextStatus = this.statusQueue_.pop();
@@ -367,10 +334,10 @@ class Monochrome {
     try {
       if (!msg.channel.guild) {
         this.logger_.logInputReaction('DIRECT MESSAGE', msg, '', true);
-        if (this.config_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
-          this.sendDmOrMentionReply_(msg, this.config_.inviteLinkDmReply);
-        } else if (this.config_.genericDMReply) {
-          this.sendDmOrMentionReply_(msg, this.config_.genericDMReply);
+        if (this.options_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
+          this.sendDmOrMentionReply_(msg, this.options_.inviteLinkDmReply);
+        } else if (this.options_.genericDMReply) {
+          this.sendDmOrMentionReply_(msg, this.options_.genericDMReply);
         }
         return true;
       }
@@ -383,8 +350,8 @@ class Monochrome {
 
   tryHandleMention_(msg) {
     try {
-      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.config_.genericMentionReply) {
-        this.sendDmOrMentionReply_(msg, this.config_.genericMentionReply);
+      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.options_.genericMentionReply) {
+        this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
         this.logger_.logInputReaction('MENTION', msg, '', true);
         return true;
       }
@@ -404,7 +371,7 @@ class Monochrome {
       return reply;
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Couldn\'t create DM or mention reply', err);
-      return this.config_.genericErrorMessage;
+      return this.options_.genericErrorMessage;
     }
   }
 }

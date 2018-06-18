@@ -32,19 +32,22 @@ class MessageProcessorManager {
   load(directory, monochrome) {
     const loggerTitle = 'MESSAGE MANAGER';
     this.processors_ = [];
-    return FileSystemUtils.getFilesInDirectory(directory).then((processorFiles) => {
-      for (let processorFile of processorFiles) {
-        try {
-          let processorInformation = reload(processorFile);
-          let processor = new MessageProcessor(processorInformation, monochrome);
-          this.processors_.push(processor);
-        } catch (err) {
-          this.logger_.logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
+
+    if (directory) {
+      return FileSystemUtils.getFilesInDirectory(directory).then((processorFiles) => {
+        for (let processorFile of processorFiles) {
+          try {
+            let processorInformation = reload(processorFile);
+            let processor = new MessageProcessor(processorInformation, monochrome);
+            this.processors_.push(processor);
+          } catch (err) {
+            this.logger_.logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
+          }
         }
-      }
-    }).catch(err => {
-      this.logger_.logFailure(loggerTitle, strings.genericLoadingError, err);
-    });
+      }).catch(err => {
+        this.logger_.logFailure(loggerTitle, strings.genericLoadingError, err);
+      });
+    }
   }
 
   /**
