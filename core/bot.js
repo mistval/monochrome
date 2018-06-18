@@ -181,6 +181,35 @@ class Monochrome {
     }
   }
 
+  userIsServerAdmin(msg) {
+    if (!msg.channel.guild) {
+      return true;
+    }
+
+    if (!msg.member) {
+      return false;
+    }
+
+    let permission = msg.member.permission.json;
+    if (permission.manageGuild || permission.administrator || permission.manageChannels) {
+      return true;
+    }
+
+    let serverAdminRole = msg.channel.guild.roles.find((role) => {
+      return role.name.toLowerCase() === this.options_.serverAdminRoleName.toLowerCase();
+    });
+
+    if (serverAdminRole && msg.member.roles.indexOf(serverAdminRole.id) !== -1) {
+      return true;
+    }
+
+    if (options_.botAdminIds.indexOf(msg.author.id) !== -1) {
+      return true;
+    }
+
+    return false;
+  }
+
   connect() {
     if (this.connected_) {
       return;

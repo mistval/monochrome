@@ -8,6 +8,3 @@ module.exports.Navigation = reload('./core/navigation.js');
 module.exports.SettingsConverters = reload('./core/settings_converters.js');
 module.exports.SettingsValidators = reload('./core/settings_validators.js');
 module.exports.Settings = reload('./core/settings.js');
-module.exports.util = {
-  userIsServerAdmin: reload('./core/util/user_is_server_admin.js'),
-};

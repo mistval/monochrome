@@ -5,7 +5,6 @@ const strings = reload('./string_factory.js').command;
 const SettingsConverters = reload('./settings_converters.js');
 const SettingsValidators = reload('./settings_validators.js');
 const Constants = reload('./constants.js');
-const userIsServerAdmin = reload('./util/user_is_server_admin.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
@@ -154,7 +153,7 @@ class Command {
       throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.onlyInServer, true, strings.invokeFailure.onlyInServerLog);
     }
     if (this.serverAdminOnly_ && !isBotAdmin) {
-      let isServerAdmin = userIsServerAdmin(msg, config);
+      let isServerAdmin = this.monochrome_.userIsServerAdmin(msg);
 
       if (!isServerAdmin) {
         let publicMessage = strings.invokeFailure.createMustBeServerAdminString(config.serverAdminRoleName);
