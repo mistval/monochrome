@@ -137,7 +137,6 @@ class Monochrome {
       settingsFilePath,
       logDirectoryPath,
       extensionsDirectoryPath,
-      onShutdown,
     } = options;
 
     this.configFilePath_ = configFilePath;
@@ -145,7 +144,6 @@ class Monochrome {
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
     this.settingsFilePath_ = settingsFilePath;
     this.extensionsDirectoryPath_ = extensionsDirectoryPath;
-    this.onShutdown_ = onShutdown || (() => {});
     this.logger_ = new Logger();
 
     this.botMentionString_ = '';
@@ -202,7 +200,6 @@ class Monochrome {
     this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
     this.settings_ = new Settings(this.persistence_, this.logger_, this.settingsFilePath_);
     this.commandManager_ = new CommandManager(
-      () => this.shutdown_(),
       this.logger_,
       this.config_,
       this.settings_,
@@ -327,22 +324,6 @@ class Monochrome {
       if (this.config_.genericErrorMessage) {
         msg.channel.createMessage(this.config_.genericErrorMessage);
       }
-    }
-  }
-
-  shutdown_() {
-    this.logger_.logSuccess(LOGGER_TITLE, 'Shutting down.');
-    try {
-      Promise.resolve(this.onShutdown_(this.bot_)).catch(err => {
-        this.logger_.logFailure(LOGGER_TITLE, 'The promise returned from a custom onShutdown handler rejected. Continuing shutdown.', err);
-      }).then(() => {
-        this.bot_.disconnect();
-        process.exit();
-      });
-    } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'The custom onShutdown handler threw. Continuing shutdown.', err);
-      this.bot_.disconnect();
-      process.exit();
     }
   }
 
