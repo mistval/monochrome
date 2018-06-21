@@ -174,7 +174,7 @@ class Command {
     });
 
     if (settingsMap[this.getEnabledSettingUniqueId()] === undefined || settingsMap[this.getEnabledSettingUniqueId()] === true) {
-      return this.invokeAction_(bot, msg, suffix, settingsMap, extension, config);
+      return this.invokeAction_(bot, msg, suffix, settingsMap, extension);
     } else {
       let publicMessage = '';
       if (!settingsMap[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
@@ -184,7 +184,7 @@ class Command {
     }
   }
 
-  invokeAction_(bot, msg, suffix, settings, extension, config) {
+  invokeAction_(bot, msg, suffix, settings, extension) {
     if (this.cooldown_ !== 0) {
       this.usersCoolingDown_.push(msg.author.id);
     }
@@ -195,7 +195,7 @@ class Command {
     this.cooldown_ * 1000);
 
     if (this.attachIsServerAdmin_) {
-      msg.authorIsServerAdmin = this.monochrome_.userIsServerAdmin(msg, config);
+      msg.authorIsServerAdmin = this.monochrome_.userIsServerAdmin(msg);
     }
 
     return this.action_(bot, msg, suffix, this.monochrome_, settings, extension);
