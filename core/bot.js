@@ -203,7 +203,7 @@ class Monochrome {
       return true;
     }
 
-    if (options_.botAdminIds.indexOf(msg.author.id) !== -1) {
+    if (this.options_.botAdminIds.indexOf(msg.author.id) !== -1) {
       return true;
     }
 
