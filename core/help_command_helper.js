@@ -24,6 +24,7 @@ class HelpCommandHelper {
 
     let currentCandidateCommand;
     let currentCandidateAlias;
+    let prefixedCurrentCandidateAlias = '';
     for (let newCandidateCommand of commands) {
       for (let newCandidateAlias of newCandidateCommand.aliases) {
         const prefixedNewCandidateAlias = `${prefix}${newCandidateAlias}`;
