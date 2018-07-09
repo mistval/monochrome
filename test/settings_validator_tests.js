@@ -51,4 +51,13 @@ describe('Settings validators', function() {
       assert(!validator(true));
     });
   });
+  describe('Map validator', function() {
+    it('Returns true for non-undefined', function() {
+      assert(SettingsValidators.isMappable(1));
+      assert(SettingsValidators.isMappable('h'));
+    });
+    it('Returns false for undefined', function() {
+      assert(!SettingsValidators.isMappable(undefined));
+    });
+  });
 });

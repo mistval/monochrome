@@ -42,6 +42,20 @@ function toStringLowercase(value) {
   return toString(value).toLowerCase();
 }
 
+function createMapConverter(map) {
+  return value => map[value];
+}
+
+function createInverseMapConverter(map) {
+  return value => {
+    for (key in map) {
+      if (map[key] === value) {
+        return key;
+      }
+    }
+  };
+}
+
 module.exports = {
   stringToFloat,
   toString,
@@ -51,4 +65,6 @@ module.exports = {
   toStringLowercase,
   createStringToStringArrayConverter,
   createStringArrayToStringConverter,
+  createMapConverter,
+  createInverseMapConverter,
 };

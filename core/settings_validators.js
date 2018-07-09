@@ -22,9 +22,14 @@ function isStringArray(stringArray) {
   return Array.isArray(stringArray) && stringArray.every(str => typeof str === typeof '');
 }
 
+function isMappable(value) {
+  return !!value;
+}
+
 module.exports = {
   createRangeValidator,
   isBoolean,
   createDiscreteOptionValidator,
   isStringArray,
+  isMappable,
 };
