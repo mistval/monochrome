@@ -175,7 +175,6 @@ class CommandManager {
     } else {
       commandText = msgContent.substring(0, spaceIndex);
     }
-    commandText = commandText.toLowerCase();
 
     for (let prefix of prefixes) {
       for (let command of this.commands_) {
