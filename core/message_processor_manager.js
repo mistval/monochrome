@@ -5,13 +5,15 @@ const MessageProcessor = reload('./message_processor.js');
 const PublicError = reload('./../core/public_error.js');
 const strings = reload('./string_factory.js').messageProcessorManager;
 
-function handleError(msg, err, logger) {
+function handleError(msg, err, logger, persistence) {
   const loggerTitle = 'MESSAGE';
   let errorToOutput = err;
   if (!errorToOutput.output) {
     errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
   }
-  errorToOutput.output(logger, loggerTitle, undefined, msg, true);
+
+  const prefix = persistence.getPrimaryPrefixFromMsg(msg);
+  errorToOutput.output(logger, loggerTitle, undefined, msg, true, prefix);
 }
 
 /**
@@ -21,9 +23,10 @@ class MessageProcessorManager {
   /**
   * @param {Logger} logger - The logger to log to
   */
-  constructor(logger) {
+  constructor(logger, persistence) {
     this.logger_ = logger;
     this.processors_ = [];
+    this.persistence_ = persistence;
   }
 
   /**
@@ -67,7 +70,7 @@ class MessageProcessorManager {
               throw PublicError.createWithGenericPublicMessage(false, innerResult);
             }
             this.logger_.logInputReaction(loggerTitle, msg, processor.name, true);
-          }).catch(err => handleError(msg, err, this.logger_));
+          }).catch(err => handleError(msg, err, this.logger_, this.persistence_));
           return true;
         } else if (typeof result === typeof '') {
           throw PublicError.createWithGenericPublicMessage(false, result);
@@ -79,7 +82,7 @@ class MessageProcessorManager {
             '\' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.');
         }
       } catch (err) {
-        handleError(msg, err, this.logger_);
+        handleError(msg, err, this.logger_, this.persistence_);
         return true
       };
     }

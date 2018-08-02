@@ -164,7 +164,7 @@ class Monochrome {
     const RepeatingQueue = reload('./repeating_queue.js');
 
     this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
-    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_);
+    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_, this.persistence_);
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
     this.commandManager_ = new CommandManager(
       this.logger_,

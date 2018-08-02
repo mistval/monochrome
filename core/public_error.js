@@ -3,6 +3,7 @@ const reload = require('require-reload')(require);
 const assert = require('assert');
 const strings = reload('./string_factory.js').publicError;
 const ErisUtils = reload('./util/eris_utils.js');
+const constants = reload('./constants.js');
 
 const PublicMessageType = {
   NONE: 0,
@@ -71,7 +72,7 @@ class PublicError extends Error {
     }
   }
 
-  output(logger, loggerTitle, config, msg, forceSilentFail) {
+  output(logger, loggerTitle, config, msg, forceSilentFail, prefix) {
     let publicMessage = this.publicMessage_;
     if (forceSilentFail) {
       publicMessage = PublicMessageType.NONE;
@@ -85,6 +86,7 @@ class PublicError extends Error {
     }
 
     if (publicMessage) {
+      publicMessage = publicMessage.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       if (this.deleteAutomatically_) {
         ErisUtils.sendMessageAndDelete(msg, publicMessage);
       } else {

@@ -14,7 +14,7 @@ const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail sil
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
 
-function handleCommandError(msg, err, config, logger) {
+function handleCommandError(msg, err, config, logger, persistence) {
   const loggerTitle = 'COMMAND';
   let errorToOutput = err;
   if (!errorToOutput.output) {
@@ -23,7 +23,9 @@ function handleCommandError(msg, err, config, logger) {
       errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
     }
   }
-  errorToOutput.output(logger, loggerTitle, config, msg);
+
+  const prefix = persistence.getPrimaryPrefixFromMsg(msg);
+  errorToOutput.output(logger, loggerTitle, config, msg, false, prefix);
 }
 
 function getDuplicateAlias(command, otherCommands) {
@@ -209,7 +211,7 @@ class CommandManager {
       }
       this.logger_.logInputReaction(loggerTitle, msg, '', true);
     } catch (err) {
-      handleCommandError(msg, err, this.config_, this.logger_);
+      handleCommandError(msg, err, this.config_, this.logger_, this.persistence_);
     }
 
     return commandToExecute;
