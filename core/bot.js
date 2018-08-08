@@ -7,6 +7,7 @@ const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const constants = require('./constants.js');
+const Blacklist = require('./blacklist.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -119,6 +120,7 @@ class Monochrome {
 
     this.botMentionString_ = '';
     this.persistence_ = new Persistence(undefined, this.options_);
+    this.blacklist_ = new Blacklist(this.persistence_, this.options_.botAdminIds);
     this.logger_.initialize(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);
@@ -140,6 +142,10 @@ class Monochrome {
 
   getPersistence() {
     return this.persistence_;
+  }
+
+  getBlacklist() {
+    return this.blacklist_;
   }
 
   getSettings() {
@@ -230,6 +236,7 @@ class Monochrome {
 
     this.bot_.on('guildCreate', guild => {
       this.logger_.logSuccess('JOINED GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
+      this.blacklist_.leaveGuildIfBlacklisted(this.bot_, guild);
     });
 
     this.bot_.on('error', (err, shardId) => {
@@ -300,6 +307,9 @@ class Monochrome {
         return; // Sometimes an empty message with no author appears. *shrug*
       }
       if (msg.author.bot) {
+        return;
+      }
+      if (this.blacklist_.isUserBlacklisted(msg.author.id)) {
         return;
       }
       msg.locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
