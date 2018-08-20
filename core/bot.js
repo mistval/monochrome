@@ -303,9 +303,6 @@ class Monochrome {
       if (!this.ready_) {
         return;
       }
-      if (!msg.author) {
-        return; // Sometimes an empty message with no author appears. *shrug*
-      }
       if (msg.author.bot) {
         return;
       }
