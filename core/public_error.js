@@ -86,7 +86,12 @@ class PublicError extends Error {
     }
 
     if (publicMessage) {
-      publicMessage = publicMessage.replace(constants.PREFIX_REPLACE_REGEX, prefix);
+      if (typeof publicMessage === typeof '') {
+        publicMessage = publicMessage.replace(constants.PREFIX_REPLACE_REGEX, prefix);
+      } else if (typeof publicMessage.content === typeof '') {
+        publicMessage.content = publicMessage.content.replace(constants.PREFIX_REPLACE_REGEX, prefix);
+      }
+
       if (this.deleteAutomatically_) {
         ErisUtils.sendMessageAndDelete(msg, publicMessage);
       } else {
