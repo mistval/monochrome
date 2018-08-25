@@ -110,6 +110,10 @@ function validateAndSanitizeOptions(options) {
     options.useANSIColorsInLogFiles = true;
   }
 
+  if (options.ignoreOtherBots === undefined) {
+    options.ignoreOtherBots = true;
+  }
+
   return options;
 }
 
@@ -303,7 +307,7 @@ class Monochrome {
       if (!this.ready_) {
         return;
       }
-      if (msg.author.bot) {
+      if (msg.author.bot && this.options_.ignoreOtherBots) {
         return;
       }
       if (this.blacklist_.isUserBlacklisted(msg.author.id)) {
