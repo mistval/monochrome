@@ -140,7 +140,7 @@ class Command {
     };
   }
 
-  async handle(bot, msg, suffix, extension, config) {
+  async handle(bot, msg, suffix, config) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
       let publicErrorMessage = strings.invokeFailure.createNotCooledDownString(msg.author.username, this.cooldown_);
       throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, strings.invokeFailure.notCooledDownLogDescription);
@@ -174,7 +174,7 @@ class Command {
     });
 
     if (settingsMap[this.getEnabledSettingUniqueId()] === undefined || settingsMap[this.getEnabledSettingUniqueId()] === true) {
-      return this.invokeAction_(bot, msg, suffix, settingsMap, extension);
+      return this.invokeAction_(bot, msg, suffix, settingsMap);
     } else {
       let publicMessage = '';
       if (!settingsMap[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
@@ -184,7 +184,7 @@ class Command {
     }
   }
 
-  invokeAction_(bot, msg, suffix, settings, extension) {
+  invokeAction_(bot, msg, suffix, settings) {
     if (this.cooldown_ !== 0) {
       this.usersCoolingDown_.push(msg.author.id);
     }
@@ -198,7 +198,7 @@ class Command {
       msg.authorIsServerAdmin = this.monochrome_.userIsServerAdmin(msg);
     }
 
-    return this.action_(bot, msg, suffix, this.monochrome_, settings, extension);
+    return this.action_(bot, msg, suffix, this.monochrome_, settings);
   }
 
   getEnabledSettingUserFacingName_() {

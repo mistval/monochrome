@@ -200,13 +200,14 @@ class CommandManager {
 
   async executeCommand_(bot, msg, commandToExecute, msgContent, spaceIndex, prefix, extension) {
     msg.prefix = prefix;
+    msg.extension = extension;
     const loggerTitle = 'COMMAND';
     let suffix = '';
     if (spaceIndex !== -1) {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      const result = await commandToExecute.handle(bot, msg, suffix, extension, this.config_);
+      const result = await commandToExecute.handle(bot, msg, suffix, this.config_);
       if (typeof result === typeof '') {
         throw PublicError.createWithGenericPublicMessage(false, result);
       }
