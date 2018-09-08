@@ -183,12 +183,12 @@ class CommandManager {
         for (let alias of command.aliases) {
           const prefixedAlias = prefix + alias;
           if (commandText === prefixedAlias) {
-            return this.executeCommand_(bot, msg, command, msgContent, spaceIndex);
+            return this.executeCommand_(bot, msg, command, msgContent, spaceIndex, prefix);
           }
           if (command.canHandleExtension && commandText.startsWith(prefixedAlias)) {
             let extension = commandText.replace(prefixedAlias, '');
             if (command.canHandleExtension(extension)) {
-              return this.executeCommand_(bot, msg, command, msgContent, spaceIndex, extension);
+              return this.executeCommand_(bot, msg, command, msgContent, spaceIndex, prefix, extension);
             }
           }
         }
@@ -198,7 +198,8 @@ class CommandManager {
     return false;
   }
 
-  async executeCommand_(bot, msg, commandToExecute, msgContent, spaceIndex, extension) {
+  async executeCommand_(bot, msg, commandToExecute, msgContent, spaceIndex, prefix, extension) {
+    msg.prefix = prefix;
     const loggerTitle = 'COMMAND';
     let suffix = '';
     if (spaceIndex !== -1) {
