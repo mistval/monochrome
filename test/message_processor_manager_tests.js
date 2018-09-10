@@ -11,7 +11,7 @@ const Msg = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [
 const MsgHello = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'hello');
 const MsgHello2 = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'hello2');
 
-describe('MessageProcessorManager', function() {
+describe.skip('MessageProcessorManager', function() {
   describe('load()', function() {
     it('Fails to load from invalid directory', function() {
       let logger = new MockLogger();
