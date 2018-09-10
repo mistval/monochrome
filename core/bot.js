@@ -288,6 +288,11 @@ class Monochrome {
       if (!unavailable) {
         this.logger_.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
       }
+      this.persistence_.resetPrefixesForServerId(guild.id).then(() => {
+        this.logger_.logSuccess('RESET PREFIXES', `For ${guild.name}`);
+      }).catch(err => {
+        this.logger_.logFailure('RESET PREFIXES', `For ${guild.name}`, err);
+      });
     });
 
     this.bot_.connect().catch(err => {
