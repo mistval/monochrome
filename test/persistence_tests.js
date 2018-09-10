@@ -33,6 +33,15 @@ describe('Persistence', function() {
       });
     }, 200);
   });
+  it('Refuses to allow setting to undefined', function(done) {
+    persistence.editData('Global', () => {
+      return undefined;
+    }).then(() => {
+      done('Should have thrown');
+    }).catch(() => {
+      done();
+    });
+  });
   describe('editDataForUser() and getDataForUser()', function() {
     const userId = 'userid1';
     const userName = 'username1';

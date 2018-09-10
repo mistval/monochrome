@@ -104,7 +104,14 @@ class Persistence {
       if (!data) {
         data = {};
       }
-      return editFunction(data);
+
+      const result = editFunction(data);
+
+      if (result === undefined) {
+        throw new Error('Cannot set data to undefined. Use a different value, like false, to signify no value.');
+      }
+
+      return result;
     });
   }
 
