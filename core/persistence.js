@@ -153,6 +153,14 @@ class Persistence {
       return data;
     });
   }
+
+  resetPrefixesForServerId(serverId) {
+    delete state.persistence.prefixesForServerId[serverId];
+    return this.editData(GLOBAL_DATA_KEY, data => {
+      data.prefixes = data.prefixes || {};
+      delete data.prefixes[serverId];
+    });
+  }
 }
 
 module.exports = Persistence;
