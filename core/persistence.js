@@ -159,6 +159,7 @@ class Persistence {
     return this.editData(GLOBAL_DATA_KEY, data => {
       data.prefixes = data.prefixes || {};
       delete data.prefixes[serverId];
+      return data;
     });
   }
 }
