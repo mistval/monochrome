@@ -136,7 +136,7 @@ class Monochrome {
     this.botMentionString_ = undefined;
 
     this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
-    this.persistence_ = new Persistence(this.options_.prefixes);
+    this.persistence_ = new Persistence(this.options_.prefixes, this.logger_);
     this.blacklist_ = new Blacklist(this.persistence_, this.options_.botAdminIds);
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);

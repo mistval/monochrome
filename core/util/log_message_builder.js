@@ -1,5 +1,3 @@
-'use strict'
-
 class LogMessageBuilder {
   constructor() {
     this.messageWithFormatting_ = '';

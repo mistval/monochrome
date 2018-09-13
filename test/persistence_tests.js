@@ -4,7 +4,7 @@ const Persistence = require('./../core/persistence.js');
 const MockConfig = require('./mock_objects/mock_config.js');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
-const persistence = new Persistence([''], {dir: './test/persistence'});
+const persistence = new Persistence([''], undefined, {dir: './test/persistence'});
 
 Storage.clearSync();
 
