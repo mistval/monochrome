@@ -1,8 +1,9 @@
 'use strict'
 const assert = require('assert');
-const strings = require('./string_factory.js').publicError;
 const ErisUtils = require('./util/eris_utils.js');
 const constants = require('./constants.js');
+
+const MISSING_PERMS_DISCORD_ERROR_SUBSTR = 'Missing Permissions';
 
 const PublicMessageType = {
   NONE: 0,
@@ -65,7 +66,7 @@ class PublicError extends Error {
     if (err.output && err.publicMessage_ === PublicMessageType.INSUFFICIENT_PRIVILEGE) {
       return err;
     }
-    let isInsufficientPrivilegeError = err.message.indexOf(strings.missingPermissionsDiscordError) !== -1;
+    let isInsufficientPrivilegeError = err.message.indexOf(MISSING_PERMS_DISCORD_ERROR_SUBSTR) !== -1;
     if (isInsufficientPrivilegeError) {
       return new PublicError(PublicMessageType.INSUFFICIENT_PRIVILEGE, false, 'Insufficient privileges', err);
     }
@@ -102,12 +103,12 @@ class PublicError extends Error {
 
     let logDescription = this.logDescription_;
     if (!logDescription) {
-      logDescription = strings.genericErrorDescriptionLog;
+      logDescription = 'Error';
     }
 
     logger.logInputReaction(loggerTitle, msg, '', false, logDescription);
     if (this.internalErr_) {
-      logger.logFailure(loggerTitle, strings.createErrorDescription(msg.content), this.internalErr_);
+      logger.logFailure(loggerTitle, `Command '${msg.content}' errored.`, this.internalErr_);
     }
   }
 }

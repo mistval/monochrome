@@ -4,7 +4,6 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const MockConfig = require('./mock_objects/mock_config.js');
 const Persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
-const strings = require('./../core/string_factory.js').command;
 const Settings = require('./../core/settings.js');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);

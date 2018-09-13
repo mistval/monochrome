@@ -3,7 +3,6 @@ const MessageProcessor = require('./../core/message_processor.js');
 const MessageProcessorManager = require('./../core/message_processor_manager.js');
 const MockMessage = require('./mock_objects/mock_message.js');
 const MockConfig = require('./mock_objects/mock_config.js');
-const strings = require('./../core/string_factory.js').messageProcessorManager;
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 

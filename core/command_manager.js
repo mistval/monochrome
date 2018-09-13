@@ -4,7 +4,6 @@ const Command = require('./command.js');
 const FileSystemUtils = require('./util/file_system_utils.js');
 const PublicError = require('./public_error.js');
 const HelpCommandHelper = require('./help_command_helper.js');
-const strings = require('./string_factory.js').commandManager;
 const Constants = require('./constants.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
@@ -108,56 +107,39 @@ class CommandManager {
 
   async load() {
     const loggerTitle = 'COMMAND MANAGER';
-    let commandDatasToLoad = [];
     this.commands_ = [];
 
-    try {
-      if (this.directory_) {
-        const commandFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
-        for (let commandFile of commandFiles) {
-          try {
-            let commandData = reload(commandFile);
-            commandDatasToLoad.push(commandData);
-          } catch (e) {
-            this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
-            continue;
-          }
-        }
-      }
-
-      for (let commandData of commandDatasToLoad) {
-        let command;
+    if (this.directory_) {
+      const commandFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
+      for (let commandFile of commandFiles) {
         try {
-          command = new Command(commandData, this.monochrome_.getSettings(), this.monochrome_);
-        } catch (err) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId || (commandData.commandAliases ? commandData.commandAliases[0] : undefined)), err);
-          continue;
-        }
-        if (commandData.uniqueId && this.commands_.find(cmd => cmd.uniqueId === commandData.uniqueId)) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createNonUniqueUniqueIdMessage(commandData.uniqueId));
-          continue;
-        }
+          let newCommandData = reload(commandFile);
+          let newCommand = new Command(newCommandData, this.monochrome_.getSettings(), this.monochrome_);
 
-        let duplicateAlias = getDuplicateAlias(command, this.commands_);
-        if (duplicateAlias) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createNonUniqueAliasMessage(commandData.uniqueId, duplicateAlias));
-          continue;
-        }
+          if (this.commands_.find(existingCommand => existingCommand.uniqueId === newCommand.uniqueId)) {
+            throw new Error(`There is another command with the same uniqueId`);
+          }
 
-        this.commands_.push(command);
+          let duplicateAlias = getDuplicateAlias(newCommand, this.commands_);
+          if (duplicateAlias) {
+            throw new Error(`There is another command that also has the alias: ${duplicateAlias}`);
+          }
+
+          this.commands_.push(newCommand);
+        } catch (e) {
+          this.monochrome_.getLogger().logFailure(loggerTitle, `Failed to load command in file: ${commandFile}`, e);
+        }
       }
+    }
 
-      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getSettings(), this.monochrome_.getPersistence());
+    this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getSettings(), this.monochrome_.getPersistence());
 
-      const settingsCategory = createSettingsCategoryForCommands(this.commands_);
-      this.monochrome_.getSettings().addNodeToRoot(settingsCategory);
+    const settingsCategory = createSettingsCategoryForCommands(this.commands_);
+    this.monochrome_.getSettings().addNodeToRoot(settingsCategory);
 
-      if (this.prefixes_ && (this.prefixes_.length > 1 || !!this.prefixes_[0])) {
-        const prefixesSetting = createPrefixesSetting(this.prefixes_);
-        this.monochrome_.getSettings().addNodeToRoot(prefixesSetting);
-      }
-    } catch (err) {
-      this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.genericError, err);
+    if (this.prefixes_ && (this.prefixes_.length > 1 || !!this.prefixes_[0])) {
+      const prefixesSetting = createPrefixesSetting(this.prefixes_);
+      this.monochrome_.getSettings().addNodeToRoot(prefixesSetting);
     }
   }
 

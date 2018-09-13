@@ -1,15 +1,14 @@
 'use strict'
 const PublicError = require('./public_error.js');
-const strings = require('./string_factory.js').command;
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const Constants = require('./constants.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
-    throw new Error(strings.validation.noData);
+    throw new Error('No command data');
   } else if (!commandData.commandAliases || commandData.commandAliases.length === 0) {
-    throw new Error(strings.validation.noAliases);
+    throw new Error('Command does not have command aliases.');
   } else if (typeof commandData.commandAliases === typeof '') {
     commandData.commandAliases = [commandData.commandAliases];
   }
@@ -17,7 +16,7 @@ function sanitizeCommandData(commandData) {
   let aliases = [];
   for (let alias of commandData.commandAliases) {
     if (typeof alias !== typeof '' || alias === '') {
-      throw new Error(strings.validation.invalidAlias);
+      throw new Error('Command alias is not a string, or is an empty string.');
     }
 
     aliases.push(alias.toLowerCase());
@@ -25,15 +24,15 @@ function sanitizeCommandData(commandData) {
   commandData.commandAliases = aliases;
 
   if (!commandData.action || typeof commandData.action !== 'function') {
-    throw new Error(strings.validation.noAction);
+    throw new Error('Command does not have an action, or it is not a function.');
   } else if (commandData.serverAdminOnly !== undefined && typeof commandData.serverAdminOnly !== typeof true) {
-    throw new Error(strings.validation.invalidServerAdminOnly);
+    throw new Error('Invalid serverAdminOnly value');
   } else if (commandData.botAdminOnly !== undefined && typeof commandData.botAdminOnly !== typeof true) {
-    throw new Error(strings.validation.invalidBotAdminOnly);
+    throw new Error('Invalid botAdminOnly value');
   } else if (commandData.canBeChannelRestricted !== undefined && typeof commandData.canBeChannelRestricted !== typeof true) {
-    throw new Error(strings.validation.invalidCanBeChannelRestricted);
+    throw new Error('Invalid canBeChannelRestricted value');
   } else if (commandData.onlyInServer !== undefined && typeof commandData.onlyInServer !== typeof true) {
-    throw new Error(strings.validation.invalidOnlyInServer);
+    throw new Error('Invalid onlyInServer value');
   } else if (commandData.canBeChannelRestricted === undefined) {
     if (commandData.serverAdminOnly || commandData.botAdminOnly) {
       commandData.canBeChannelRestricted = false;
@@ -45,15 +44,15 @@ function sanitizeCommandData(commandData) {
   }
 
   if (commandData.canHandleExtension && typeof commandData.canHandleExtension !== 'function') {
-    throw new Error(strings.validation.invalidCanHandleExtension);
+    throw new Error('Command has a canHandleExtension property, but it\'s not a function. It must be.');
   }
 
   if (commandData.cooldown === undefined) {
     commandData.cooldown = 0;
   } else if (typeof commandData.cooldown !== typeof 1.5) {
-    throw new Error(strings.validation.invalidCooldown);
+    throw new Error('Invalid cooldown, it\'s not a number');
   } else if (commandData.cooldown < 0) {
-    throw new Error(strings.validation.negativeCooldown);
+    throw new Error('Cooldown is less than 0. Cannot reverse time.');
   }
   if (!commandData.uniqueId || typeof commandData.uniqueId !== typeof '') {
     throw new Error('The command needs to have a uniqueId');
@@ -68,10 +67,10 @@ function sanitizeCommandData(commandData) {
     commandData.requiredSettings = [];
   }
   if (!Array.isArray(commandData.requiredSettings)) {
-    throw new Error(strings.validation.invalidRequiredSettings);
+    throw new Error('Invalid value for requiredSettings. It must be a string or an array of strings.');
   }
   if (commandData.requiredSettings.find(setting => typeof setting !== typeof '')) {
-    throw new Error(strings.validation.nonStringSetting);
+    throw new Error('A required setting is not a string.');
   }
   return commandData;
 }
@@ -128,7 +127,7 @@ class Command {
 
     return {
       userFacingName: this.getEnabledSettingUserFacingName_(),
-      description: strings.settings.createEnabledSettingDescription(this.getEnabledSettingUserFacingName_()),
+      description: `This setting controls whether the ${this.getEnabledSettingUserFacingName_()} command (and all of its aliases) is allowed to be used or not.`,
       allowedValuesDescription: '**Enabled** or **Disabled**',
       defaultUserFacingValue: 'Enabled',
       uniqueId: this.getEnabledSettingUniqueId(),
@@ -141,22 +140,21 @@ class Command {
 
   async handle(bot, msg, suffix, config) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
-      let publicErrorMessage = strings.invokeFailure.createNotCooledDownString(msg.author.username, this.cooldown_);
-      throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, strings.invokeFailure.notCooledDownLogDescription);
+      let publicErrorMessage = `${msg.author.username}, that command has a ${this.cooldown_} second cooldown.`;
+      throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, 'Not cooled down');
     }
     let isBotAdmin = config.botAdminIds.indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
-      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.onlyBotAdmin, true, strings.invokeFailure.onlyBotAdminLog);
+      throw PublicError.createWithCustomPublicMessage('Only a bot admin can use that command.', true, 'User is not a bot admin');
     }
     if (this.onlyInServer_ && !msg.channel.guild) {
-      throw PublicError.createWithCustomPublicMessage(strings.invokeFailure.onlyInServer, true, strings.invokeFailure.onlyInServerLog);
+      throw PublicError.createWithCustomPublicMessage('That command can only be used in a server.', true, 'Not in a server');
     }
     if (this.serverAdminOnly_ && !isBotAdmin) {
       let isServerAdmin = this.monochrome_.userIsServerAdmin(msg);
 
       if (!isServerAdmin) {
-        let publicMessage = strings.invokeFailure.createMustBeServerAdminString(config.serverAdminRoleName);
-        throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.mustBeServerAdminLog);
+        throw PublicError.createWithCustomPublicMessage('You must be a server admin in order to use that command.', true, 'User is not a server admin');
       }
     }
 
@@ -177,9 +175,9 @@ class Command {
     } else {
       let publicMessage = '';
       if (!settingsMap[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
-        publicMessage = strings.invokeFailure.commandDisabled;
+        publicMessage = 'That command is disabled in this channel.';
       }
-      throw PublicError.createWithCustomPublicMessage(publicMessage, true, strings.invokeFailure.commandDisabledLog);
+      throw PublicError.createWithCustomPublicMessage(publicMessage, true, 'Command disabled');
     }
   }
 

@@ -3,7 +3,6 @@ const reload = require('require-reload')(require);
 const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');
 const PublicError = require('./../core/public_error.js');
-const strings = require('./string_factory.js').messageProcessorManager;
 
 function handleError(msg, err, logger, persistence) {
   const loggerTitle = 'MESSAGE';
@@ -23,24 +22,21 @@ class MessageProcessorManager {
     this.directory_ = directory;
   }
 
-  load() {
+  async load() {
     const loggerTitle = 'MESSAGE MANAGER';
     this.processors_ = [];
 
     if (this.directory_) {
-      return FileSystemUtils.getFilesInDirectory(this.directory_).then((processorFiles) => {
-        for (let processorFile of processorFiles) {
-          try {
-            let processorInformation = reload(processorFile);
-            let processor = new MessageProcessor(processorInformation, this.monochrome_);
-            this.processors_.push(processor);
-          } catch (err) {
-            this.monochrome_.getLogger().logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
-          }
+      const processorFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
+      for (let processorFile of processorFiles) {
+        try {
+          let processorInformation = reload(processorFile);
+          let processor = new MessageProcessor(processorInformation, this.monochrome_);
+          this.processors_.push(processor);
+        } catch (err) {
+          this.monochrome_.getLogger().logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
         }
-      }).catch(err => {
-        this.monochrome_.getLogger().logFailure(loggerTitle, strings.genericLoadingError, err);
-      });
+      }
     }
   }
 
