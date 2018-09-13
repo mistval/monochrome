@@ -1,6 +1,5 @@
 'use strict'
-const reload = require('require-reload')(require);
-const NavigationPage = reload('./navigation_page.js');
+const NavigationPage = require('./navigation_page.js');
 
 const LOGGER_TITLE = 'NAVIGATION';
 

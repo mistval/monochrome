@@ -8,6 +8,10 @@ const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const constants = require('./constants.js');
 const Blacklist = require('./blacklist.js');
+const MessageProcessorManager = require('./message_processor_manager.js');
+const Settings = require('./settings.js');
+const CommandManager = require('./command_manager.js');
+const RepeatingQueue = require('./repeating_queue.js');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -120,15 +124,18 @@ function validateAndSanitizeOptions(options) {
 class Monochrome {
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
-    this.logger_ = new Logger();
+    this.botMentionString_ = undefined;
 
-    this.botMentionString_ = '';
-    this.persistence_ = new Persistence(undefined, this.options_);
+    this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
+    this.persistence_ = new Persistence(this.options_.prefixes);
     this.blacklist_ = new Blacklist(this.persistence_, this.options_.botAdminIds);
-    this.logger_.initialize(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
+
+    this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
+    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_, this.persistence_);
+
     this.reload();
   }
 
@@ -165,30 +172,10 @@ class Monochrome {
   }
 
   reload() {
-    this.logger_.reload();
-    this.navigationManager_.reload();
-
-    const MessageProcessorManager = reload('./message_processor_manager.js');
-    const Settings = reload('./settings.js');
-    const CommandManager = reload('./command_manager.js');
-    const RepeatingQueue = reload('./repeating_queue.js');
-
-    this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
-    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_, this.persistence_);
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
-    this.commandManager_ = new CommandManager(
-      this.logger_,
-      this.options_,
-      this.settings_,
-      this.persistence_,
-    );
-
-    this.commandManager_.load(this.options_.commandsDirectoryPath, this);
+    this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this);
+    this.commandManager_.load();
     this.messageProcessorManager_.load(this.options_.messageProcessorsDirectoryPath, this);
-
-    if (this.ready_) {
-      this.loadExtensions_();
-    }
   }
 
   userIsServerAdmin(msg) {
@@ -226,8 +213,6 @@ class Monochrome {
     }
     this.connected_ = true;
     this.bot_.on('ready', () => {
-      this.ready_ = true;
-      this.loadExtensions_();
       this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
       this.botMentionString_ = '<@' + this.bot_.user.id + '>';
       this.rotateStatuses_();
@@ -300,18 +285,8 @@ class Monochrome {
     });
   }
 
-  loadExtensions_() {
-    if (this.options_.extensionsDirectoryPath_) {
-      this.extensionManager_ = new (reload('./extension_manager.js'))();
-      this.extensionManager_.load(this.extensionsDirectoryPath_, this);
-    }
-  }
-
   onMessageCreate_(msg) {
     try {
-      if (!this.ready_) {
-        return;
-      }
       if (msg.author.bot && this.options_.ignoreOtherBots) {
         return;
       }

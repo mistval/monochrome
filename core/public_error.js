@@ -1,9 +1,8 @@
 'use strict'
-const reload = require('require-reload')(require);
 const assert = require('assert');
-const strings = reload('./string_factory.js').publicError;
-const ErisUtils = reload('./util/eris_utils.js');
-const constants = reload('./constants.js');
+const strings = require('./string_factory.js').publicError;
+const ErisUtils = require('./util/eris_utils.js');
+const constants = require('./constants.js');
 
 const PublicMessageType = {
   NONE: 0,

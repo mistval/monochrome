@@ -4,16 +4,9 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const MockConfig = require('./mock_objects/mock_config.js');
 const Persistence = require('./../core/persistence.js');
 const Storage = require('node-persist');
-const MockLogger = require('./mock_objects/mock_logger.js');
 const strings = require('./../core/string_factory.js').command;
 const Settings = require('./../core/settings.js');
 
-const MsgNoPerms = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], []);
-const MsgIsServerAdminWithTag = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], ['Server Admin']);
-const MsgIsServerAdmin = new MockMessage('channel1', 'user1', 'Username', [], [], 'content', ['manageGuild']);
-const MsgIsBotAdmin = new MockMessage('channel1', 'bot-admin-id', 'Username');
-const MsgIsBotAndServerAdmin = new MockMessage('channel1', 'bot-admin-id', 'Username', ['Server Admin'], ['Server Admin']);
-const MsgDM = new MockMessage('channel1', 'not-bot-admin', 'Username');
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 
 const persistence = new Persistence({dir: './test/persistence'}, config);

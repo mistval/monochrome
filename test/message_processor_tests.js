@@ -4,7 +4,7 @@ const MockMessage = require('./mock_objects/mock_message.js');
 const MockConfig = require('./mock_objects/mock_config.js');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
-const Msg = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'a message');
+const Msg = MockMessage.simpleMessage;
 
 const NoNameData = {
   action(bot, msg) {

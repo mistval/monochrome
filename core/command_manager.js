@@ -1,11 +1,11 @@
 'use strict'
 const reload = require('require-reload')(require);
-const Command = reload('./command.js');
-const FileSystemUtils = reload('./util/file_system_utils.js');
-const PublicError = reload('./public_error.js');
-const HelpCommandHelper = reload('./help_command_helper.js');
-const strings = reload('./string_factory.js').commandManager;
-const Constants = reload('./constants.js');
+const Command = require('./command.js');
+const FileSystemUtils = require('./util/file_system_utils.js');
+const PublicError = require('./public_error.js');
+const HelpCommandHelper = require('./help_command_helper.js');
+const strings = require('./string_factory.js').commandManager;
+const Constants = require('./constants.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 
@@ -95,32 +95,30 @@ function createSettingsCategoryForCommands(userCommands) {
 }
 
 class CommandManager {
-  constructor(logger, config, settings, persistence) {
+  constructor(directory, monochrome) {
+    this.monochrome_ = monochrome;
     this.commands_ = [];
-    this.settings_ = settings;
-    this.logger_ = logger;
-    this.config_ = config;
-    this.persistence_ = persistence;
+    this.directory_ = directory;
   }
 
   getHelpCommandHelper() {
     return this.helpCommandHelper_;
   }
 
-  async load(directory, monochrome) {
+  async load() {
     const loggerTitle = 'COMMAND MANAGER';
     let commandDatasToLoad = [];
     this.commands_ = [];
 
     try {
-      if (directory) {
-        const commandFiles = await FileSystemUtils.getFilesInDirectory(directory);
+      if (this.directory_) {
+        const commandFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
         for (let commandFile of commandFiles) {
           try {
             let commandData = reload(commandFile);
             commandDatasToLoad.push(commandData);
           } catch (e) {
-            this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
+            this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
             continue;
           }
         }
@@ -129,36 +127,36 @@ class CommandManager {
       for (let commandData of commandDatasToLoad) {
         let command;
         try {
-          command = new Command(commandData, this.settings_, monochrome);
+          command = new Command(commandData, this.monochrome_.getSettings(), this.monochrome_);
         } catch (err) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId || (commandData.commandAliases ? commandData.commandAliases[0] : undefined)), err);
+          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId || (commandData.commandAliases ? commandData.commandAliases[0] : undefined)), err);
           continue;
         }
         if (commandData.uniqueId && this.commands_.find(cmd => cmd.uniqueId === commandData.uniqueId)) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueUniqueIdMessage(commandData.uniqueId));
+          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createNonUniqueUniqueIdMessage(commandData.uniqueId));
           continue;
         }
 
         let duplicateAlias = getDuplicateAlias(command, this.commands_);
         if (duplicateAlias) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueAliasMessage(commandData.uniqueId, duplicateAlias));
+          this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.createNonUniqueAliasMessage(commandData.uniqueId, duplicateAlias));
           continue;
         }
 
         this.commands_.push(command);
       }
 
-      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.config_, this.settings_, this.persistence_);
+      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getConfig(), this.monochrome_.getSettings(), this.monochrome_.getPersistence());
 
       const settingsCategory = createSettingsCategoryForCommands(this.commands_);
-      this.settings_.addNodeToRoot(settingsCategory);
+      this.monochrome_.getSettings().addNodeToRoot(settingsCategory);
 
-      if (this.config_.prefixes && (this.config_.prefixes.length > 1 || !!this.config_.prefixes[0])) {
-        const prefixesSetting = createPrefixesSetting(this.config_.prefixes);
-        this.settings_.addNodeToRoot(prefixesSetting);
+      if (this.monochrome_.getConfig().prefixes && (this.monochrome_.getConfig().prefixes.length > 1 || !!this.monochrome_.getConfig().prefixes[0])) {
+        const prefixesSetting = createPrefixesSetting(this.monochrome_.getConfig().prefixes);
+        this.monochrome_.getSettings().addNodeToRoot(prefixesSetting);
       }
     } catch (err) {
-      this.logger_.logFailure(loggerTitle, strings.validation.genericError, err);
+      this.monochrome_.getLogger().logFailure(loggerTitle, strings.validation.genericError, err);
     }
   }
 
@@ -168,7 +166,7 @@ class CommandManager {
   */
   processInput(bot, msg) {
     const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    const prefixes = this.persistence_.getPrefixesForServerId(serverId);
+    const prefixes = this.monochrome_.getPersistence().getPrefixesForServerId(serverId);
     let msgContent = msg.content.replace('\u3000', ' ');
     let spaceIndex = msgContent.indexOf(' ');
     let commandText = '';
@@ -207,13 +205,13 @@ class CommandManager {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      const result = await commandToExecute.handle(bot, msg, suffix, this.config_);
+      const result = await commandToExecute.handle(bot, msg, suffix, this.monochrome_.getConfig());
       if (typeof result === typeof '') {
         throw PublicError.createWithGenericPublicMessage(false, result);
       }
-      this.logger_.logInputReaction(loggerTitle, msg, '', true);
+      this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, '', true);
     } catch (err) {
-      handleCommandError(msg, err, this.config_, this.logger_, this.persistence_);
+      handleCommandError(msg, err, this.monochrome_.getConfig(), this.monochrome_.getLogger(), this.monochrome_.getPersistence());
     }
 
     return commandToExecute;

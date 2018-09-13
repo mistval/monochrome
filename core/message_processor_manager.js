@@ -1,9 +1,9 @@
 'use strict'
 const reload = require('require-reload')(require);
-const FileSystemUtils = reload('./util/file_system_utils.js');
-const MessageProcessor = reload('./message_processor.js');
-const PublicError = reload('./../core/public_error.js');
-const strings = reload('./string_factory.js').messageProcessorManager;
+const FileSystemUtils = require('./util/file_system_utils.js');
+const MessageProcessor = require('./message_processor.js');
+const PublicError = require('./../core/public_error.js');
+const strings = require('./string_factory.js').messageProcessorManager;
 
 function handleError(msg, err, logger, persistence) {
   const loggerTitle = 'MESSAGE';

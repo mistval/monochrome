@@ -1,6 +1,5 @@
 'use strict'
-const reload = require('require-reload')(require);
-const storage = reload('./util/node_persist_atomic.js');
+const storage = require('./util/node_persist_atomic.js');
 const state = require('./util/misc_unreloadable_data.js');
 
 const USER_DATA_KEY_PREFIX = 'User';
@@ -19,9 +18,9 @@ function keyForServerId(serverId) {
 * A utility to help with persisting data. Singleton.
 */
 class Persistence {
-  constructor(options, config) {
-    storage.init(options);
-    this.defaultPrefixes_ = config.prefixes || [''];
+  constructor(defaultPrefixes, nodePersistOptions) {
+    storage.init(nodePersistOptions);
+    this.defaultPrefixes_ = defaultPrefixes;
 
     if (!state.persistence) {
       state.persistence = {

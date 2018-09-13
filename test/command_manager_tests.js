@@ -1,5 +1,4 @@
 const CommandManager = require('./../core/command_manager.js');
-const MockLogger = require('./mock_objects/mock_logger.js');
 const MockMessage = require('./mock_objects/mock_message.js');
 const assert = require('assert');
 const MockConfig = require('./mock_objects/mock_config.js');
@@ -13,13 +12,6 @@ const Storage = require('node-persist');
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
 const persistence = new Persistence({dir: './test/persistence'}, config);
 Storage.clearSync();
-
-const MsgAboutCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!about suffix');
-const MsgAboutCommandExtension = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!aboutextension suffix');
-const MsgHelpCommand = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], 'bot!help');
-const MsgIsBotAdminReload = new MockMessage('channel1', 'bot-admin-id', 'Username', ['Server Admin'], [], '}reload');
-const MsgIsServerAdminReload = new MockMessage('channel1', 'user1', 'Username', [], [], '}reload', ['manageGuild']);
-const MsgNoPermsReload = new MockMessage('channel1', 'user1', 'Username', ['Server Admin'], [], '}reload');
 
 function settings() {
   Storage.clearSync();

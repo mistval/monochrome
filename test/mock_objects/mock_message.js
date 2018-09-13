@@ -1,46 +1,29 @@
+const MockChannel = require('./mock_channel.js');
+const MockUser = require('./mock_user.js');
+
 class MockMessage {
-  constructor(channelId, authorId, authorUsername, guildRoles, authorRoles, content, authorPermissions) {
-    this.member = {};
-    this.content = content;
-    this.author = {
-      id: authorId,
-      username: authorUsername,
-    };
-    this.channel = {
-      id: channelId,
-      createMessage(text) {
-        this.sentMessage = new MockMessage('channel', 'authorId', 'authorName', [], []);
-        return Promise.resolve(this.sentMessage);
-      }
-    };
-    if (guildRoles) {
-      this.channel.guild = {};
-      this.channel.guild.roles = [];
-      this.channel.guild.id = 'guild1';
-      for (let i = 0; i < guildRoles.length; ++i) {
-        this.channel.guild.roles.push({id: i, name: guildRoles[i]});
-      }
-    }
-    if (authorRoles) {
-      this.member.roles = [];
-      for (let authorRoleName of authorRoles) {
-        let guildRoleId = this.channel.guild.roles.findIndex(guildRole => {
-          return guildRole.name === authorRoleName;
-        });
-        this.member.roles.push(guildRoleId);
-      }
-    }
-    this.member.permission = {};
-    this.member.permission.json = {};
-    authorPermissions = authorPermissions || [];
-    for (let authorPermission of authorPermissions) {
-      this.member.permission.json[authorPermission] = true;
-    }
+  constructor(messageObject) {
+    const copy = JSON.parse(JSON.stringify(messageObject));
+    Object.assign(this, copy);
   }
 
-  delete() {
-    this.deleted = true;
+  setChannel(channel) {
+    const newMessage = new MockMessage(this);
+    newMessage.channel = channel;
+    return newMessage;
   }
 }
 
-module.exports = MockMessage;
+const baseMessage = new MockMessage({
+  channel: MockChannel.simpleDMChannel,
+  author: MockUser.simpleUser,
+  content: 'Some content',
+});
+
+const simpleDMMessage = new MockMessage(baseMessage);
+const simpleGuildMessage = baseMessage.setChannel(MockChannel.simpleGuildChannel);
+
+module.exports = {
+  simpleDMMessage,
+  simpleGuildMessage,
+};

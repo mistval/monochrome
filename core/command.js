@@ -1,10 +1,9 @@
 'use strict'
-const reload = require('require-reload')(require);
-const PublicError = reload('./public_error.js');
-const strings = reload('./string_factory.js').command;
-const SettingsConverters = reload('./settings_converters.js');
-const SettingsValidators = reload('./settings_validators.js');
-const Constants = reload('./constants.js');
+const PublicError = require('./public_error.js');
+const strings = require('./string_factory.js').command;
+const SettingsConverters = require('./settings_converters.js');
+const SettingsValidators = require('./settings_validators.js');
+const Constants = require('./constants.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
