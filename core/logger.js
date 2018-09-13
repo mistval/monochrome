@@ -9,7 +9,7 @@ const LOG_FILE_PREFIX = 'log_';
 
 function addPrecedingZero(timeString) {
   if (timeString.length === 1) {
-    return '0' + timeString;
+    return `0${timeString}`;
   }
   return timeString;
 }
@@ -25,7 +25,7 @@ function createTimestamp() {
   hour = addPrecedingZero(hour);
   minute = addPrecedingZero(minute);
   second = addPrecedingZero(second);
-  return '[' + month + '/' + day + '/' + year + ' ' + hour + ':' + minute + ':' + second + ']';
+  return `[${month}/${day}/${year} ${hour}:${minute}:${second}]`;
 }
 
 class Logger {
@@ -72,14 +72,16 @@ class Logger {
     logMessageBuilder.setColor(AnsiColor.RESET);
     logMessageBuilder.append(' >> ');
     if (inputReactorTitle) {
-      logMessageBuilder.append('[' + inputReactorTitle + '] ');
+      logMessageBuilder.append(`[${inputReactorTitle}]`);
+      logMessageBuilder.append(' ');
     }
     logMessageBuilder.setColor(AnsiColor.MAGENTA);
     logMessageBuilder.append(msg.content);
 
     if (succeeded) {
       logMessageBuilder.setColor(AnsiColor.RESET);
-      logMessageBuilder.append(' (' + turnAroundTimeMs + 'ms turnaround)');
+      logMessageBuilder.append(' ');
+      logMessageBuilder.append(`(${turnAroundTimeMs}ms turnaround)`);
     }
 
     if (succeeded) {
@@ -87,7 +89,8 @@ class Logger {
     } else {
       if (failureMessage) {
         logMessageBuilder.setColor(AnsiColor.RED);
-        logMessageBuilder.append(' FAILED (' + failureMessage + ')');
+        logMessageBuilder.append(' ');
+        logMessageBuilder.append(`FAILED (${failureMessage})`);
       }
       this.logFailure(title, logMessageBuilder);
     }
@@ -117,13 +120,10 @@ class Logger {
     messageBuilder.append(message);
     messageBuilder.setColor(AnsiColor.RESET);
 
-    let errString = '';
     if (err) {
-      errString += `${err.stack}\n`;
-
       messageBuilder.append(' ');
       messageBuilder.setColor(AnsiColor.RED);
-      messageBuilder.append(errString);
+      messageBuilder.append(err.stack);
       messageBuilder.setColor(AnsiColor.RESET);
     }
 
@@ -132,9 +132,9 @@ class Logger {
 
     if (this.logToFile_) {
       if (this.useAnsiColorsInLogFile) {
-        this.fileStream_.write(messageWithFormatting + '\n');
+        this.fileStream_.write(`${messageWithFormatting}\n`);
       } else {
-        this.fileStream_.write(messageBuilder.getMessageWithoutFormatting() + '\n');
+        this.fileStream_.write(`${messageBuilder.getMessageWithoutFormatting()}\n`);
       }
     }
   }
