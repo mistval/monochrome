@@ -13,7 +13,7 @@ const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail sil
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
 
-function handleCommandError(msg, err, config, logger, persistence) {
+function handleCommandError(msg, err, monochrome) {
   const loggerTitle = 'COMMAND';
   let errorToOutput = err;
   if (!errorToOutput.output) {
@@ -23,8 +23,7 @@ function handleCommandError(msg, err, config, logger, persistence) {
     }
   }
 
-  const prefix = persistence.getPrimaryPrefixFromMsg(msg);
-  errorToOutput.output(logger, loggerTitle, config, msg, false, prefix);
+  errorToOutput.output(loggerTitle, msg, false, monochrome);
 }
 
 function getDuplicateAlias(command, otherCommands) {
@@ -184,13 +183,13 @@ class CommandManager {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      const result = await commandToExecute.handle(bot, msg, suffix, this.monochrome_.getConfig());
+      const result = await commandToExecute.handle(bot, msg, suffix);
       if (typeof result === typeof '') {
         throw PublicError.createWithGenericPublicMessage(false, result);
       }
       this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, '', true);
     } catch (err) {
-      handleCommandError(msg, err, this.monochrome_.getConfig(), this.monochrome_.getLogger(), this.monochrome_.getPersistence());
+      handleCommandError(msg, err, this.monochrome_);
     }
 
     return commandToExecute;

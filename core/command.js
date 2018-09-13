@@ -138,12 +138,12 @@ class Command {
     };
   }
 
-  async handle(bot, msg, suffix, config) {
+  async handle(bot, msg, suffix) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
       let publicErrorMessage = `${msg.author.username}, that command has a ${this.cooldown_} second cooldown.`;
       throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, 'Not cooled down');
     }
-    let isBotAdmin = config.botAdminIds.indexOf(msg.author.id) !== -1;
+    let isBotAdmin = this.monochrome_.getBotAdminIds().indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
       throw PublicError.createWithCustomPublicMessage('Only a bot admin can use that command.', true, 'User is not a bot admin');
     }

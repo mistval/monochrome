@@ -4,15 +4,14 @@ const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');
 const PublicError = require('./../core/public_error.js');
 
-function handleError(msg, err, logger, persistence) {
+function handleError(msg, err, monochrome) {
   const loggerTitle = 'MESSAGE';
   let errorToOutput = err;
   if (!errorToOutput.output) {
     errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
   }
 
-  const prefix = persistence.getPrimaryPrefixFromMsg(msg);
-  errorToOutput.output(logger, loggerTitle, undefined, msg, true, prefix);
+  errorToOutput.output(loggerTitle, msg, true, monochrome);
 }
 
 class MessageProcessorManager {
@@ -51,7 +50,7 @@ class MessageProcessorManager {
               throw PublicError.createWithGenericPublicMessage(false, innerResult);
             }
             this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
-          }).catch(err => handleError(msg, err, this.monochrome_.getLogger(), this.monochrome_.getPersistence()));
+          }).catch(err => handleError(msg, err, this.monochrome_));
           return true;
         } else if (typeof result === typeof '') {
           throw PublicError.createWithGenericPublicMessage(false, result);

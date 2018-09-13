@@ -72,15 +72,18 @@ class PublicError extends Error {
     }
   }
 
-  output(logger, loggerTitle, config, msg, forceSilentFail, prefix) {
+  output(loggerTitle, msg, forceSilentFail, monochrome) {
+    const logger = monochrome.getLogger();
+    const prefix = monochrome.getPersistence().getPrimaryPrefixFromMsg(msg);
+
     let publicMessage = this.publicMessage_;
     if (forceSilentFail) {
       publicMessage = PublicMessageType.NONE;
     }
     if (publicMessage === PublicMessageType.GENERIC) {
-      publicMessage = config.genericErrorMessage;
+      publicMessage = monochrome.getGenericErrorMessage();
     } else if (publicMessage === PublicMessageType.INSUFFICIENT_PRIVILEGE) {
-      publicMessage = config.missingPermissionsErrorMessage;
+      publicMessage = monochrome.getMissingPermissionsErrorMessage();
     } else if (publicMessage === PublicMessageType.NONE) {
       publicMessage = undefined;
     }
