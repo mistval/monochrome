@@ -70,7 +70,6 @@ module.exports = {
     "]settings"
   ],
   "useANSIColorsInLogFiles": true,  // Whether ANSI color codes should be used in the log file or not. If you're going to be cat'ing log files in a console, you probably want this to be true. If you're going to be opening logs in notepad, you may want to set this to false.
-  "serverAdminRoleName": "monochrome", // Users with a role with this name will be considered server admins able to run server admin commands.
   "genericErrorMessage": "Oh no, that command had an error! Please tell my owner to check the logs!", // If a command errors and that error escapes into core code, this message will be sent to the channel. If you don't want a generic error message, this can be an empty string.
   "genericDMReply": "Hi <user>, bot!help to see my commands!", // The bot will reply with this when DM'd, if the DM doesn't contain a command. <user> is replaced with the user's name.
   "genericMentionReply": "Hi <@user>, say bot!help to see my commands!", // The bot will reply like this when mentioned. <@user> mentions the user.
@@ -264,7 +263,7 @@ And then open node_modules/monochrome-bot/documentation/index.html. However the 
 ## Best Practices And What to Return to Core
 This section mainly discusses what the action() function of your commands and message processors should return when invoked.
 
-The simplest thing you can do is return nothing from commands. From message processors, you can return true if the message processor agrees to handle the message, false if not. 
+The simplest thing you can do is return nothing from commands. From message processors, you can return true if the message processor agrees to handle the message, false if not.
 
 However, doing this does not take full advantage of monochrome's built-in error handling and logging.
 ### Returning promises
