@@ -113,7 +113,7 @@ class CommandManager {
       for (let commandFile of commandFiles) {
         try {
           let newCommandData = reload(commandFile);
-          let newCommand = new Command(newCommandData, this.monochrome_.getSettings(), this.monochrome_);
+          let newCommand = new Command(newCommandData, this.monochrome_);
 
           if (this.commands_.find(existingCommand => existingCommand.uniqueId === newCommand.uniqueId)) {
             throw new Error(`There is another command with the same uniqueId`);

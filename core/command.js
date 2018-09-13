@@ -76,7 +76,7 @@ function sanitizeCommandData(commandData) {
 }
 
 class Command {
-  constructor(commandData, settings, monochrome) {
+  constructor(commandData, monochrome) {
     commandData = sanitizeCommandData(commandData);
     this.aliases = commandData.commandAliases;
     this.uniqueId = commandData.uniqueId;
@@ -95,7 +95,6 @@ class Command {
     this.attachIsServerAdmin_ = !!commandData.attachIsServerAdmin;
     this.canBeChannelRestricted_ = commandData.canBeChannelRestricted;
     this.monochrome_ = monochrome;
-    this.settings_ = settings;
     this.requiredSettings_.push(this.getEnabledSettingUniqueId());
     this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
     this.hidden = !!commandData.hidden;
@@ -160,7 +159,7 @@ class Command {
 
     const settingsPromises = this.requiredSettings_.map(requiredSetting => {
       const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-      return this.settings_.getInternalSettingValue(requiredSetting, serverId, msg.channel.id, msg.author.id);
+      return this.monochrome_.getSettings().getInternalSettingValue(requiredSetting, serverId, msg.channel.id, msg.author.id);
     });
 
     const settingsArray = await Promise.all(settingsPromises);
