@@ -207,14 +207,6 @@ class Monochrome {
       return true;
     }
 
-    let serverAdminRole = msg.channel.guild.roles.find((role) => {
-      return role.name.toLowerCase() === this.options_.serverAdminRoleName.toLowerCase();
-    });
-
-    if (serverAdminRole && msg.member.roles.indexOf(serverAdminRole.id) !== -1) {
-      return true;
-    }
-
     if (this.options_.botAdminIds.indexOf(msg.author.id) !== -1) {
       return true;
     }
