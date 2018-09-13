@@ -1,6 +1,5 @@
 class HelpCommandHelper {
-  constructor(commands, config, settings, persistence) {
-    this.config_ = config;
+  constructor(commands, settings, persistence) {
     this.settings_ = settings;
     this.persistence_ = persistence;
     this.nonHiddenCommands_ = commands.filter(command => !command.hidden);

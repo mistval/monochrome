@@ -95,10 +95,11 @@ function createSettingsCategoryForCommands(userCommands) {
 }
 
 class CommandManager {
-  constructor(directory, monochrome) {
+  constructor(directory, prefixes, monochrome) {
     this.monochrome_ = monochrome;
     this.commands_ = [];
     this.directory_ = directory;
+    this.prefixes_ = prefixes;
   }
 
   getHelpCommandHelper() {
@@ -146,13 +147,13 @@ class CommandManager {
         this.commands_.push(command);
       }
 
-      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getConfig(), this.monochrome_.getSettings(), this.monochrome_.getPersistence());
+      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getSettings(), this.monochrome_.getPersistence());
 
       const settingsCategory = createSettingsCategoryForCommands(this.commands_);
       this.monochrome_.getSettings().addNodeToRoot(settingsCategory);
 
-      if (this.monochrome_.getConfig().prefixes && (this.monochrome_.getConfig().prefixes.length > 1 || !!this.monochrome_.getConfig().prefixes[0])) {
-        const prefixesSetting = createPrefixesSetting(this.monochrome_.getConfig().prefixes);
+      if (this.prefixes_ && (this.prefixes_.length > 1 || !!this.prefixes_[0])) {
+        const prefixesSetting = createPrefixesSetting(this.prefixes_);
         this.monochrome_.getSettings().addNodeToRoot(prefixesSetting);
       }
     } catch (err) {

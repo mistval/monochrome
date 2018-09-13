@@ -171,7 +171,7 @@ class Monochrome {
 
   reload() {
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
-    this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this);
+    this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this.getConfig().prefixes, this);
     this.commandManager_.load();
     this.messageProcessorManager_ = new MessageProcessorManager(this.options_.messageProcessorsDirectoryPath, this);
     this.messageProcessorManager_.load();
