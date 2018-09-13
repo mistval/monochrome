@@ -26,7 +26,7 @@ describe('Persistence', function() {
       return persistence.getGlobalData().then(data => {
         for (let i = 0; i < 100; ++i) {
           if (data[i.toString()] !== i) {
-            done('data does not match expectations at position ' + i.toString());
+            return done('data does not match expectations at position ' + i.toString());
           }
         }
         done();
