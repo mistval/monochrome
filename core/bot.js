@@ -11,7 +11,6 @@ const Blacklist = require('./blacklist.js');
 const MessageProcessorManager = require('./message_processor_manager.js');
 const Settings = require('./settings.js');
 const CommandManager = require('./command_manager.js');
-const RepeatingQueue = require('./repeating_queue.js');
 const assert = require('assert');
 
 const LOGGER_TITLE = 'CORE';
@@ -19,6 +18,12 @@ const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
 const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
+
+function updateStatusFromQueue(bot, queue) {
+  let nextStatus = queue.shift();
+  bot.editStatus({name: nextStatus});
+  queue.push(nextStatus);
+}
 
 function updateDiscordBotsDotOrg(config, bot, logger) {
   if (!config.discordBotsDotOrgAPIKey) {
@@ -96,6 +101,8 @@ function validateAndSanitizeOptions(options) {
     if (!options.statusRotationIntervalInSeconds && options.statusRotation.length > 1) {
       throw new Error('If statusRotation is provided and has more than one status, statusRotationIntervalInSeconds must also be provided');
     }
+  } else {
+    options.statusRotation = [];
   }
 
   if (options.botAdminIds && !Array.isArray(options.botAdminIds)) {
@@ -134,7 +141,6 @@ class Monochrome {
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
-    this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
 
     this.reload();
   }
@@ -221,7 +227,7 @@ class Monochrome {
     this.connected_ = true;
     this.bot_.on('ready', () => {
       this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
-      this.botMentionString_ = '<@' + this.bot_.user.id + '>';
+      this.botMentionString_ = this.bot_.user.mention;
       this.rotateStatuses_();
       this.startUpdateStatsInterval_();
     });
@@ -281,9 +287,9 @@ class Monochrome {
         this.logger_.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
       }
       this.persistence_.resetPrefixesForServerId(guild.id).then(() => {
-        this.logger_.logSuccess('RESET PREFIXES', `For ${guild.name}`);
+        this.logger_.logSuccess('RESET PREFIXES', `for ${guild.name}`);
       }).catch(err => {
-        this.logger_.logFailure('RESET PREFIXES', `For ${guild.name}`, err);
+        this.logger_.logFailure('RESET PREFIXES', `for ${guild.name}`, err);
       });
     });
 
@@ -300,7 +306,6 @@ class Monochrome {
       if (this.blacklist_.isUserBlacklisted(msg.author.id)) {
         return;
       }
-      msg.locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
       if (this.commandManager_.processInput(this.bot_, msg)) {
         return;
       }
@@ -316,7 +321,9 @@ class Monochrome {
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
       if (this.options_.genericErrorMessage) {
-        msg.channel.createMessage(this.options_.genericErrorMessage);
+        msg.channel.createMessage(this.options_.genericErrorMessage).catch(err => {
+          this.logger_.logFailure(LOGGER_TITLE, 'Error sending error message', err);
+        });
       }
     }
   }
@@ -334,20 +341,22 @@ class Monochrome {
   }
 
   rotateStatuses_() {
-    try {
-      if (this.rotateStatusesTimeoutHandle_) {
-        clearTimeout(this.rotateStatusesTimeoutHandle_);
-      }
-      if (this.options_.statusRotation) {
-        if (this.options_.statusRotation.length > 1) {
-          this.rotateStatusesTimeoutHandle_ = setTimeout(() => this.rotateStatuses_(), this.options_.statusRotationIntervalInSeconds * 1000);
-        }
+    let statusRotation = this.options_.statusRotation;
+    if (statusRotation.length === 0) {
+      return;
+    }
 
-        let nextStatus = this.statusQueue_.pop();
-        this.bot_.editStatus({name: nextStatus});
-      }
-    } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+    updateStatusFromQueue(this.bot_, statusRotation);
+
+    if (statusRotation.length > 1) {
+      let intervalInMs = this.options_.statusRotationIntervalInSeconds * 1000;
+      setInterval(() => {
+        try {
+          updateStatusFromQueue(this.bot_, statusRotation);
+        } catch (err) {
+          this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+        }
+      }, intervalInMs);
     }
   }
 
@@ -391,9 +400,9 @@ class Monochrome {
 
   createDMOrMentionReply_(configReply, msg) {
     try {
-      let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, '<@' + msg.author.id + '>');
+      let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, msg.author.mention);
       reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
-      const prefix = this.persistence_.getPrefixesForMessage(msg)[0];
+      const prefix = this.persistence_.getPrimaryPrefixFromMsg(msg);
       reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       return reply;
     } catch (err) {

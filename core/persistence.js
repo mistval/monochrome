@@ -86,7 +86,8 @@ class Persistence {
   * @returns {String} The primary prefix.
   */
   getPrimaryPrefixFromMsg(msg) {
-    return this.getPrefixesForServerId(msg.locationId)[0];
+    const locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
+    return this.getPrefixesForServerId(locationId)[0];
   }
 
   /**
