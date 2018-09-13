@@ -132,9 +132,7 @@ class Monochrome {
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
-
     this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
-    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_, this.persistence_);
 
     this.reload();
   }
@@ -175,7 +173,8 @@ class Monochrome {
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
     this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this);
     this.commandManager_.load();
-    this.messageProcessorManager_.load(this.options_.messageProcessorsDirectoryPath, this);
+    this.messageProcessorManager_ = new MessageProcessorManager(this.options_.messageProcessorsDirectoryPath, this);
+    this.messageProcessorManager_.load();
   }
 
   userIsServerAdmin(msg) {

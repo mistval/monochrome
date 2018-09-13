@@ -160,10 +160,6 @@ class CommandManager {
     }
   }
 
-  /**
-  * Tries to process user input as a command.
-  * Note: this returning true does not mean that a command was necessarily successful. It only means that the input was handed to a command to process.
-  */
   processInput(bot, msg) {
     const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
     const prefixes = this.monochrome_.getPersistence().getPrefixesForServerId(serverId);
