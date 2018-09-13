@@ -98,6 +98,7 @@ class CommandManager {
     this.commands_ = [];
     this.directory_ = directory;
     this.prefixes_ = prefixes;
+    this.persistence_ = monochrome.getPersistence();
   }
 
   getHelpCommandHelper() {
@@ -143,9 +144,23 @@ class CommandManager {
   }
 
   processInput(bot, msg) {
-    const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    const prefixes = this.monochrome_.getPersistence().getPrefixesForServerId(serverId);
-    let msgContent = msg.content.replace('\u3000', ' ');
+    let serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
+    let prefixes = this.persistence_.getPrefixesForServerId(serverId);
+    let msgContent = msg.content;
+
+    // Break out early if no matching prefixes
+    const numPrefixes = prefixes.length;
+    const lastIndex = numPrefixes - 1;
+    for (let i = 0; i < numPrefixes; ++i) {
+      if (msgContent.startsWith(prefixes[i])) {
+        break
+      }
+      if (i === lastIndex) {
+        return false;
+      }
+    }
+
+    msgContent = msgContent.replace('\u3000', ' ');
     let spaceIndex = msgContent.indexOf(' ');
     let commandText = '';
     if (spaceIndex === -1) {
