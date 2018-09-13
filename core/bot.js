@@ -12,6 +12,7 @@ const MessageProcessorManager = require('./message_processor_manager.js');
 const Settings = require('./settings.js');
 const CommandManager = require('./command_manager.js');
 const RepeatingQueue = require('./repeating_queue.js');
+const assert = require('assert');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -69,6 +70,7 @@ function createGuildLeaveJoinLogString(guild, logger) {
     let owner = guild.members.get(guild.ownerID).user;
     return guild.name + ' owned by ' + owner.username + '#' + owner.discriminator;
   } catch (err) {
+    // Sometimes this happens because the owner isn't cached or something.
     logger.logFailure(LOGGER_TITLE, 'Couldn\'t create join/leave guild log string', err);
     return '<Error getting guild name or owner name>';
   }
@@ -158,6 +160,7 @@ class Monochrome {
   }
 
   getSettings() {
+    assert(this.settings_, 'Settings not available (probably a bug in monochrome)');
     return this.settings_;
   }
 
@@ -178,6 +181,7 @@ class Monochrome {
   }
 
   getCommandManager() {
+    assert(this.commandManager_, 'Command manager not available (probably a bug in monochrome)');
     return this.commandManager_;
   }
 
