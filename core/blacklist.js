@@ -33,7 +33,7 @@ class Blacklist {
 
   async blacklistUser(bot, userId, reason) {
     if (this.botAdminIds_.indexOf(userId) !== -1) {
-      //throw PublicError.createWithCustomPublicMessage(`<@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
+      throw PublicError.createWithCustomPublicMessage(`<@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
     }
 
     this.reasonForUserId_[userId] = reason;
