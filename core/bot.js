@@ -35,11 +35,11 @@ function updateDiscordBotsDotOrg(config, bot, logger) {
       'Authorization': config.discordBotsDotOrgAPIKey,
       'Accept': 'application/json',
     },
-    uri: 'https://discordbots.org/api/bots/' + bot.user.id + '/stats',
-    body: '{"server_count": ' + bot.guilds.size.toString() + '}',
+    uri: `https://discordbots.org/api/bots/${bot.user.id}/stats`,
+    body: `{"server_count": ${bot.guilds.size.toString()}}`,
     method: 'POST',
   }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, 'Sent stats to discordbots.org: ' + bot.guilds.size.toString() + ' servers.');
+    logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${bot.guilds.size.toString()} servers.`);
   }).catch(err => {
     logger.logFailure(LOGGER_TITLE, 'Error sending stats to discordbots.org', err);
   });
@@ -55,11 +55,11 @@ function updateBotsDotDiscordDotPw(config, bot, logger) {
       'Authorization': config.botsDotDiscordDotPwAPIKey,
       'Accept': 'application/json',
     },
-    uri: 'https://bots.discord.pw/api/bots/' + bot.user.id + '/stats',
-    body: '{"server_count": ' + bot.guilds.size.toString() + '}',
+    uri: `https://bots.discord.pw/api/bots/${bot.user.id}/stats`,
+    body: `{"server_count": ${bot.guilds.size.toString()}}`,
     method: 'POST',
   }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, 'Sent stats to bots.discord.pw: ' + bot.guilds.size.toString() + ' servers.');
+    logger.logSuccess(LOGGER_TITLE, `Sent stats to bots.discord.pw: ${bot.guilds.size.toString()} servers.`);
   }).catch(err => {
     logger.logFailure(LOGGER_TITLE, 'Error sending stats to bots.discord.pw', err);
   });
@@ -73,7 +73,7 @@ function updateStats(config, bot, logger) {
 function createGuildLeaveJoinLogString(guild, logger) {
   try {
     let owner = guild.members.get(guild.ownerID).user;
-    return guild.name + ' owned by ' + owner.username + '#' + owner.discriminator;
+    return `${guild.name} owned by ${owner.username}#${owner.discriminator}`;
   } catch (err) {
     // Sometimes this happens because the owner isn't cached or something.
     logger.logFailure(LOGGER_TITLE, 'Couldn\'t create join/leave guild log string', err);
@@ -133,7 +133,6 @@ function validateAndSanitizeOptions(options) {
 class Monochrome {
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
-    this.botMentionString_ = undefined;
 
     this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger_);
@@ -224,10 +223,10 @@ class Monochrome {
     if (this.connected_) {
       return;
     }
+
     this.connected_ = true;
     this.bot_.on('ready', () => {
       this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
-      this.botMentionString_ = this.bot_.user.mention;
       this.rotateStatuses_();
       this.startUpdateStatsInterval_();
     });
@@ -244,7 +243,7 @@ class Monochrome {
     this.bot_.on('error', (err, shardId) => {
       let errorMessage = 'Error';
       if (shardId) {
-        errorMessage += ' on shard ' + shardId;
+        errorMessage += ` on shard ${shardId}`;
       }
       this.logger_.logFailure(LOGGER_TITLE, errorMessage, err);
     });
@@ -254,19 +253,19 @@ class Monochrome {
     });
 
     this.bot_.on('shardDisconnect', (err, id) => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Shard ' + id + ' disconnected', err);
+      this.logger_.logFailure(LOGGER_TITLE, `Shard ${id} disconnected`, err);
     });
 
     this.bot_.on('shardResume', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' reconnected');
+      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} reconnected`);
     });
 
     this.bot_.on('warn', message => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Warning: ' + message);
+      this.logger_.logFailure(LOGGER_TITLE, `Warning: ${message}`);
     });
 
     this.bot_.on('shardReady', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' connected');
+      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} connected`);
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
@@ -319,7 +318,7 @@ class Monochrome {
         return;
       }
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level (probably a bug in monochrome)', err);
       if (this.options_.genericErrorMessage) {
         msg.channel.createMessage(this.options_.genericErrorMessage).catch(err => {
           this.logger_.logFailure(LOGGER_TITLE, 'Error sending error message', err);
@@ -361,7 +360,7 @@ class Monochrome {
   }
 
   sendDmOrMentionReply_(toMsg, replyTemplate) {
-    toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
+    return toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
       this.logger_.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
     });
   }
@@ -385,8 +384,12 @@ class Monochrome {
   }
 
   tryHandleMention_(msg) {
+    if (!this.bot_.user) {
+      return;
+    }
+
     try {
-      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.options_.genericMentionReply) {
+      if (msg.mentions.length > 0 && msg.content.indexOf(this.bot_.user.mention) === 0 && this.options_.genericMentionReply) {
         this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
         this.logger_.logInputReaction('MENTION', msg, '', true);
         return true;
