@@ -33,7 +33,7 @@ class MessageProcessorManager {
           let processor = new MessageProcessor(processorInformation, this.monochrome_);
           this.processors_.push(processor);
         } catch (err) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, 'Failed to load message processor from file: ' + processorFile, err);
+          this.monochrome_.getLogger().logFailure(loggerTitle, `Failed to load message processor from file: ${processorFile}`, err);
         }
       }
     }
@@ -58,8 +58,7 @@ class MessageProcessorManager {
           this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
           return true;
         } else if (result !== false) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, 'Message processor \'' + processor.name +
-            '\' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.');
+          this.monochrome_.getLogger().logFailure(loggerTitle, `Message processor '${processor.name}' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.`);
         }
       } catch (err) {
         handleError(msg, err, this.monochrome_.getLogger(), this.monochrome_.getPersistence());

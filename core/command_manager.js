@@ -7,14 +7,15 @@ const HelpCommandHelper = require('./help_command_helper.js');
 const Constants = require('./constants.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
+const assert = require('assert');
 
 const COMMAND_CATEGORY_NAME = 'Enabled commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail silently';
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
+const LOGGER_TITLE = 'COMMAND';
 
 function handleCommandError(msg, err, monochrome) {
-  const loggerTitle = 'COMMAND';
   let errorToOutput = err;
   if (!errorToOutput.output) {
     errorToOutput = PublicError.createInsufficientPrivilegeError(err);
@@ -23,7 +24,7 @@ function handleCommandError(msg, err, monochrome) {
     }
   }
 
-  errorToOutput.output(loggerTitle, msg, false, monochrome);
+  return errorToOutput.output(LOGGER_TITLE, msg, false, monochrome);
 }
 
 function getDuplicateAlias(command, otherCommands) {
@@ -55,6 +56,7 @@ function createPrefixesSetting(defaultPrefixes) {
     defaultUserFacingValue: defaultPrefixes.join(' '),
     allowedValuesDescription: 'A **space separated** list of prefixes',
     uniqueId: PREFIXES_SETTING_UNIQUE_ID,
+    serverSetting: true,
     userSetting: false,
     channelSetting: false,
     requireConfirmation: true,
@@ -73,6 +75,8 @@ function createDisabledCommandsFailSilentlySetting() {
     defaultUserFacingValue: 'Disabled',
     allowedValuesDescription: '**Enabled** or **Disabled**',
     uniqueId: Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID,
+    serverSetting: true,
+    channelSetting: true,
     userSetting: false,
     convertUserFacingValueToInternalValue: SettingsConverters.createStringToBooleanConverter('enabled', 'disabled'),
     convertInternalValueToUserFacingValue: SettingsConverters.createBooleanToStringConverter('Enabled', 'Disabled'),
@@ -102,11 +106,11 @@ class CommandManager {
   }
 
   getHelpCommandHelper() {
+    assert(this.helpCommandHelper_, 'Help command helper not available');
     return this.helpCommandHelper_;
   }
 
   async load() {
-    const loggerTitle = 'COMMAND MANAGER';
     this.commands_ = [];
 
     if (this.directory_) {
@@ -127,7 +131,7 @@ class CommandManager {
 
           this.commands_.push(newCommand);
         } catch (e) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, `Failed to load command in file: ${commandFile}`, e);
+          this.monochrome_.getLogger().logFailure(LOGGER_TITLE, `Failed to load command in file: ${commandFile}`, e);
         }
       }
     }
@@ -192,7 +196,6 @@ class CommandManager {
   async executeCommand_(bot, msg, commandToExecute, msgContent, spaceIndex, prefix, extension) {
     msg.prefix = prefix;
     msg.extension = extension;
-    const loggerTitle = 'COMMAND';
     let suffix = '';
     if (spaceIndex !== -1) {
       suffix = msgContent.substring(spaceIndex + 1).trim();
@@ -202,7 +205,7 @@ class CommandManager {
       if (typeof result === typeof '') {
         throw PublicError.createWithGenericPublicMessage(false, result);
       }
-      this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, '', true);
+      this.monochrome_.getLogger().logInputReaction(LOGGER_TITLE, msg, '', true);
     } catch (err) {
       handleCommandError(msg, err, this.monochrome_);
     }
