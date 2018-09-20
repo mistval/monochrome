@@ -156,7 +156,7 @@ class Persistence {
    * that no one else can be editing the value for the same key at the same time.
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
    */
-  async editGlobalData(editunction) {
+  async editGlobalData(editFunction) {
     return this.editData(GLOBAL_DATA_KEY, editFunction);
   }
 
@@ -166,7 +166,12 @@ class Persistence {
    * @param {string[]} prefixes - The new prefixes for the server.
    */
   async editPrefixesForServerId(serverId, prefixes) {
-    this.prefixesForServerId_[serverId] = prefixes;
+    if (!prefixes) {
+      delete this.prefixesForServerId_[serverId];
+    } else {
+      this.prefixesForServerId_[serverId] = prefixes;
+    }
+
     return this.editData(GLOBAL_DATA_KEY, data => {
       data.prefixes = data.prefixes || {};
       data.prefixes[serverId] = prefixes;
@@ -179,8 +184,7 @@ class Persistence {
    * @param {string} serverId
    */
   async resetPrefixesForServerId(serverId) {
-    delete this.prefixesForServerId_[serverId];
-    return this.editPrefixesForServerId(serverId, this.prefixesForServerId_);
+    return this.editPrefixesForServerId(serverId, undefined);
   }
 }
 
