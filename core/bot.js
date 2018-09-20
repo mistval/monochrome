@@ -130,7 +130,47 @@ function validateAndSanitizeOptions(options) {
   return options;
 }
 
+/**
+ * Options to customize the behavior of monochrome. botToken is the only required property.
+ * @typedef {Object} MonochromeOptions
+ * @property {string} botToken - Your bot's token.
+ * @property {string[]} [prefixes=['']] - The bot's default command prefixes.
+ * @property {string} [commandsDirectoryPath=undefined] - The path of the directory (must exist) where your command files exist.
+ * @property {string} [messageProcessorsDirectoryPath=undefined] - The path of the directory (must exist) where your message processor files exist.
+ * @property {string} [logDirectoryPath=undefined] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
+ * @property {string} [settingsFilePath=undefined] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
+ * @property {boolean} [useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
+ * @property {string} [genericErrorMessage=undefined] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
+ * @property {string} [missingPermissionsErrorMessage=undefined] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send messages in the channel)
+ * @property {string} [genericDMReply=undefined] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response.
+ * @property {string} [genericMentionReply=undefined] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message.
+ * @property {string} [inviteLinkDmReply=undefined] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server.
+ * @property {string[]} [statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
+ * @property {number} [statusRotationIntervalInSeconds=undefined] - The bot will change their status on this interval (if the statusRotation has more than one status).
+ * @property {string} discordBotsDotOrgAPIKey - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
+ * @property {string} botsDotDiscordDotPwAPIKey - If you have an API key from {@link https://bots.discord.pw/} you can provide it here and your server count will be sent regularly.
+ * @property {Object} [erisOptions=undefined] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
+ */
+
+ /**
+  * The Eris Client object that monochrome is built on top of.
+  * @external "Eris.Client"
+  * @see {@link https://abal.moe/Eris/docs/Client}
+  */
+
+/**
+ * Represents a message received from the Discord API.
+ * @external "Eris.Message"
+ * @see {@link https://abal.moe/Eris/docs/Message}
+
+/**
+ * The main entry point into the framework. You construct this and call connect()
+ * on it to start your bot.
+ */
 class Monochrome {
+  /**
+   * @param {MonochromeOptions} - Options to customize bot behavior.
+   */
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
 
@@ -144,26 +184,52 @@ class Monochrome {
     this.reload();
   }
 
+  /**
+   * Get the Eris client object.
+   * You can subscribe to events on the client, use it to lookup users, etc.
+   * @returns {Eris.Client}
+   * @see {@link https://abal.moe/Eris/docs/Client}
+   */
   getErisBot() {
     return this.bot_;
   }
 
+  /**
+   * Get the Logger, which you can use to log messages.
+   * @returns {Logger}
+   */
   getLogger() {
     return this.logger_;
   }
 
+  /**
+   * Get the NavigationManager, with which you can register and send navigations.
+   * @returns {NavigationManager}
+   */
   getNavigationManager() {
     return this.navigationManager_;
   }
 
+  /**
+   * Get the Persistence object, with which you can read and store persistent data.
+   * @returns {Persistence}
+   */
   getPersistence() {
     return this.persistence_;
   }
 
+  /**
+   * Get the Blacklist, which you can use to blacklist users and manage blacklisted users.
+   * @returns {Blacklist}
+   */
   getBlacklist() {
     return this.blacklist_;
   }
 
+  /**
+   * Get the Settings object, with which you can read and store persistent settings.
+   * @returns {Settings}
+   */
   getSettings() {
     assert(this.settings_, 'Settings not available (probably a bug in monochrome)');
     return this.settings_;
@@ -185,11 +251,20 @@ class Monochrome {
     return this.options_.missingPermissionsErrorMessage;
   }
 
+  /**
+   * Get the CommandManager.
+   * @returns {CommandManager}
+   */
   getCommandManager() {
     assert(this.commandManager_, 'Command manager not available (probably a bug in monochrome)');
     return this.commandManager_;
   }
 
+  /**
+   * Reload your commands, message processors, and settings. You can use this
+   * to add, remove, and edit commands and other code, without having to restart
+   * your bot.
+   */
   reload() {
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
     this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this.options_.prefixes, this);
@@ -198,6 +273,11 @@ class Monochrome {
     this.messageProcessorManager_.load();
   }
 
+  /**
+   * Check if the sender of a message is a server admin (or bot admin).
+   * @param {Eris.Message} - The Eris message. {@link https://abal.moe/Eris/docs/Message}
+   * @returns {boolean}
+   */
   userIsServerAdmin(msg) {
     if (!msg.channel.guild) {
       return true;
@@ -219,6 +299,9 @@ class Monochrome {
     return false;
   }
 
+  /**
+   * Connect to Discord and start listening for users to send commands to the bot.
+   */
   connect() {
     if (this.connected_) {
       return;
