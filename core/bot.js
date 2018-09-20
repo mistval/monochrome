@@ -191,6 +191,7 @@ class Monochrome {
    * @see {@link https://abal.moe/Eris/docs/Client}
    */
   getErisBot() {
+    assert(this.bot_, 'The bot object is not available (probably a bug in monochrome)');
     return this.bot_;
   }
 
@@ -199,6 +200,7 @@ class Monochrome {
    * @returns {Logger}
    */
   getLogger() {
+    assert(this.logger_, 'Logger not available (probably a bug in monochrome)');
     return this.logger_;
   }
 
@@ -207,6 +209,7 @@ class Monochrome {
    * @returns {NavigationManager}
    */
   getNavigationManager() {
+    assert(this.navigationManager_, 'NavigationManager not available (probably a bug in monochrome)');
     return this.navigationManager_;
   }
 
@@ -215,6 +218,7 @@ class Monochrome {
    * @returns {Persistence}
    */
   getPersistence() {
+    assert(this.persistence_, 'Persistence not available (probably a bug in monochrome)');
     return this.persistence_;
   }
 
@@ -223,6 +227,7 @@ class Monochrome {
    * @returns {Blacklist}
    */
   getBlacklist() {
+    assert(this.blacklist_, 'Blacklist not available (probably a bug in monochrome)');
     return this.blacklist_;
   }
 
