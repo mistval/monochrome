@@ -20,6 +20,11 @@ function leaveGuildsWithExplanation(bot, guilds, reason) {
   return Promise.all(guilds.map(guild => leaveGuildWithExplanation(bot, guild, reason)));
 }
 
+/**
+ * Maintains a list of blacklisted users whom the bot should not interact with.
+ * The final resting place of command spammers and people you don't like.
+ * @hideconstructor
+ */
 class Blacklist {
   constructor(bot, persistence, botAdminIds) {
     this.reasonForUserId_ = {};
@@ -27,12 +32,22 @@ class Blacklist {
     this.botAdminIds_ = botAdminIds;
     this.bot_ = bot;
 
-    persistence.getData(BLACKLIST_PERSISTENCE_KEY).then(data => {
+    this.ready = persistence.getData(BLACKLIST_PERSISTENCE_KEY).then(data => {
       this.reasonForUserId_ = data;
     });
   }
 
+  /**
+  * Blacklist a user. The user will be completely ignored by the bot, and any guilds
+  * that they own will be left.
+  * @param {string} userId - The ID of the user to blacklist.
+  * @param {string} reason - The reason the user was blacklisted. If the user is a guild owner,
+  *   the bot will send a message with this reason to a channel in the guild before leaving.
+  *   If the user is not a guild owner, they will just be silently ignored and will not see
+  *   this reason.
+  */
   async blacklistUser(userId, reason) {
+    await this.ready;
     if (this.botAdminIds_.indexOf(userId) !== -1) {
       throw PublicError.createWithCustomPublicMessage(`<@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
     }
@@ -44,7 +59,8 @@ class Blacklist {
     return leaveGuildsWithExplanation(this.bot_, blacklistedGuilds, reason);
   }
 
-  leaveGuildIfBlacklisted(guild) {
+  async leaveGuildIfBlacklisted(guild) {
+    await this.ready;
     const blacklisted = this.isUserBlacklisted(guild.ownerID);
     if (!blacklisted) {
       return;
@@ -54,16 +70,40 @@ class Blacklist {
     return leaveGuildWithExplanation(this.bot_, guild, reason);
   }
 
-  unblacklistUser(userId) {
+  /**
+   * Remove a user from the blacklist so that they can interact with the bot again.
+   * @param {string} userId - The ID of the user to unblacklist.
+   */
+  async unblacklistUser(userId) {
+    await this.ready;
     delete this.reasonForUserId_[userId];
     return this.updatePersistence_();
   }
 
-  isUserBlacklisted(userId) {
+  /**
+   * Check if a user is blacklisted without first checking if the blacklist
+   * has loaded. This function is meant to be called in hot paths and may incorrectly
+   * return false if called immediately after the bot is started. Considering using
+   * the isUserBlacklisted method instead.
+   * @param {string} userId - The ID of the user to check the blacklist for.
+   * @return {boolean}
+   */
+  isUserBlacklistedQuick(userId) {
     return !!this.reasonForUserId_[userId];
   }
 
-  updatePersistence_() {
+  /**
+   * Check if a user is blacklisted.
+   * @param {string} userId - The ID of the user to check the blacklist for.
+   * @return {boolean}
+   */
+  async isUserBlacklisted(userId) {
+    await this.ready;
+    return !!this.reasonForUserId_[userId];
+  }
+
+  async updatePersistence_() {
+    await this.ready;
     return this.persistence_.editData(BLACKLIST_PERSISTENCE_KEY, () => this.reasonForUserId_);
   }
 }

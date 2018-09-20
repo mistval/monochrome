@@ -302,7 +302,7 @@ class Monochrome {
       if (msg.author.bot && this.options_.ignoreOtherBots) {
         return;
       }
-      if (this.blacklist_.isUserBlacklisted(msg.author.id)) {
+      if (this.blacklist_.isUserBlacklistedQuick(msg.author.id)) {
         return;
       }
       if (this.commandManager_.processInput(this.bot_, msg)) {
