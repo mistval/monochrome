@@ -28,6 +28,10 @@ function createTimestamp() {
   return `[${month}/${day}/${year} ${hour}:${minute}:${second}]`;
 }
 
+/**
+ * Log events to the console and to the log file.
+ * @hideconstructor
+ */
 class Logger {
   constructor(logDirectoryPath, useAnsiColorsInLogFile, consoleOverride) {
     this.console_ = consoleOverride || console;
@@ -96,11 +100,22 @@ class Logger {
     }
   }
 
+  /**
+   * Log a message with a successful green color.
+   * @param {string} title - The title of the message to log.
+   * @param {string} message - The body of the message to log.
+   */
   logSuccess(title, message) {
     this.checkState_();
     this.logMessage(title, '\u001b[32m', message);
   }
 
+  /**
+   * Log a message with an unsuccessful red color.
+   * @param {string} title - The title of the message to log.
+   * @param {string} message - The body of the message to log.
+   * @param {Error} [err] - The exception that occurred, if applicable. Its stack trace will be logged.
+   */
   logFailure(title, message, err) {
     this.checkState_();
     this.logMessage(title, '\u001b[31m', message, err);
