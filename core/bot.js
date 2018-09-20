@@ -134,10 +134,10 @@ class Monochrome {
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
 
+    this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger_);
-    this.blacklist_ = new Blacklist(this.persistence_, this.options_.botAdminIds);
-    this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
+    this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
 

@@ -21,17 +21,18 @@ function leaveGuildsWithExplanation(bot, guilds, reason) {
 }
 
 class Blacklist {
-  constructor(persistence, botAdminIds) {
+  constructor(bot, persistence, botAdminIds) {
     this.reasonForUserId_ = {};
     this.persistence_ = persistence;
     this.botAdminIds_ = botAdminIds;
+    this.bot_ = bot;
 
     persistence.getData(BLACKLIST_PERSISTENCE_KEY).then(data => {
       this.reasonForUserId_ = data;
     });
   }
 
-  async blacklistUser(bot, userId, reason) {
+  async blacklistUser(userId, reason) {
     if (this.botAdminIds_.indexOf(userId) !== -1) {
       throw PublicError.createWithCustomPublicMessage(`<@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
     }
@@ -39,21 +40,21 @@ class Blacklist {
     this.reasonForUserId_[userId] = reason;
     await this.updatePersistence_();
 
-    const blacklistedGuilds = bot.guilds.filter(guild => guild.ownerID === userId);
-    return leaveGuildsWithExplanation(bot, blacklistedGuilds, reason);
+    const blacklistedGuilds = this.bot_.guilds.filter(guild => guild.ownerID === userId);
+    return leaveGuildsWithExplanation(this.bot_, blacklistedGuilds, reason);
   }
 
-  leaveGuildIfBlacklisted(bot, guild) {
+  leaveGuildIfBlacklisted(guild) {
     const blacklisted = this.isUserBlacklisted(guild.ownerID);
     if (!blacklisted) {
       return;
     }
 
     const reason = this.reasonForUserId_[guild.ownerID];
-    return leaveGuildWithExplanation(bot, guild, reason);
+    return leaveGuildWithExplanation(this.bot_, guild, reason);
   }
 
-  unblacklistUser(bot, userId) {
+  unblacklistUser(userId) {
     delete this.reasonForUserId_[userId];
     return this.updatePersistence_();
   }
