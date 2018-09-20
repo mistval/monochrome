@@ -12,20 +12,7 @@ function sendReactions(msg, reactions, logger) {
   }
 }
 
-/**
-* Represents a navigation. A navigation allows its owner to browse information by using reactions.
-* In response to the reactions, the bot edits its message.
-* Note: in order to mostly work around a Discord desktop client bug (https://trello.com/c/Nnkj5D0W/1154-editing-a-message-may-sometimes-cause-part-of-previous-message-to-appear),
-*   the message gets edited twice per reaction. This can easily lead to light rate-limiting against your bot, which is handled seemlessly (thanks Eris).
-*   There is also rate-limiting built into this class, though it does not limit the rate sufficiently to prevent Discord's ratelimiting.
-*/
 class Navigation {
-  /**
-  * @param {String} ownerId - The Discord user ID of this navigation's owner (who is allowed to manipulate it with reactions).
-  * @param {String} showPageArrows - Whether the page arrows should be shown, or only the chapter emotes.
-  * @param {String} initialEmojiName - The unicode emote name for the chapter that should be shown initially.
-  * @param {Object} chapterForEmojiName - A dictionary mapping from unicode emoji to NavigationChapter.
-  */
   constructor(ownerId, showPageArrows, initialEmojiName, chapterForEmojiName) {
     let keys = Object.keys(chapterForEmojiName);
     if (keys.indexOf(initialEmojiName) === -1) {
@@ -38,9 +25,6 @@ class Navigation {
     this.actionAccumulator_ = new ActionAccumulator(EDIT_DELAY_TIME_IN_MS);
   }
 
-  /**
-  * @param {Eris.Message} msg - The message the navigation is getting created in response to. The navigation will be sent to the same channel.
-  */
   createMessage(msg, logger) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage(logger).then(navigationPage => {
@@ -72,12 +56,6 @@ class Navigation {
     });
   }
 
-  /**
-  * When an emoji is added or removed, this gets called and, if appropriate, the state of the navigation changes.
-  * @param {Eris.Client} bot - The Eris bot.
-  * @param {String} emoji - The unicode emoji that was toggled.
-  * @param {String} userId - The id of the user who toggled the emoji.
-  */
   handleEmojiToggled(bot, emoji, userId, logger) {
     if (bot.user.id === userId) {
       return;
