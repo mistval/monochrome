@@ -130,28 +130,6 @@ function validateAndSanitizeOptions(options) {
   return options;
 }
 
-/**
- * Options to customize the behavior of monochrome. botToken is the only required property.
- * @typedef {Object} MonochromeOptions
- * @property {string} botToken - Your bot's token.
- * @property {string[]} [prefixes=['']] - The bot's default command prefixes.
- * @property {string} [commandsDirectoryPath=undefined] - The path of the directory (must exist) where your command files exist.
- * @property {string} [messageProcessorsDirectoryPath=undefined] - The path of the directory (must exist) where your message processor files exist.
- * @property {string} [logDirectoryPath=undefined] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
- * @property {string} [settingsFilePath=undefined] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
- * @property {boolean} [useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
- * @property {string} [genericErrorMessage=undefined] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
- * @property {string} [missingPermissionsErrorMessage=undefined] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send messages in the channel)
- * @property {string} [genericDMReply=undefined] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response.
- * @property {string} [genericMentionReply=undefined] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message.
- * @property {string} [inviteLinkDmReply=undefined] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server.
- * @property {string[]} [statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
- * @property {number} [statusRotationIntervalInSeconds=undefined] - The bot will change their status on this interval (if the statusRotation has more than one status).
- * @property {string} discordBotsDotOrgAPIKey - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
- * @property {string} botsDotDiscordDotPwAPIKey - If you have an API key from {@link https://bots.discord.pw/} you can provide it here and your server count will be sent regularly.
- * @property {Object} [erisOptions=undefined] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
- */
-
  /**
   * The Eris Client object that monochrome is built on top of.
   * @external "Eris.Client"
@@ -170,7 +148,24 @@ function validateAndSanitizeOptions(options) {
  */
 class Monochrome {
   /**
-   * @param {MonochromeOptions} - Options to customize bot behavior.
+   * @param {Object} options - Options to customize bot behavior.
+   * @param {string} options.botToken - Your bot's token.
+   * @param {string[]} [options.prefixes=['']] - The bot's default command prefixes.
+   * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command files exist.
+   * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor files exist.
+   * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
+   * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
+   * @param {boolean} [options.useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
+   * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
+   * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send messages in the channel)
+   * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response.
+   * @param {string} [options.genericMentionReply] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message.
+   * @param {string} [options.inviteLinkDmReply] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server.
+   * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
+   * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
+   * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.botsDotDiscordDotPwAPIKey] - If you have an API key from {@link https://bots.discord.pw/} you can provide it here and your server count will be sent regularly.
+   * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
    */
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
