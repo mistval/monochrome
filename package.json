@@ -37,5 +37,8 @@
     "request": "2.88.0",
     "request-promise": "4.2.2",
     "require-reload": "0.2.2"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.5.5"
   }
 }
