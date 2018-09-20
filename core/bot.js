@@ -162,6 +162,7 @@ function validateAndSanitizeOptions(options) {
  * Represents a message received from the Discord API.
  * @external "Eris.Message"
  * @see {@link https://abal.moe/Eris/docs/Message}
+ */
 
 /**
  * The main entry point into the framework. You construct this and call connect()
