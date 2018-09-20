@@ -1,3 +1,7 @@
+/**
+ * Assists in creating a help command
+ * @hideconstructor
+ */
 class HelpCommandHelper {
   constructor(commands, settings, persistence) {
     this.settings_ = settings;
@@ -5,17 +9,27 @@ class HelpCommandHelper {
     this.nonHiddenCommands_ = commands.filter(command => !command.hidden);
   }
 
+  /**
+   * Get all commands that do not have their hidden property set to true.
+   * @returns {Command[]}
+   */
   getNonHiddenCommands() {
     return this.nonHiddenCommands_;
   }
 
-  findCommandForAlias(alias, serverId) {
+  /**
+   * Do a fuzzy search for a command that matches the provided search term. Returns
+   * undefined if no match is found.
+   * @param {string} searchTerm - The string to find a matching command for.
+   * @returns {Command|undefined}
+   */
+  findCommand(searchTerm, serverId) {
     const prefix = this.persistence_.getPrefixesForServerId(serverId)[0];
     const commands = this.getNonHiddenCommands();
 
     const exactMatch =
-      commands.find(command => command.aliases.indexOf(alias) !== -1)
-      || commands.find(command => command.aliases.indexOf(`${prefix}${alias}`) !== -1);
+      commands.find(command => command.aliases.indexOf(searchTerm) !== -1)
+      || commands.find(command => command.aliases.indexOf(`${prefix}${searchTerm}`) !== -1);
 
     if (exactMatch) {
       return exactMatch;
@@ -27,15 +41,15 @@ class HelpCommandHelper {
     for (let newCandidateCommand of commands) {
       for (let newCandidateAlias of newCandidateCommand.aliases) {
         const prefixedNewCandidateAlias = `${prefix}${newCandidateAlias}`;
-        if (prefixedNewCandidateAlias.indexOf(alias) !== -1) {
+        if (prefixedNewCandidateAlias.indexOf(searchTerm) !== -1) {
           let update = false;
           if (!currentCandidateCommand) {
             update = true;
           } else {
-            let currentStartsWithAlias = prefixedCurrentCandidateAlias.startsWith(alias);
-            let newStartsWithAlias = prefixedNewCandidateAlias.startsWith(alias);
-            let currentContainsAliasNotAtStart = !currentStartsWithAlias || prefixedCurrentCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
-            let newContainsAliasNotAtStart = !newStartsWithAlias || prefixedNewCandidateAlias.replace(alias, '').indexOf(alias) !== -1;
+            let currentStartsWithAlias = prefixedCurrentCandidateAlias.startsWith(searchTerm);
+            let newStartsWithAlias = prefixedNewCandidateAlias.startsWith(searchTerm);
+            let currentContainsAliasNotAtStart = !currentStartsWithAlias || prefixedCurrentCandidateAlias.replace(searchTerm, '').indexOf(searchTerm) !== -1;
+            let newContainsAliasNotAtStart = !newStartsWithAlias || prefixedNewCandidateAlias.replace(searchTerm, '').indexOf(searchTerm) !== -1;
             let newIsShorter = prefixedNewCandidateAlias.length < prefixedCurrentCandidateAlias.length;
             if (currentStartsWithAlias && newStartsWithAlias) {
               // They both start with the alias.
@@ -67,6 +81,11 @@ class HelpCommandHelper {
     return currentCandidateCommand;
   }
 
+  /**
+   * Get all non-hidden commands that are enabled where the msg was sent.
+   * @param {Eris.Message} msg - The Eris message that caused the help command to be invoked.
+   * @returns {Command[]}
+   */
   async getEnabledNonHiddenCommands(msg) {
     const promises = this.nonHiddenCommands_.map(command => {
       return this.settings_.getInternalSettingValue(

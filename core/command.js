@@ -75,6 +75,15 @@ function sanitizeCommandData(commandData) {
   return commandData;
 }
 
+/**
+ * Represents a command.
+ * @property {string[]} aliases
+ * @property {string} shortDescription
+ * @property {string} longDescription
+ * @property {string} usageExample
+ * @property {string[]} aliasesForHelp - The aliases that should be displayed in the help command.
+ * @property {boolean} hidden - True if information about this command should not be shown by the help command.
+ */
 class Command {
   constructor(commandData, monochrome) {
     commandData = sanitizeCommandData(commandData);
@@ -91,7 +100,7 @@ class Command {
     this.longDescription = commandData.longDescription;
     this.usageExample = commandData.usageExample;
     this.canHandleExtension = commandData.canHandleExtension;
-    this.aliasesForHelp = commandData.aliasesForHelp;
+    this.aliasesForHelp = commandData.aliasesForHelp || this.aliases;
     this.attachIsServerAdmin_ = !!commandData.attachIsServerAdmin;
     this.canBeChannelRestricted_ = commandData.canBeChannelRestricted;
     this.monochrome_ = monochrome;

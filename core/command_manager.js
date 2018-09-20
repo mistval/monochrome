@@ -96,6 +96,10 @@ function createSettingsCategoryForCommands(userCommands) {
   };
 }
 
+/**
+ * Responsible for delegating messages to command handlers.
+ * @hideconstructor
+ */
 class CommandManager {
   constructor(directory, prefixes, monochrome) {
     this.monochrome_ = monochrome;
@@ -105,6 +109,10 @@ class CommandManager {
     this.persistence_ = monochrome.getPersistence();
   }
 
+  /**
+   * Get the HelpCommandHelper which provides assistance in creating a help command.
+   * @returns {HelpCommandHelper}
+   */
   getHelpCommandHelper() {
     assert(this.helpCommandHelper_, 'Help command helper not available');
     return this.helpCommandHelper_;
