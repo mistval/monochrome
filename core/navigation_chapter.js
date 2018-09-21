@@ -20,8 +20,9 @@ const LOGGER_TITLE = 'NAVIGATION';
   * @callback NavigationChapter~getPageFromPreparedData
   * @param {Object} preparedData - Whatever was returned from the {@link NavigationChapter~prepareData} function.
   * @param {number} pageIndex - The index of the page to return.
-  * @returns {(Object|string)} - A string or [Discord embed structure]{@link https://discordapp.com/developers/docs/resources/channel#embed-object} representing
-  *   the content to update the message with when the user navigates to the specified pageIndex.
+  * @returns {(Object|string|undefined)} - A string or [Discord embed structure]{@link https://discordapp.com/developers/docs/resources/channel#embed-object} representing
+  *   the content to update the message with when the user navigates to the specified pageIndex. If the pageIndex is out of bounds, you can return undefined, and no
+  *   navigation will occur.
   * @async
   */
 

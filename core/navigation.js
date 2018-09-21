@@ -14,7 +14,28 @@ function sendReactions(msg, reactions, logger) {
   }
 }
 
+/**
+ * Represents a collection of messages that can be navigated in two dimensions
+ * via reaction buttons below the message. A navigation is a collection of {@link NavigationChapter}s.
+ * Each navigation chapter controls a one-dimensional slice of navigable content.
+ * The user can move forward and backward within a chapter by using the arrow reaction
+ * buttons, and can switch chapters by using the other reaction buttons.<br><br>
+ * Once a Navigation is constructed, it can be shown to the user by using {@link NavigationManager.show}
+ */
 class Navigation {
+  /**
+  * Construct a Navigation. If this Navigation only has one {@link NavigationChapter}, use the
+  * {@link Navigation.fromOneNavigationChapter} factory method instead. If you only
+  * need left and right pagination, and you already have all the content you want to display
+  * to the user, use the {@link Navigation.fromOneDimensionalContents} factory method instead.
+  * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+  * @param {boolean} showPageArrows - Whether to show the arrow reactions or not. If you know in advance
+  *   that none of your {@link NavigationChapter}s have more than one page, you can set this to false.
+  * @param {string} initialEmojiName - The name of the emoji for the chapter to show initially.
+  * @param {Object.<string, NavigationChapter>} chapterForEmojiName - An object where the keys are emoji names and the values are {@link NavigationChapter}s.
+  *   When the emoji is clicked, control will switch to the specified chapter. To find the name of an emoji, enter the emoji in
+  *   Discord's chat box, put a \ in front of it, and hit enter.
+  */
   constructor(ownerId, showPageArrows, initialEmojiName, chapterForEmojiName) {
     let keys = Object.keys(chapterForEmojiName);
     if (keys.indexOf(initialEmojiName) === -1) {
@@ -27,11 +48,24 @@ class Navigation {
     this.actionAccumulator_ = new ActionAccumulator(EDIT_DELAY_TIME_IN_MS);
   }
 
+  /**
+   * Construct a Navigation with just one chapter. Only the arrow reactions will
+   * be shown and navigation will only be possible in one dimension.
+   * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+   * @param {NavigationChapter} navigationChapter - The {@link NavigationChapter} to show.
+   */
   static fromOneNavigationChapter(ownerId, navigationChapter) {
     const chapterForEmojiName = { a: navigationChapter };
     return new Navigation(ownerId, true, 'a', chapterForEmojiName);
   }
 
+  /**
+   * Construct a Navigation from an array of [Discord embed structures]{@link https://discordapp.com/developers/docs/resources/channel#embed-object} (or strings).
+   * Only the arrow reactions will be shown and navigation will only be possible in one dimension.
+   * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+   * @param {string[]|Object[]} contents - The strings or [Discord embed structures]{@link https://discordapp.com/developers/docs/resources/channel#embed-object}
+   *   to show in the navigation.
+   */
   static fromOneDimensionalContents(ownerId, contents) {
     const chapter = NavigationChapter.fromContent(contents);
     return Navigation.fromOneNavigationChapter(ownerId, chapter);
