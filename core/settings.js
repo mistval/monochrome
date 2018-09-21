@@ -28,7 +28,7 @@ const SettingScope = {
  * @type {Object}
  * @property {boolean} accepted - Whether or not the update was applied.
  * @property {Object} [setting] - The setting that was (or wasn't) updated (only present if a matching setting was found)
- * @property {UpdateRejectionReason} [reason] - Why the update failed (only present if accepted is false)
+ * @property {Settings.UpdateRejectionReason} [reason] - Why the update failed (only present if accepted is false)
  * @property {string} [rejectedUserFacingValue] - The user facing value that was rejected (only present if reason === UpdateRejectionReason.INVALID_VALUE)
  * @property {string} [nonExistentUniqueId] - The unique ID that the caller tried to change the setting value for (only present if reason === UpdateRejectionReason.SETTING_DOES_NOT_EXIST)
  * @property {string} [newUserFacingValue] - The new user facing value that the setting was updated to (only if accepted === true)

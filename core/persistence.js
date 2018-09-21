@@ -20,6 +20,9 @@ function keyForServerId(serverId) {
 
 /**
  * Read or write persistent data that is persisted even if the process is killed.
+ * The persistence is a key-value store backed by [node-persist]{@link https://www.npmjs.com/package/node-persist}.
+ * You can store values for any key, but there are convenience methods provided for storing data
+ * attached to a particular user or server, or in a global store.
  * @hideconstructor
  */
 class Persistence {
@@ -80,7 +83,9 @@ class Persistence {
   }
 
   /**
-   * Get the command prefixes associated with a server.
+   * Get the command prefixes associated with a server ID. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
    * @param {string} serverId
    * @returns {string[]}
    */
@@ -89,17 +94,21 @@ class Persistence {
   }
 
   /**
-   * Get the primary prefix for the location where the specified msg was sent.
+   * Get the primary prefix for the location where msg was sent. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
    * @param {Eris.Message} msg
    * @returns {string}
    */
-  getPrimaryPrefixFromMsg(msg) {
+  getPrimaryPrefixForMsg(msg) {
     const locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
     return this.getPrefixesForServerId(locationId)[0];
   }
 
   /**
-   * Get the prefixes for the location where the specified msg was sent.
+   * Get the prefixes for the location where msg was sent. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
    * @param {Eris.Message} msg
    * @returns {string[]}
    */
