@@ -46,7 +46,7 @@ class Navigation {
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
-      return msg.channel.createMessage(navigationPage.content, navigationPage.file, msg);
+      return msg.channel.createMessage(navigationPage, undefined, msg);
     }).then(sentMessage => {
       let emojis = Object.keys(this.chapterForEmojiName_);
       let reactionsToSend = [];
@@ -97,8 +97,8 @@ class Navigation {
       }
 
       pagePromise.then(navigationPage => {
-        if (navigationPage && navigationPage.content && desiredEmojiName === this.currentEmojiName_) {
-          return this.message_.edit(navigationPage.content);
+        if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
+          return this.message_.edit(navigationPage);
         }
       }).catch(err => {
         logger.logFailure(LOGGER_TITLE, 'Error navigating.', err);

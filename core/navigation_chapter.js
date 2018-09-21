@@ -1,6 +1,3 @@
-'use strict'
-const NavigationPage = require('./navigation_page.js');
-
 const LOGGER_TITLE = 'NAVIGATION';
 
 /**
@@ -68,18 +65,9 @@ class NavigationChapter {
    *   the message to show the next or previous message in this array.
    */
   static fromContent(contents) {
-    let navigationPages = [];
-    for (let content of contents) {
-      navigationPages.push(new NavigationPage(content));
-    }
-
-    return NavigationChapter.fromNavigationPages(navigationPages);
-  }
-
-  static fromNavigationPages(pages) {
     let dataSource = {};
     dataSource.prepareData = () => {
-      return pages;
+      return contents;
     };
     dataSource.getPageFromPreparedData = (preparedData, pageIndex) => {
       return preparedData[pageIndex];
@@ -92,6 +80,9 @@ class NavigationChapter {
     if (!this.preparedData_) {
       try {
         this.preparedData_ = await this.dataSource_.prepareData();
+        if (this.preparedData_ === undefined) {
+          this.preparedData_ = true;
+        }
         return this.getCurrentPageFromPreparedData_(logger);
       } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
@@ -122,9 +113,6 @@ class NavigationChapter {
     } else {
       try {
         let page = await this.dataSource_.getPageFromPreparedData(this.preparedData_, pageToGet);
-        if (page && !page.content) {
-          page = new NavigationPage(page);
-        }
         while (this.pages_.length <= pageToGet) {
           this.pages_.push(undefined);
         }
