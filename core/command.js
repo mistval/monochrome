@@ -25,8 +25,6 @@ function sanitizeCommandData(commandData) {
 
   if (!commandData.action || typeof commandData.action !== 'function') {
     throw new Error('Command does not have an action, or it is not a function.');
-  } else if (commandData.serverAdminOnly !== undefined && typeof commandData.serverAdminOnly !== typeof true) {
-    throw new Error('Invalid serverAdminOnly value');
   } else if (commandData.botAdminOnly !== undefined && typeof commandData.botAdminOnly !== typeof true) {
     throw new Error('Invalid botAdminOnly value');
   } else if (commandData.canBeChannelRestricted !== undefined && typeof commandData.canBeChannelRestricted !== typeof true) {
@@ -34,7 +32,7 @@ function sanitizeCommandData(commandData) {
   } else if (commandData.onlyInServer !== undefined && typeof commandData.onlyInServer !== typeof true) {
     throw new Error('Invalid onlyInServer value');
   } else if (commandData.canBeChannelRestricted === undefined) {
-    if (commandData.serverAdminOnly || commandData.botAdminOnly) {
+    if (commandData.botAdminOnly) {
       commandData.canBeChannelRestricted = false;
     } else {
       commandData.canBeChannelRestricted = true;
@@ -76,10 +74,46 @@ function sanitizeCommandData(commandData) {
 }
 
 /**
+ * A function to perform a command. This function is invoked when a user message
+ * starts with the server's command prefix plus one of the command's aliases.
+ * @callback Command~commandAction
+ * @param {Eris.Client} bot
+ * @param {Eris.Message} msg - The message that triggered the command
+ * @param {string} suffix - The part of the message that follows the command invocation (i.e. for "prefix!command do the command", the prefix is "do the command")
+ * @param {Monochrome} monochrome
+ * @param {Object} settings - The requested setting values. The keys of this object and the setting unique IDs, and the values are the settings values.
+ */
+
+/**
+ * A definition of one command. Each command definition should
+ * be a module in your commands directory (specified as a constructor option to {@link Monochrome}).
+ * Each command definition file should export one command definition.
+ * @typedef {Object} Command~CommandDefinition
+ * @property {string[]} commandAliases - The part of the command that follows the prefix. For example if
+ *   your prefixes (specified as a constructor option to {@link Monochrome}) contain "command!"" and your command
+ *   aliases contain "ping", then "command!ping" will trigger this command (if the prefix has not been customized in the server)
+ * @property {string} uniqueId - A unique ID to identify the command. This can be anything, and won't be shown to users. You should
+ *   never change it.
+ * @property {Command~commandAction} action - A function to perform the command.
+ * @property {number} [cooldown=0] - A period of time (in seconds) to prevent that user from using this command after they previously used it.
+ * @property {string} [shortDescription] - A brief description of what the command does. This is intended to be displayed by the help command.
+ * @property {string} [longDescription] - A longer description of what the command does. This is intended to be displayed by the help command when
+ *   the user requests to see the advanced help for the command.
+ * @property {string} [usageExample] - An example of how to use the command. If "<prefix>" is present in this string, it will be replaced with the primary
+ *   command prefix in the server.
+ * @property {boolean} [botAdminOnly=false] - If true, only a bot admin can use this command. Bot admins are specified as a constructor option to {@link Monochrome}.
+ * @property {boolean} [canBeChannelRestricted=!botAdminOnly] - If true, server admins can disable this command in any channel in their server.
+ * @property {string[]} [requiredSettings=[]] - An array of setting unique IDs that are required for this command. When this command is invoked, the values of
+ *   those settings are looked up and passed into your [commandAction function]{@link CommandDefinition~commandAction}.
+ * @property {string[]} [aliasesForHelp] - If you don't want to show some of the command aliases in the help, you can specify which ones you do want to show here.
+ *   By default, all aliases are shown in the help.
+ */
+
+/**
  * Represents a command. Commands should not be constructed directly.
  * They are constructed by the {@link CommandManager} which reads the command
- * definitions in your commands directory (specified as a constructor option to {@link Monochrome})
- * and constructs commands accordingly.
+ * definition module in your commands directory (specified as a constructor option to {@link Monochrome})
+ * and constructs commands accordingly. For help constructing a command definition see {@link Command~CommandDefinition}.
  * @property {string[]} aliases
  * @property {string} shortDescription
  * @property {string} longDescription
@@ -94,7 +128,6 @@ class Command {
     this.uniqueId = commandData.uniqueId;
     this.requiredSettings_ = commandData.requiredSettings;
     this.action_ = commandData.action;
-    this.serverAdminOnly_ = !!commandData.serverAdminOnly;
     this.botAdminOnly_ = !!commandData.botAdminOnly;
     this.onlyInServer_ = !!commandData.onlyInServer;
     this.cooldown_ = commandData.cooldown || 0;
@@ -117,10 +150,6 @@ class Command {
 
   getCooldown() {
     return this.cooldown_;
-  }
-
-  getIsForServerAdminOnly() {
-    return this.serverAdminOnly_;
   }
 
   getIsForBotAdminOnly() {
@@ -160,13 +189,6 @@ class Command {
     }
     if (this.onlyInServer_ && !msg.channel.guild) {
       throw PublicError.createWithCustomPublicMessage('That command can only be used in a server.', true, 'Not in a server');
-    }
-    if (this.serverAdminOnly_ && !isBotAdmin) {
-      let isServerAdmin = this.monochrome_.userIsServerAdmin(msg);
-
-      if (!isServerAdmin) {
-        throw PublicError.createWithCustomPublicMessage('You must be a server admin in order to use that command.', true, 'User is not a server admin');
-      }
     }
 
     const settingsPromises = this.requiredSettings_.map(requiredSetting => {
