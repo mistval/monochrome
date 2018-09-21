@@ -1,6 +1,6 @@
 /**
  * Assists in creating a help command.
- * HelpCommandHelper should not be constructed. It should be
+ * The HelpCommandHelper can be
  * accessed via {@link CommandManager#getHelpCommandHelper}.
  * @hideconstructor
  */

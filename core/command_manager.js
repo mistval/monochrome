@@ -97,8 +97,7 @@ function createSettingsCategoryForCommands(userCommands) {
 
 /**
  * Responsible for delegating messages to command handlers.
- * CommandManager should not be constructed. It should be
- * accessed via {@link Monochrome#getCommandManager}.
+ * The CommandManager can be accessed via {@link Monochrome#getCommandManager}.
  * @hideconstructor
  */
 class CommandManager {

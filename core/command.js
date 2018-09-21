@@ -128,10 +128,10 @@ function sanitizeCommandData(commandData) {
  */
 
 /**
- * Represents a command. Commands should not be constructed directly. The constructor is shown here due to JSDoc limitations.
+ * Represents a command. Commands cannot be constructed directly. The constructor is shown here due to JSDoc limitations.
  * Commands are constructed by the {@link CommandManager} which reads the command
  * definition modules in your commands directory (specified as a constructor option to {@link Monochrome})
- * and constructs commands accordingly. For help constructing a command definition, and an example, see {@link Command~CommandDefinition}.
+ * and constructs commands accordingly. For help writing a command definition, and an example, see {@link Command~CommandDefinition}.
  * @property {string[]} aliases
  * @property {string} shortDescription
  * @property {string} longDescription

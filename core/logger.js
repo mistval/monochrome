@@ -29,7 +29,7 @@ function createTimestamp() {
 
 /**
  * Log events to the console and to the log file.
- * Logger should not be constructed. It should be
+ * The Logger can be
  * accessed via {@link Monochrome~getLogger}.
  * @hideconstructor
  */

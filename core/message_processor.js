@@ -40,7 +40,7 @@ const reload = require('require-reload')(require);
  */
 
 /**
- * Represents a message processor. Message processors should not be constructed directly.
+ * Represents a message processor. Message processors cannot be constructed directly.
  * The constructor is shown here due to JSDoc limitations.
  * Message processors are constructed by the MessageProcessorManager which reads the
  * message processor definition modules in your message processors directory (specified as a constructor option to {@link Monochrome})

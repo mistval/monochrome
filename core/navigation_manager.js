@@ -1,6 +1,6 @@
 /**
  * Handles displaying and controlling {@link Navigation}s.
- * NavigationManager should not be constructed. It should be
+ * The NavigationManager can be
  * accessed via {@link Monochrome#getNavigationManager}.
  * @hideconstructor
  */
