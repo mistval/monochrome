@@ -96,8 +96,10 @@ function sanitizeCommandData(commandData) {
  * @property {Command~commandAction} action - A function to perform the command.
  * @property {number} [cooldown=0] - A period of time (in seconds) to prevent that user from using this command after they previously used it.
  * @property {string} [shortDescription] - A brief description of what the command does. This is intended to be displayed by the help command.
+ *    If "<prefix>" is present in this string, it will be replaced with the primary command prefix in the server.
  * @property {string} [longDescription] - A longer description of what the command does. This is intended to be displayed by the help command when
- *   the user requests to see the advanced help for the command.
+ *   the user requests to see the advanced help for the command. If "<prefix>" is present in this string, it will be replaced with the primary
+ *   command prefix in the server.
  * @property {string} [usageExample] - An example of how to use the command. If "<prefix>" is present in this string, it will be replaced with the primary
  *   command prefix in the server.
  * @property {boolean} [botAdminOnly=false] - If true, only a bot admin can use this command. Bot admins are specified as a constructor option to {@link Monochrome}.
@@ -106,13 +108,30 @@ function sanitizeCommandData(commandData) {
  *   those settings are looked up and passed into your [commandAction function]{@link CommandDefinition~commandAction}.
  * @property {string[]} [aliasesForHelp] - If you don't want to show some of the command aliases in the help, you can specify which ones you do want to show here.
  *   By default, all aliases are shown in the help.
+ * @example
+ * module.exports = {
+   commandAliases: ['ping', 'p'],
+   uniqueId: 'ping',
+   cooldown: 5,
+   shortDescription: 'You say <prefix>ping, I say pong.',
+   longDescription: 'This command is really useless and has no need for a long description but ¯\_(ツ)_/¯',
+   usageExample: '<prefix>ping',
+   botAdminOnly: false,
+   canBeChannelRestricted: true,
+   requiredSetting: ['unique_id_of_some_setting'],
+   aliasesForHelp: ['ping'],
+   action(bot, msg, suffix, monochrome, requestedSettings) {
+     return msg.channel.createMessage('Pong!', null, msg);
+   },
+ };
+
  */
 
 /**
  * Represents a command. Commands should not be constructed directly. The constructor is shown here due to JSDoc limitations.
  * Commands are constructed by the {@link CommandManager} which reads the command
  * definition modules in your commands directory (specified as a constructor option to {@link Monochrome})
- * and constructs commands accordingly. For help constructing a command definition see {@link Command~CommandDefinition}.
+ * and constructs commands accordingly. For help constructing a command definition, and an example, see {@link Command~CommandDefinition}.
  * @property {string[]} aliases
  * @property {string} shortDescription
  * @property {string} longDescription
