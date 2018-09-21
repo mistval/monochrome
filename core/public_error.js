@@ -58,7 +58,7 @@ class PublicError extends Error {
 
   async output(loggerTitle, msg, forceSilentFail, monochrome) {
     const logger = monochrome.getLogger();
-    const prefix = monochrome.getPersistence().getPrimaryPrefixForMsg(msg);
+    const prefix = monochrome.getPersistence().getPrimaryPrefixForMessage(msg);
 
     let publicMessage = this.publicMessage_;
     if (forceSilentFail) {

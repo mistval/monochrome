@@ -20,7 +20,7 @@ function sendReactions(msg, reactions, logger) {
  * Each navigation chapter controls a one-dimensional slice of navigable content.
  * The user can move forward and backward within a chapter by using the arrow reaction
  * buttons, and can switch chapters by using the other reaction buttons.<br><br>
- * Once a Navigation is constructed, it can be shown to the user by using {@link NavigationManager.show}
+ * Once a Navigation is constructed, it can be shown to the user by using {@link NavigationManager#show}
  */
 class Navigation {
   /**

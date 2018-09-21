@@ -83,8 +83,8 @@ class Blacklist {
   /**
    * Check if a user is blacklisted without first checking if the blacklist
    * has loaded. This function is meant to be called in hot paths and may incorrectly
-   * return false if called immediately after the bot is started. Considering using
-   * the isUserBlacklisted method instead.
+   * return false if called immediately after the bot is started. Consider using
+   * {@link Blacklist#isUserBlacklisted} instead. It will always return the correct result.
    * @param {string} userId - The ID of the user to check the blacklist for.
    * @return {boolean}
    */

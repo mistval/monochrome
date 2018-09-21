@@ -290,6 +290,8 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
 
 /**
  * Get and set settings with server, channel, and user scope.
+ * Settings should not be constructed. It should be
+ * accessed via {@link Monochrome#getSettings}.
  * @hideconstructor
  */
 class Settings {
