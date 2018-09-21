@@ -21,14 +21,31 @@ const reload = require('require-reload')(require);
  * @property {string} name - A name for the message processor. This can be anything, and will not be shown to users.
  *   It exists solely for logging purposes.
  * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
+ * @example
+ * module.exports = {
+   name: 'Palindrome',
+   action(bot, msg, monochrome) {
+     const text = msg.content;
+     if (!text || text.length < 2) {
+       return false; // Since we are not interested in handling this message, return false.
+     }
+     const textBackwards = text.split('').reverse().join('');
+     if (text === textBackwards) {
+       return msg.channel.createMessage('That\'s a palindrome!'); // Since we are handling this message, return a promise (could also return true)
+     } else {
+       return false; // Since we are not interested in handling this message, return false.
+     }
+   }
+ };
  */
 
 /**
  * Represents a message processor. Message processors should not be constructed directly.
  * The constructor is shown here due to JSDoc limitations.
  * Message processors are constructed by the MessageProcessorManager which reads the
- * message processor definition modules in your message processors directory (specified as a constructor option to Monochrome)
- * and constructs message processors accordingly. For help constructing a message processor definition, see {@link MessageProcessor~MessageProcessorDefinition}
+ * message processor definition modules in your message processors directory (specified as a constructor option to {@link Monochrome})
+ * and constructs message processors accordingly. For help constructing a message processor definition,
+ * and an example, see {@link MessageProcessor~MessageProcessorDefinition}.
  */
 class MessageProcessor {
   constructor(processorData, monochrome) {
