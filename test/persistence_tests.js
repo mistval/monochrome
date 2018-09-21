@@ -102,13 +102,13 @@ describe('Persistence', function() {
     const serverId = 'server1';
     const otherServerId = 'server2';
     it('Returns prefixes in config if they haven\'t been customized', function() {
-      const prefixes = persistence.getPrefixesForServerId(serverId);
+      const prefixes = persistence.getPrefixesForServer(serverId);
       assert(JSON.stringify(prefixes) === JSON.stringify(['']));
     });
     it('Returns custom prefixes if they exist', async function() {
       const customPrefixes = ['a'];
       await persistence.editPrefixesForServerId(serverId, customPrefixes);
-      const prefixes = persistence.getPrefixesForServerId(serverId);
+      const prefixes = persistence.getPrefixesForServer(serverId);
       assert(JSON.stringify(prefixes) === JSON.stringify(customPrefixes));
     });
     it('Resets given server\'s prefixes without resetting others', async function() {
@@ -117,18 +117,18 @@ describe('Persistence', function() {
       await persistence.editPrefixesForServerId(serverId, customPrefixes);
       await persistence.editPrefixesForServerId(otherServerId, customPrefixes);
 
-      let prefixes1 = persistence.getPrefixesForServerId(serverId);
+      let prefixes1 = persistence.getPrefixesForServer(serverId);
       assert(JSON.stringify(prefixes1) === JSON.stringify(customPrefixes));
 
-      let prefixes2 = persistence.getPrefixesForServerId(otherServerId);
+      let prefixes2 = persistence.getPrefixesForServer(otherServerId);
       assert(JSON.stringify(prefixes2) === JSON.stringify(customPrefixes));
 
       await persistence.resetPrefixesForServerId(serverId);
 
-      prefixes1 = persistence.getPrefixesForServerId(serverId);
+      prefixes1 = persistence.getPrefixesForServer(serverId);
       assert(JSON.stringify(prefixes1) === JSON.stringify(['']));
 
-      prefixes2 = persistence.getPrefixesForServerId(otherServerId);
+      prefixes2 = persistence.getPrefixesForServer(otherServerId);
       assert(JSON.stringify(prefixes2) === JSON.stringify(customPrefixes));
     });
   });

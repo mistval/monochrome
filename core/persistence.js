@@ -14,7 +14,7 @@ function keyForServerId(serverId) {
 
 /**
  * @callback Persistence~editFunction
- * @param {Object} data - The current data associated with the key.
+ * @param {Object} data - The current data associated with the key. If there is none, an empty object {} is given. This data can be manipulated and then returned to persist it.
  * @returns {Object} The new data to associate with the key.
  */
 
@@ -45,6 +45,9 @@ class Persistence {
    * an empty object {} is returned.
    * @param {string} key
    * @returns {Object} The value associated with the specified key.
+   * @example
+const data = await persistence.getData('some_key');
+console.log(JSON.stringify(data));
    */
   async getData(key) {
     const data = await storage.getItem(key);
@@ -60,6 +63,10 @@ class Persistence {
    * object {} is returned.
    * @param {string} userId
    * @returns {Object} The value associated with the specified userId
+   * @example
+const userId = '123456789';
+const data = await persistence.getDataForUser(userId);
+console.log(JSON.stringify(data));
    */
   async getDataForUser(userId) {
     return this.getData(keyForUserId(userId));
@@ -70,6 +77,10 @@ class Persistence {
    * object {} is returned.
    * @param {string} serverId
    * @returns {Object} The value associated with the specified serverId
+   * @example
+const serverId = '123456789';
+const data = await persistence.getDataForServer(serverId);
+console.log(JSON.stringify(data));
    */
   async getDataForServer(serverId) {
     return this.getData(keyForServerId(serverId));
@@ -79,6 +90,9 @@ class Persistence {
    * Get the global data. If no such data exists, an empty
    * object {} is returned.
    * @returns {Object} The global data.
+   * @example
+const data = await persistence.getGlobalData();
+console.log(JSON.stringify(data));
    */
   async getGlobalData() {
     return this.getData(GLOBAL_DATA_KEY);
@@ -90,8 +104,13 @@ class Persistence {
    * might return the default prefixes even though the server has custom prefixes.
    * @param {string} serverId
    * @returns {string[]}
+   * @example
+const serverId = '123456789';
+const prefixes = persistence.getPrefixesForServer(serverId);
+const firstPrefix = prefixes[0];
+const numberOfPrefixes = prefixes.length;
    */
-  getPrefixesForServerId(serverId) {
+  getPrefixesForServer(serverId) {
     return this.prefixesForServerId_[serverId] || this.defaultPrefixes_;
   }
 
@@ -103,8 +122,7 @@ class Persistence {
    * @returns {string}
    */
   getPrimaryPrefixForMessage(msg) {
-    const locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    return this.getPrefixesForServerId(locationId)[0];
+    return this.getPrefixesForMessage(msg)[0];
   }
 
   /**
@@ -115,7 +133,7 @@ class Persistence {
    * @returns {string[]}
    */
   getPrefixesForMessage(msg) {
-    return this.getPrefixesForServerId(msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
+    return this.getPrefixesForServer(msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
   }
 
   /**
@@ -123,6 +141,18 @@ class Persistence {
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} key
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+await persistence.editData('some_key', (data) => {
+  data.randomNumber = Math.random() * 100;
+
+  if (!data.numberOfTimesEdited) {
+    data.numberOfTimesEdited = 0;
+  }
+
+  data.numberOfTimesEdited += 1;
+
+  return data;
+});
    */
   async editData(key, editFunction) {
     return storage.editItem(key, data => {
@@ -145,6 +175,12 @@ class Persistence {
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} userId
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+const userId = '123456789';
+await editDataForUser(userId, (data) => {
+  data.userIsWorthMyTime = false;
+  return data;
+});
    */
   async editDataForUser(userId, editFunction) {
     let key = keyForUserId(userId);
@@ -156,6 +192,12 @@ class Persistence {
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} serverId
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+const serverId = '123456789';
+await editDataForServer(serverId, (data) => {
+  data.favoriteUserInServer = 'nobody';
+  return data;
+});
    */
   async editDataForServer(serverId, editFunction) {
     let key = keyForServerId(serverId);
@@ -166,6 +208,14 @@ class Persistence {
    * Edit the data global data. This function is atomic in the sense
    * that no one else can be editing the value for the same key at the same time.
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example await editGlobalData((data) => {
+  if (!data.scoreboard) {
+    data.scoreboard = {};
+  }
+
+  data.scoreboard['John Wick'] = 100;
+  return data;
+});
    */
   async editGlobalData(editFunction) {
     return this.editData(GLOBAL_DATA_KEY, editFunction);
@@ -175,6 +225,10 @@ class Persistence {
    * Edit the prefixes associated with a server.
    * @param {string} serverId
    * @param {string[]} prefixes - The new prefixes for the server.
+   * @example
+const serverId = '123456789';
+const newPrefixes = ['!', '@', '&!'];
+await editPrefixesForServer(serverId, newPrefixes);
    */
   async editPrefixesForServerId(serverId, prefixes) {
     if (!prefixes) {

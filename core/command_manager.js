@@ -45,7 +45,7 @@ function savePrefixes(persistence, settingUniqueId, serverId, channelId, userId,
 }
 
 function getPrefixes(persistence, setting, serverId) {
-  return persistence.getPrefixesForServerId(serverId);
+  return persistence.getPrefixesForServer(serverId);
 }
 
 function createPrefixesSetting(defaultPrefixes) {
@@ -158,7 +158,7 @@ class CommandManager {
 
   processInput(bot, msg) {
     let serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    let prefixes = this.persistence_.getPrefixesForServerId(serverId);
+    let prefixes = this.persistence_.getPrefixesForServer(serverId);
     let msgContent = msg.content;
 
     // Break out early if no matching prefixes

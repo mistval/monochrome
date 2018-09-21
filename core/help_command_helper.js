@@ -26,7 +26,7 @@ class HelpCommandHelper {
    * @returns {Command|undefined}
    */
   findCommand(searchTerm, serverId) {
-    const prefix = this.persistence_.getPrefixesForServerId(serverId)[0];
+    const prefix = this.persistence_.getPrefixesForServer(serverId)[0];
     const commands = this.getNonHiddenCommands();
 
     const exactMatch =
