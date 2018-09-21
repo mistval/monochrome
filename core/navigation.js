@@ -1,3 +1,5 @@
+const NavigationChapter = require('./navigation_chapter.js');
+
 const LOGGER_TITLE = 'NAVIGATION';
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
@@ -23,6 +25,16 @@ class Navigation {
     this.currentEmojiName_ = initialEmojiName;
     this.ownerId_ = ownerId;
     this.actionAccumulator_ = new ActionAccumulator(EDIT_DELAY_TIME_IN_MS);
+  }
+
+  static fromOneNavigationChapter(ownerId, navigationChapter) {
+    const chapterForEmojiName = { a: navigationChapter };
+    return new Navigation(ownerId, true, 'a', chapterForEmojiName);
+  }
+
+  static fromOneDimensionalContents(ownerId, contents) {
+    const chapter = NavigationChapter.fromContent(contents);
+    return Navigation.fromOneNavigationChapter(ownerId, chapter);
   }
 
   createMessage(msg, logger) {
