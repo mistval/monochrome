@@ -1,4 +1,3 @@
-'use strict'
 const PublicError = require('./public_error.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');

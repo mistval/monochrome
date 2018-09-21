@@ -1,4 +1,3 @@
-'use strict'
 const reload = require('require-reload')(require);
 const Command = require('./command.js');
 const FileSystemUtils = require('./util/file_system_utils.js');

@@ -1,4 +1,3 @@
-'use strict'
 const reload = require('require-reload')(require);
 const Eris = require('eris');
 const request = require('request-promise');

@@ -1,4 +1,3 @@
-'use strict'
 const reload = require('require-reload')(require);
 const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');

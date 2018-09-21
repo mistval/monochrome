@@ -1,4 +1,3 @@
-'use strict'
 const fs = require('fs');
 const AnsiColor = require('./util/ansi_color_codes.js');
 const LogMessageBuilder = require('./util/log_message_builder');
