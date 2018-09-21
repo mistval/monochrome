@@ -51,6 +51,9 @@ class Navigation {
   /**
    * Construct a Navigation with just one chapter. Only the arrow reactions will
    * be shown and navigation will only be possible in one dimension.
+   * If you already have all the content you want to display to the user,
+   * you can use the {@link Navigation.fromOneDimensionalContents} factory method instead
+   * and avoid having to construct a {@link NavigationChapter} yourself.
    * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
    * @param {NavigationChapter} navigationChapter - The {@link NavigationChapter} to show.
    */
