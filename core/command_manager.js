@@ -110,7 +110,7 @@ class CommandManager {
   }
 
   /**
-   * Get the HelpCommandHelper which provides assistance in creating a help command.
+   * Get the HelpCommandHelper which provides assistance for creating a help command.
    * @returns {HelpCommandHelper}
    */
   getHelpCommandHelper() {

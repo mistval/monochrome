@@ -80,6 +80,8 @@ function sanitizeCommandData(commandData) {
  * @param {string} suffix - The part of the message that follows the command invocation (i.e. for "prefix!command do the command", the prefix is "do the command")
  * @param {Monochrome} monochrome
  * @param {Object} settings - The requested setting values. The keys of this object and the setting unique IDs, and the values are the settings values.
+ * @returns {Promise|undefined} If a promise is returned, it will be resolved, and if it rejects, that error will be logged and handled. In general, your
+ *   commands should return promises.
  */
 
 /**
@@ -108,9 +110,9 @@ function sanitizeCommandData(commandData) {
  */
 
 /**
- * Represents a command. Commands should not be constructed directly.
- * They are constructed by the {@link CommandManager} which reads the command
- * definition module in your commands directory (specified as a constructor option to {@link Monochrome})
+ * Represents a command. Commands should not be constructed directly. The constructor is shown here due to JSDoc limitations.
+ * Commands are constructed by the {@link CommandManager} which reads the command
+ * definition modules in your commands directory (specified as a constructor option to {@link Monochrome})
  * and constructs commands accordingly. For help constructing a command definition see {@link Command~CommandDefinition}.
  * @property {string[]} aliases
  * @property {string} shortDescription

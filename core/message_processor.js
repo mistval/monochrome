@@ -1,6 +1,36 @@
 'use strict'
 const reload = require('require-reload')(require);
 
+/**
+ * This function will be invoked with any message that the bot receives that is not
+ * handled by a command or another message processor. This function examines the message
+ * and either ignores it or takes action on it.
+ * @callback MessageProcessor~action
+ * @param {Eris.Client} bot
+ * @param {Eris.Message} msg - The message to consider handling.
+ * @param {Monochrome} monochrome
+ * @returns {boolean|Promise} If the message processor will not handle this message, you should return false (not a promise that resolves to false).
+ *   If a promise is returned, the message processor is assumed to have accepted the message, and it will not be propogated further. True may also be returned.
+ *   If a promise is returned, it will be resolved, and if it rejects, the error will be handled and logged.
+ */
+
+/**
+ * A definition of one message processor. Each message processor definition should
+ * be a module in your message processors directory (specified as a constructor option to {@link Monochrome}).
+ * Each message processor definition file should export one message processor definition.
+ * @typedef {Object} MessageProcessor~MessageProcessorDefinition
+ * @property {string} name - A name for the message processor. This can be anything, and will not be shown to users.
+ *   It exists solely for logging purposes.
+ * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
+ */
+
+/**
+ * Represents a message processor. Message processors should not be constructed directly.
+ * The constructor is shown here due to JSDoc limitations.
+ * Message processors are constructed by the MessageProcessorManager which reads the
+ * message processor definition modules in your message processors directory (specified as a constructor option to Monochrome)
+ * and constructs message processors accordingly. For help constructing a message processor definition, see {@link MessageProcessor~MessageProcessorDefinition}
+ */
 class MessageProcessor {
   constructor(processorData, monochrome) {
     if (!processorData) {
