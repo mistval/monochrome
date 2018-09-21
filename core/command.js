@@ -29,8 +29,6 @@ function sanitizeCommandData(commandData) {
     throw new Error('Invalid botAdminOnly value');
   } else if (commandData.canBeChannelRestricted !== undefined && typeof commandData.canBeChannelRestricted !== typeof true) {
     throw new Error('Invalid canBeChannelRestricted value');
-  } else if (commandData.onlyInServer !== undefined && typeof commandData.onlyInServer !== typeof true) {
-    throw new Error('Invalid onlyInServer value');
   } else if (commandData.canBeChannelRestricted === undefined) {
     if (commandData.botAdminOnly) {
       commandData.canBeChannelRestricted = false;
@@ -129,7 +127,6 @@ class Command {
     this.requiredSettings_ = commandData.requiredSettings;
     this.action_ = commandData.action;
     this.botAdminOnly_ = !!commandData.botAdminOnly;
-    this.onlyInServer_ = !!commandData.onlyInServer;
     this.cooldown_ = commandData.cooldown || 0;
     this.usersCoolingDown_ = [];
     this.shortDescription = commandData.shortDescription;
@@ -186,9 +183,6 @@ class Command {
     let isBotAdmin = this.monochrome_.getBotAdminIds().indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
       throw PublicError.createWithCustomPublicMessage('Only a bot admin can use that command.', true, 'User is not a bot admin');
-    }
-    if (this.onlyInServer_ && !msg.channel.guild) {
-      throw PublicError.createWithCustomPublicMessage('That command can only be used in a server.', true, 'Not in a server');
     }
 
     const settingsPromises = this.requiredSettings_.map(requiredSetting => {
