@@ -144,6 +144,31 @@ function validateAndSanitizeOptions(options) {
 /**
  * The main entry point into the framework. You construct this and call connect()
  * on it to start your bot.
+ @example
+const path = require('path');
+
+const bot = new monochrome({
+  botToken: require('./my-gitignored-config-file.json').myBotToken,
+  prefixes: ['!', '@'],
+  commandsDirectoryPath: path.join(__dirname, 'commands'),
+  messageProcessorsDirectoryPath: path.join(__dirname, 'message_processors'),
+  logDirectoryPath: path.join(__dirname, 'logs'),
+  persistenceDirectoryPath: path.join(__dirname, 'persistence')
+  settingsFilePath: path.join(__dirname, 'settings.js'),
+  useANSIColorsInLogFiles: true,
+  genericErrorMessage: 'Sorry, there was an error with that command. It has been logged and will be addressed.',
+  missingPermissionsErrorMessage: 'I do not have permission to reply to that command in this channel.',
+  genericDMReply: 'Say **<prefix>help** to see my commands!',
+  genericMentionReply: 'Hi <@user>, say **<prefix>help** to see my commands!',
+  inviteLinkDmReply: 'You can invite me to your server with this link! https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot',
+  statusRotation: ['cooking dinner', 'eating dinner', 'cleaning kitchen'],
+  statusRotationIntervalInSeconds: 600,
+  discordBotsDotOrgAPIKey: require('./my-gitignored-config-file.json').myDiscordBotsDotOrgAPIkey,
+  botsDotDiscordDotPwAPIKey: require('./my-gitignored-config-file.json').myBotDotDiscordDotPwAPIKey,
+  erisOptions: { maxShards: 'auto' },
+});
+
+bot.connect();
  */
 class Monochrome {
   /**
