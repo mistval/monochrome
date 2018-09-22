@@ -74,7 +74,7 @@ class Navigation {
     return Navigation.fromOneNavigationChapter(ownerId, chapter);
   }
 
-  createMessage(msg, logger) {
+  createMessage(channel, parentMsg, logger) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage(logger).then(navigationPage => {
       if (!navigationPage) {
@@ -83,7 +83,7 @@ class Navigation {
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
-      return msg.channel.createMessage(navigationPage, undefined, msg);
+      return channel.createMessage(navigationPage, undefined, parentMsg);
     }).then(sentMessage => {
       let emojis = Object.keys(this.chapterForEmojiName_);
       let reactionsToSend = [];

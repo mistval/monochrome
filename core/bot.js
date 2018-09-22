@@ -131,14 +131,20 @@ function validateAndSanitizeOptions(options) {
 
  /**
   * The Eris Client object that monochrome is built on top of.
-  * @external "Eris.Client"
+  * @external Eris.Client
   * @see {@link https://abal.moe/Eris/docs/Client}
   */
 
 /**
  * Represents a message received from the Discord API.
- * @external "Eris.Message"
+ * @external Eris.Message
  * @see {@link https://abal.moe/Eris/docs/Message}
+ */
+
+/**
+ * Represents a channel in a Discord server.
+ * @external Eris.Channel
+ * @see {@link https://abal.moe/Eris/docs/Channel}
  */
 
 /**
