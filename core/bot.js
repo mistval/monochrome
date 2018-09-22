@@ -131,20 +131,21 @@ function validateAndSanitizeOptions(options) {
 
  /**
   * The Eris Client object that monochrome is built on top of.
-  * @external Eris.Client
+  * @external "Eris.Client"
   * @see {@link https://abal.moe/Eris/docs/Client}
   */
 
 /**
  * Represents a message received from the Discord API.
- * @external Eris.Message
+ * @external "Eris.Message"
  * @see {@link https://abal.moe/Eris/docs/Message}
  */
 
 /**
- * Represents a channel in a Discord server.
- * @external Eris.Channel
- * @see {@link https://abal.moe/Eris/docs/Channel}
+ * Represents a channel in a Discord server. Usually you would get this from the
+ * .channel property on {@link external:"Eris.Message"}.
+ * @external "Eris.TextChannel"
+ * @see {@link https://abal.moe/Eris/docs/TextChannel}
  */
 
 /**
@@ -214,7 +215,7 @@ class Monochrome {
   /**
    * Get the Eris client object.
    * You can subscribe to events on the client, use it to lookup users, etc.
-   * @returns {Eris.Client}
+   * @returns {external:"Eris.Client"}
    * @see {@link https://abal.moe/Eris/docs/Client}
    */
   getErisBot() {
@@ -232,7 +233,7 @@ class Monochrome {
   }
 
   /**
-   * Get the NavigationManager, with which you can register and send navigations.
+   * Get the NavigationManager, with which you can send navigations.
    * @returns {NavigationManager}
    */
   getNavigationManager() {
@@ -307,7 +308,7 @@ class Monochrome {
 
   /**
    * Check if the sender of a message is a server admin (or bot admin).
-   * @param {Eris.Message} - The Eris message. {@link https://abal.moe/Eris/docs/Message}
+   * @param {external:"Eris.Message"} - The Eris message. {@link https://abal.moe/Eris/docs/Message}
    * @returns {boolean}
    */
   userIsServerAdmin(msg) {

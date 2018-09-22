@@ -5,8 +5,8 @@ const reload = require('require-reload')(require);
  * handled by a command or another message processor. This function examines the message
  * and either ignores it or takes action on it.
  * @callback MessageProcessor~action
- * @param {Eris.Client} bot
- * @param {Eris.Message} msg - The message to consider handling.
+ * @param {external:"Eris.Client"} bot
+ * @param {external:"Eris.Message"} msg - The message to consider handling.
  * @param {Monochrome} monochrome
  * @returns {boolean|Promise} If the message processor will not handle this message, you should return false (not a promise that resolves to false).
  *   If a promise is returned, the message processor is assumed to have accepted the message, and it will not be propogated further. True may also be returned.

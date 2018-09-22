@@ -125,7 +125,7 @@ const numberOfPrefixes = prefixes.length;
    * Get the primary prefix for the location where msg was sent. This method is synchronous, in order to avoid the overhead
    * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
    * might return the default prefixes even though the server has custom prefixes.
-   * @param {Eris.Message} msg
+   * @param {external:"Eris.Message"} msg
    * @returns {string}
    */
   getPrimaryPrefixForMessage(msg) {
@@ -136,7 +136,7 @@ const numberOfPrefixes = prefixes.length;
    * Get the prefixes for the location where msg was sent. This method is synchronous, in order to avoid the overhead
    * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
    * might return the default prefixes even though the server has custom prefixes.
-   * @param {Eris.Message} msg
+   * @param {external:"Eris.Message"} msg
    * @returns {string[]}
    */
   getPrefixesForMessage(msg) {

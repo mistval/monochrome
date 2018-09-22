@@ -85,7 +85,7 @@ class HelpCommandHelper {
 
   /**
    * Get all non-hidden commands that are enabled where the msg was sent.
-   * @param {Eris.Message} msg - The Eris message that caused the help command to be invoked.
+   * @param {external:"Eris.Message"} msg - The Eris message that caused the help command to be invoked.
    * @returns {Command[]}
    */
   async getEnabledNonHiddenCommands(msg) {

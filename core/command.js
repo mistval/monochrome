@@ -74,11 +74,11 @@ function sanitizeCommandData(commandData) {
  * A function to perform a command. This function is invoked when a user message
  * starts with the server's command prefix plus one of the command's aliases.
  * @callback Command~commandAction
- * @param {Eris.Client} bot
- * @param {Eris.Message} msg - The message that triggered the command
+ * @param {external:"Eris.Client"} bot
+ * @param {external:"Eris.Message"} msg - The message that triggered the command
  * @param {string} suffix - The part of the message that follows the command invocation (i.e. for "prefix!command do the command", the prefix is "do the command")
  * @param {Monochrome} monochrome
- * @param {Object} settings - The requested setting values. The keys of this object and the setting unique IDs, and the values are the settings values.
+ * @param {Object} settings - The requested setting values. The keys of this object are the setting unique IDs, and the values are the settings values.
  * @returns {Promise|undefined} If a promise is returned, it will be resolved, and if it rejects, that error will be logged and handled. In general, your
  *   commands should return promises.
  */
