@@ -120,7 +120,7 @@ class NavigationChapter {
         if (!this.pages_[pageToGet]) {
           this.pages_[pageToGet] = page;
         }
-        if (page && page.content) {
+        if (page) {
           return page;
         } else {
           this.pages_[pageToGet] = undefined;

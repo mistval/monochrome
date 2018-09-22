@@ -514,7 +514,7 @@ class Monochrome {
     try {
       let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, msg.author.mention);
       reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
-      const prefix = this.persistence_.getPrimaryPrefixFromMsg(msg);
+      const prefix = this.persistence_.getPrimaryPrefixForMessage(msg);
       reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       return reply;
     } catch (err) {

@@ -209,10 +209,7 @@ class CommandManager {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      const result = await commandToExecute.handle(bot, msg, suffix);
-      if (typeof result === typeof '') {
-        throw PublicError.createWithGenericPublicMessage(false, result);
-      }
+      await commandToExecute.handle(bot, msg, suffix);
       this.monochrome_.getLogger().logInputReaction(LOGGER_TITLE, msg, '', true);
     } catch (err) {
       handleCommandError(msg, err, this.monochrome_);
