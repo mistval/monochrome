@@ -1,4 +1,5 @@
 const storage = require('./util/node_persist_atomic.js');
+const path = require('path');
 
 const USER_DATA_KEY_PREFIX = 'User';
 const SERVER_DATA_KEY_PREFIX = 'Server';
@@ -28,7 +29,13 @@ function keyForServerId(serverId) {
  * @hideconstructor
  */
 class Persistence {
-  constructor(defaultPrefixes, logger, nodePersistOptions) {
+  constructor(defaultPrefixes, logger, persistenceDirectory) {
+    const nodePersistOptions = {};
+    if (persistenceDirectory) {
+      const directoryRelative = path.relative(process.cwd(), persistenceDirectory);
+      nodePersistOptions.dir = directoryRelative;
+    }
+
     storage.init(nodePersistOptions);
     this.defaultPrefixes_ = defaultPrefixes;
     this.prefixesForServerId_ = {};

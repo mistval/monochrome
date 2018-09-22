@@ -2,9 +2,10 @@ const assert = require('assert');
 const Storage = require('node-persist');
 const Persistence = require('./../core/persistence.js');
 const MockConfig = require('./mock_objects/mock_config.js');
+const path = require('path');
 
 const config = new MockConfig('Server Admin', ['bot-admin-id']);
-const persistence = new Persistence([''], undefined, {dir: './test/persistence'});
+const persistence = new Persistence([''], undefined, path.join(__dirname, 'persistence'));
 
 Storage.clearSync();
 

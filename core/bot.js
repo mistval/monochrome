@@ -153,6 +153,7 @@ class Monochrome {
    * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command files exist.
    * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor files exist.
    * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
+   * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist)
    * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
    * @param {boolean} [options.useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
    * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
@@ -171,7 +172,7 @@ class Monochrome {
 
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
-    this.persistence_ = new Persistence(this.options_.prefixes, this.logger_);
+    this.persistence_ = new Persistence(this.options_.prefixes, this.logger_, this.options_.persistenceDirectoryPath);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
