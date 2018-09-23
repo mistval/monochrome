@@ -1,21 +1,20 @@
-'use strict'
 const reload = require('require-reload')(require);
-const Command = reload('./command.js');
-const FileSystemUtils = reload('./util/file_system_utils.js');
-const PublicError = reload('./public_error.js');
-const HelpCommandHelper = reload('./help_command_helper.js');
-const strings = reload('./string_factory.js').commandManager;
-const Constants = reload('./constants.js');
+const Command = require('./command.js');
+const FileSystemUtils = require('./util/file_system_utils.js');
+const PublicError = require('./public_error.js');
+const HelpCommandHelper = require('./help_command_helper.js');
+const Constants = require('./constants.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
+const assert = require('assert');
 
 const COMMAND_CATEGORY_NAME = 'Enabled commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail silently';
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
+const LOGGER_TITLE = 'COMMAND';
 
-function handleCommandError(msg, err, config, logger, persistence) {
-  const loggerTitle = 'COMMAND';
+function handleCommandError(msg, err, monochrome) {
   let errorToOutput = err;
   if (!errorToOutput.output) {
     errorToOutput = PublicError.createInsufficientPrivilegeError(err);
@@ -24,8 +23,7 @@ function handleCommandError(msg, err, config, logger, persistence) {
     }
   }
 
-  const prefix = persistence.getPrimaryPrefixFromMsg(msg);
-  errorToOutput.output(logger, loggerTitle, config, msg, false, prefix);
+  return errorToOutput.output(LOGGER_TITLE, msg, false, monochrome);
 }
 
 function getDuplicateAlias(command, otherCommands) {
@@ -47,7 +45,7 @@ function savePrefixes(persistence, settingUniqueId, serverId, channelId, userId,
 }
 
 function getPrefixes(persistence, setting, serverId) {
-  return persistence.getPrefixesForServerId(serverId);
+  return persistence.getPrefixesForServer(serverId);
 }
 
 function createPrefixesSetting(defaultPrefixes) {
@@ -57,6 +55,7 @@ function createPrefixesSetting(defaultPrefixes) {
     defaultUserFacingValue: defaultPrefixes.join(' '),
     allowedValuesDescription: 'A **space separated** list of prefixes',
     uniqueId: PREFIXES_SETTING_UNIQUE_ID,
+    serverSetting: true,
     userSetting: false,
     channelSetting: false,
     requireConfirmation: true,
@@ -75,6 +74,8 @@ function createDisabledCommandsFailSilentlySetting() {
     defaultUserFacingValue: 'Disabled',
     allowedValuesDescription: '**Enabled** or **Disabled**',
     uniqueId: Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID,
+    serverSetting: true,
+    channelSetting: true,
     userSetting: false,
     convertUserFacingValueToInternalValue: SettingsConverters.createStringToBooleanConverter('enabled', 'disabled'),
     convertInternalValueToUserFacingValue: SettingsConverters.createBooleanToStringConverter('Enabled', 'Disabled'),
@@ -94,82 +95,84 @@ function createSettingsCategoryForCommands(userCommands) {
   };
 }
 
+/**
+ * Responsible for delegating messages to command handlers.
+ * The CommandManager can be accessed via {@link Monochrome#getCommandManager}.
+ * @hideconstructor
+ */
 class CommandManager {
-  constructor(logger, config, settings, persistence) {
+  constructor(directory, prefixes, monochrome) {
+    this.monochrome_ = monochrome;
     this.commands_ = [];
-    this.settings_ = settings;
-    this.logger_ = logger;
-    this.config_ = config;
-    this.persistence_ = persistence;
-  }
-
-  getHelpCommandHelper() {
-    return this.helpCommandHelper_;
-  }
-
-  async load(directory, monochrome) {
-    const loggerTitle = 'COMMAND MANAGER';
-    let commandDatasToLoad = [];
-    this.commands_ = [];
-
-    try {
-      if (directory) {
-        const commandFiles = await FileSystemUtils.getFilesInDirectory(directory);
-        for (let commandFile of commandFiles) {
-          try {
-            let commandData = reload(commandFile);
-            commandDatasToLoad.push(commandData);
-          } catch (e) {
-            this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandFromFileMessage(commandFile), e);
-            continue;
-          }
-        }
-      }
-
-      for (let commandData of commandDatasToLoad) {
-        let command;
-        try {
-          command = new Command(commandData, this.settings_, monochrome);
-        } catch (err) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createFailedToLoadCommandWithUniqueIdMessage(commandData.uniqueId || (commandData.commandAliases ? commandData.commandAliases[0] : undefined)), err);
-          continue;
-        }
-        if (commandData.uniqueId && this.commands_.find(cmd => cmd.uniqueId === commandData.uniqueId)) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueUniqueIdMessage(commandData.uniqueId));
-          continue;
-        }
-
-        let duplicateAlias = getDuplicateAlias(command, this.commands_);
-        if (duplicateAlias) {
-          this.logger_.logFailure(loggerTitle, strings.validation.createNonUniqueAliasMessage(commandData.uniqueId, duplicateAlias));
-          continue;
-        }
-
-        this.commands_.push(command);
-      }
-
-      this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.config_, this.settings_, this.persistence_);
-
-      const settingsCategory = createSettingsCategoryForCommands(this.commands_);
-      this.settings_.addNodeToRoot(settingsCategory);
-
-      if (this.config_.prefixes && (this.config_.prefixes.length > 1 || !!this.config_.prefixes[0])) {
-        const prefixesSetting = createPrefixesSetting(this.config_.prefixes);
-        this.settings_.addNodeToRoot(prefixesSetting);
-      }
-    } catch (err) {
-      this.logger_.logFailure(loggerTitle, strings.validation.genericError, err);
-    }
+    this.directory_ = directory;
+    this.prefixes_ = prefixes;
+    this.persistence_ = monochrome.getPersistence();
   }
 
   /**
-  * Tries to process user input as a command.
-  * Note: this returning true does not mean that a command was necessarily successful. It only means that the input was handed to a command to process.
-  */
+   * Get the HelpCommandHelper which provides assistance for creating a help command.
+   * @returns {HelpCommandHelper}
+   */
+  getHelpCommandHelper() {
+    assert(this.helpCommandHelper_, 'Help command helper not available');
+    return this.helpCommandHelper_;
+  }
+
+  async load() {
+    this.commands_ = [];
+
+    if (this.directory_) {
+      const commandFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
+      for (let commandFile of commandFiles) {
+        try {
+          let newCommandData = reload(commandFile);
+          let newCommand = new Command(newCommandData, this.monochrome_);
+
+          if (this.commands_.find(existingCommand => existingCommand.uniqueId === newCommand.uniqueId)) {
+            throw new Error(`There is another command with the same uniqueId`);
+          }
+
+          let duplicateAlias = getDuplicateAlias(newCommand, this.commands_);
+          if (duplicateAlias) {
+            throw new Error(`There is another command that also has the alias: ${duplicateAlias}`);
+          }
+
+          this.commands_.push(newCommand);
+        } catch (e) {
+          this.monochrome_.getLogger().logFailure(LOGGER_TITLE, `Failed to load command in file: ${commandFile}`, e);
+        }
+      }
+    }
+
+    this.helpCommandHelper_ = new HelpCommandHelper(this.commands_, this.monochrome_.getSettings(), this.monochrome_.getPersistence());
+
+    const settingsCategory = createSettingsCategoryForCommands(this.commands_);
+    this.monochrome_.getSettings().addNodeToRoot(settingsCategory);
+
+    if (this.prefixes_ && (this.prefixes_.length > 1 || !!this.prefixes_[0])) {
+      const prefixesSetting = createPrefixesSetting(this.prefixes_);
+      this.monochrome_.getSettings().addNodeToRoot(prefixesSetting);
+    }
+  }
+
   processInput(bot, msg) {
-    const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-    const prefixes = this.persistence_.getPrefixesForServerId(serverId);
-    let msgContent = msg.content.replace('\u3000', ' ');
+    let serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
+    let prefixes = this.persistence_.getPrefixesForServer(serverId);
+    let msgContent = msg.content;
+
+    // Break out early if no matching prefixes
+    const numPrefixes = prefixes.length;
+    const lastIndex = numPrefixes - 1;
+    for (let i = 0; i < numPrefixes; ++i) {
+      if (msgContent.startsWith(prefixes[i])) {
+        break
+      }
+      if (i === lastIndex) {
+        return false;
+      }
+    }
+
+    msgContent = msgContent.replace('\u3000', ' ');
     let spaceIndex = msgContent.indexOf(' ');
     let commandText = '';
     if (spaceIndex === -1) {
@@ -201,19 +204,15 @@ class CommandManager {
   async executeCommand_(bot, msg, commandToExecute, msgContent, spaceIndex, prefix, extension) {
     msg.prefix = prefix;
     msg.extension = extension;
-    const loggerTitle = 'COMMAND';
     let suffix = '';
     if (spaceIndex !== -1) {
       suffix = msgContent.substring(spaceIndex + 1).trim();
     }
     try {
-      const result = await commandToExecute.handle(bot, msg, suffix, this.config_);
-      if (typeof result === typeof '') {
-        throw PublicError.createWithGenericPublicMessage(false, result);
-      }
-      this.logger_.logInputReaction(loggerTitle, msg, '', true);
+      await commandToExecute.handle(bot, msg, suffix);
+      this.monochrome_.getLogger().logInputReaction(LOGGER_TITLE, msg, '', true);
     } catch (err) {
-      handleCommandError(msg, err, this.config_, this.logger_, this.persistence_);
+      handleCommandError(msg, err, this.monochrome_);
     }
 
     return commandToExecute;

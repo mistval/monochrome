@@ -1,10 +1,12 @@
 const Settings = require('./../core/settings.js');
 const Persistence = require('./../core/persistence.js');
 const { SettingsConverters, SettingsValidators } = require('./../monochrome.js');
-const Logger = require('./mock_objects/mock_logger.js');
 const assert = require('assert');
 const Storage = require('node-persist');
 const MockConfig = require('./mock_objects/mock_config.js');
+const Logger = require('./../core/logger.js');
+const mockConsole = require('./mock_objects/mock_console.js');
+const path = require('path');
 
 const KOTOBA_SETTINGS_PATH = `${__dirname}/mock_settings/kotoba.js`;
 const NON_ARRAY_SETTINGS_PATH = `${__dirname}/mock_settings/non_array.js`;
@@ -76,9 +78,8 @@ const SERVER_ID_2 = 'server2';
 const CHANNEL_ID_2 = 'channel2';
 const USER_ID_2 = 'user2';
 
-const logger = new Logger();
-
-const persistence = new Persistence({dir: './test/persistence'}, config);
+const logger = new Logger(undefined, undefined, mockConsole);
+const persistence = new Persistence([''], undefined, path.join(__dirname, 'persistence'));
 
 function createValidSetting1() {
   return {

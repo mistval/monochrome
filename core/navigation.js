@@ -1,3 +1,5 @@
+const NavigationChapter = require('./navigation_chapter.js');
+
 const LOGGER_TITLE = 'NAVIGATION';
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
@@ -13,18 +15,26 @@ function sendReactions(msg, reactions, logger) {
 }
 
 /**
-* Represents a navigation. A navigation allows its owner to browse information by using reactions.
-* In response to the reactions, the bot edits its message.
-* Note: in order to mostly work around a Discord desktop client bug (https://trello.com/c/Nnkj5D0W/1154-editing-a-message-may-sometimes-cause-part-of-previous-message-to-appear),
-*   the message gets edited twice per reaction. This can easily lead to light rate-limiting against your bot, which is handled seemlessly (thanks Eris).
-*   There is also rate-limiting built into this class, though it does not limit the rate sufficiently to prevent Discord's ratelimiting.
-*/
+ * Represents a collection of messages that can be navigated in two dimensions
+ * via reaction buttons below the message. A navigation is a collection of {@link NavigationChapter}s.
+ * Each navigation chapter controls a one-dimensional slice of navigable content.
+ * The user can move forward and backward within a chapter by using the arrow reaction
+ * buttons, and can switch chapters by using the other reaction buttons.<br><br>
+ * Once a Navigation is constructed, it can be shown to the user by using {@link NavigationManager#show}
+ */
 class Navigation {
   /**
-  * @param {String} ownerId - The Discord user ID of this navigation's owner (who is allowed to manipulate it with reactions).
-  * @param {String} showPageArrows - Whether the page arrows should be shown, or only the chapter emotes.
-  * @param {String} initialEmojiName - The unicode emote name for the chapter that should be shown initially.
-  * @param {Object} chapterForEmojiName - A dictionary mapping from unicode emoji to NavigationChapter.
+  * Construct a Navigation. If this Navigation only has one {@link NavigationChapter}, use the
+  * {@link Navigation.fromOneNavigationChapter} factory method instead. If you only
+  * need left and right pagination, and you already have all the content you want to display
+  * to the user, use the {@link Navigation.fromOneDimensionalContents} factory method instead.
+  * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+  * @param {boolean} showPageArrows - Whether to show the arrow reactions or not. If you know in advance
+  *   that none of your {@link NavigationChapter}s have more than one page, you can set this to false.
+  * @param {string} initialEmojiName - The name of the emoji for the chapter to show initially.
+  * @param {Object.<string, NavigationChapter>} chapterForEmojiName - An object where the keys are emoji names and the values are {@link NavigationChapter}s.
+  *   When the emoji is clicked, control will switch to the specified chapter. To find the name of an emoji, enter the emoji in
+  *   Discord's chat box, put a \ in front of it, and hit enter.
   */
   constructor(ownerId, showPageArrows, initialEmojiName, chapterForEmojiName) {
     let keys = Object.keys(chapterForEmojiName);
@@ -39,9 +49,32 @@ class Navigation {
   }
 
   /**
-  * @param {Eris.Message} msg - The message the navigation is getting created in response to. The navigation will be sent to the same channel.
-  */
-  createMessage(msg, logger) {
+   * Construct a Navigation with just one chapter. Only the arrow reactions will
+   * be shown and navigation will only be possible in one dimension.
+   * If you already have all the content you want to display to the user,
+   * you can use the {@link Navigation.fromOneDimensionalContents} factory method instead
+   * and avoid having to construct a {@link NavigationChapter} yourself.
+   * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+   * @param {NavigationChapter} navigationChapter - The {@link NavigationChapter} to show.
+   */
+  static fromOneNavigationChapter(ownerId, navigationChapter) {
+    const chapterForEmojiName = { a: navigationChapter };
+    return new Navigation(ownerId, true, 'a', chapterForEmojiName);
+  }
+
+  /**
+   * Construct a Navigation from an array of [Discord embed structures]{@link https://discordapp.com/developers/docs/resources/channel#embed-object} (or strings).
+   * Only the arrow reactions will be shown and navigation will only be possible in one dimension.
+   * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
+   * @param {string[]|Object[]} contents - The strings or [Discord embed structures]{@link https://discordapp.com/developers/docs/resources/channel#embed-object}
+   *   to show in the navigation.
+   */
+  static fromOneDimensionalContents(ownerId, contents) {
+    const chapter = NavigationChapter.fromContent(contents);
+    return Navigation.fromOneNavigationChapter(ownerId, chapter);
+  }
+
+  createMessage(channel, parentMsg, logger) {
     let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     return chapter.getCurrentPage(logger).then(navigationPage => {
       if (!navigationPage) {
@@ -50,7 +83,7 @@ class Navigation {
       if (navigationPage.showPageArrows !== undefined) {
         this.showPageArrows_ = navigationPage.showPageArrows;
       }
-      return msg.channel.createMessage(navigationPage.content, navigationPage.file, msg);
+      return channel.createMessage(navigationPage, undefined, parentMsg);
     }).then(sentMessage => {
       let emojis = Object.keys(this.chapterForEmojiName_);
       let reactionsToSend = [];
@@ -72,12 +105,6 @@ class Navigation {
     });
   }
 
-  /**
-  * When an emoji is added or removed, this gets called and, if appropriate, the state of the navigation changes.
-  * @param {Eris.Client} bot - The Eris bot.
-  * @param {String} emoji - The unicode emoji that was toggled.
-  * @param {String} userId - The id of the user who toggled the emoji.
-  */
   handleEmojiToggled(bot, emoji, userId, logger) {
     if (bot.user.id === userId) {
       return;
@@ -107,8 +134,8 @@ class Navigation {
       }
 
       pagePromise.then(navigationPage => {
-        if (navigationPage && navigationPage.content && desiredEmojiName === this.currentEmojiName_) {
-          return this.message_.edit(navigationPage.content);
+        if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
+          return this.message_.edit(navigationPage);
         }
       }).catch(err => {
         logger.logFailure(LOGGER_TITLE, 'Error navigating.', err);

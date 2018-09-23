@@ -1,42 +1,39 @@
-'use strict'
-const reload = require('require-reload')(require);
-let implementation;
-
 /**
-* A singleton to manage registered Navigation's.
-*/
+ * Handles displaying and controlling {@link Navigation}s.
+ * The NavigationManager can be
+ * accessed via {@link Monochrome#getNavigationManager}.
+ * @hideconstructor
+ */
 class NavigationManager {
   constructor(logger) {
-    this.reload();
     this.navigationForMessageId_ = {};
     this.logger_ = logger;
   }
 
   /**
-  * Reload the class' main implementation. Since this class contains state that should not be lost during a reload, this file itself should not be reloaded.
-  */
-  reload() {
-    implementation = reload('./implementations/navigation_manager_implementation.js');
+   * Display a navigation.
+   * @param {Navigation} navigation - The navigation to display.
+   * @param {number} expirationTimeInMs - How long before the navigation should become
+   *   inactive and cease responding to reactions. Note that showing a navigation takes memory,
+   *   so if this number is excessively high, you may run out of memory eventually (unlikely to ever
+   *   happen except for very popular bots).
+   * @param {external:"Eris.Channel"} channel - The channel to show the navigation in ({@link Eris.Message} has a .channel property to get this)
+   * @param {external:"Eris.Message"} [parentMsg] - The user message that caused the navigation to be created.
+   *   If that message is deleted, the bot will delete the navigation. Omit if you don't want that
+   *   behavior.
+   */
+  show(navigation, expirationTimeInMs, channel, parentMsg) {
+    return navigation.createMessage(channel, parentMsg, this.logger_).then(messageId => {
+      this.navigationForMessageId_[messageId] = navigation;
+      setTimeout(() => delete this.navigationForMessageId_[messageId], expirationTimeInMs);
+    });
   }
 
-  /** Register a navigation and create the message in Discord.
-  * @param {Navigation} navigaton - The navigation to register.
-  * @param {expirationTimeInMs} - The time in ms until the navigation expires and reactions to it are no longer responded to.
-  *   (If the navigation never expires, that would be a memory leak)
-  * @param {Eris.Message} msg - The message that the navigation is being created in response to.
-  */
-  register(navigation, expirationTimeInMs, msg) {
-    return implementation.register(this, navigation, expirationTimeInMs, msg);
-  }
-
-  /** Handled a reaction being toggled.
-  * @param {Client} bot - The Eris client.
-  * @param {Message} msg - The Eris message.
-  * @param {String} emoji - The emoji that was toggled.
-  * @param {String} userid - The user who toggled the emoji.
-  */
   handleEmojiToggled(bot, msg, emoji, userId) {
-    implementation.handleEmojiToggled(this, bot, msg, emoji, userId);
+    let navigation = this.navigationForMessageId_[msg.id];
+    if (navigation) {
+      navigation.handleEmojiToggled(bot, emoji, userId, this.logger_);
+    }
   }
 }
 

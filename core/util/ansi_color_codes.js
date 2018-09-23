@@ -1,4 +1,3 @@
-'use strict'
 /**
 * Basic ANSI color codes that most terminal emulators support.
 */

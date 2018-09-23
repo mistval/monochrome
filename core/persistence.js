@@ -1,7 +1,5 @@
-'use strict'
-const reload = require('require-reload')(require);
-const storage = reload('./util/node_persist_atomic.js');
-const state = require('./util/misc_unreloadable_data.js');
+const storage = require('./util/node_persist_atomic.js');
+const path = require('path');
 
 const USER_DATA_KEY_PREFIX = 'User';
 const SERVER_DATA_KEY_PREFIX = 'Server';
@@ -16,90 +14,154 @@ function keyForServerId(serverId) {
 }
 
 /**
-* A utility to help with persisting data. Singleton.
-*/
+ * @callback Persistence~editFunction
+ * @param {Object} data - The current data associated with the key. If there is none, an empty object {} is given. This data can be manipulated and then returned to persist it.
+ * @returns {Object} The new data to associate with the key.
+ */
+
+/**
+ * Read or write persistent data that is persisted even if the process is killed.
+ * The persistence is a key-value store backed by [node-persist]{@link https://www.npmjs.com/package/node-persist}.
+ * You can store values for any key, but there are convenience methods provided for storing data
+ * attached to a particular user or server, or in a global store.
+ * Persistence can be
+ * accessed via {@link Monochrome#getPersistence}.
+ * @hideconstructor
+ */
 class Persistence {
-  constructor(options, config) {
-    storage.init(options);
-    this.defaultPrefixes_ = config.prefixes || [''];
-
-    if (!state.persistence) {
-      state.persistence = {
-        prefixesForServerId: {},
-      };
-
-      this.getGlobalData().then(data => {
-        state.persistence.prefixesForServerId = data.prefixes || {};
-      });
+  constructor(defaultPrefixes, logger, persistenceDirectory) {
+    const nodePersistOptions = {};
+    if (persistenceDirectory) {
+      const directoryRelative = path.relative(process.cwd(), persistenceDirectory);
+      nodePersistOptions.dir = directoryRelative;
     }
-  }
 
-  getData(key) {
-    return storage.getItem(key).then(data => {
-      if (data) {
-        return data;
-      } else {
-        return {};
-      }
+    storage.init(nodePersistOptions);
+    this.defaultPrefixes_ = defaultPrefixes;
+    this.prefixesForServerId_ = {};
+
+    this.getGlobalData().then(data => {
+      this.prefixesForServerId_ = data.prefixes || {};
+    }).catch(err => {
+      logger.logFailure('PERSISTENCE', 'Error loading prefixes', err);
     });
   }
 
   /**
-  * Get data associated with a userId
-  * @param {String} userId - The id of the user to get data associated with.
-  * @returns {Promise} a promise that will be fulfilled with the user data object.
-  */
-  getDataForUser(userId) {
+   * Get the value associated with the specified key. If no such value exists,
+   * an empty object {} is returned.
+   * @param {string} key
+   * @returns {Object} The value associated with the specified key.
+   * @example
+const data = await persistence.getData('some_key');
+console.log(JSON.stringify(data));
+   */
+  async getData(key) {
+    const data = await storage.getItem(key);
+    if (data) {
+      return data;
+    } else {
+      return {};
+    }
+  }
+
+  /**
+   * Get the data associated with a user. If no such data exists, an empty
+   * object {} is returned.
+   * @param {string} userId
+   * @returns {Object} The value associated with the specified userId
+   * @example
+const userId = '123456789';
+const data = await persistence.getDataForUser(userId);
+console.log(JSON.stringify(data));
+   */
+  async getDataForUser(userId) {
     return this.getData(keyForUserId(userId));
   }
 
   /**
-  * Get data associated with a serverId
-  * @param {String} serverId - The id of the server to get data associated with.
-  * @returns {Promise} a promise that will be fulfilled with the server data object.
-  */
-  getDataForServer(serverId) {
+   * Get the data associated with a server. If no such data exists, an empty
+   * object {} is returned.
+   * @param {string} serverId
+   * @returns {Object} The value associated with the specified serverId
+   * @example
+const serverId = '123456789';
+const data = await persistence.getDataForServer(serverId);
+console.log(JSON.stringify(data));
+   */
+  async getDataForServer(serverId) {
     return this.getData(keyForServerId(serverId));
   }
 
   /**
-  * Get global data
-  * @returns {Promise} a promise that will be fulfilled with the global data object.
-  */
-  getGlobalData() {
+   * Get the global data. If no such data exists, an empty
+   * object {} is returned.
+   * @returns {Object} The global data.
+   * @example
+const data = await persistence.getGlobalData();
+console.log(JSON.stringify(data));
+   */
+  async getGlobalData() {
     return this.getData(GLOBAL_DATA_KEY);
   }
 
   /**
-  * Get the prefixes for the given server ID. For performance reasons, this does not
-  * return a promise. If it is called before the server prefixes have a chance to load, the
-  * default prefixes will be returned.
-  * @param {String} serverId - The id of the server to get prefixes for.
-  * @returns {Array<String>} An array of prefixes.
-  */
-  getPrefixesForServerId(serverId) {
-    return state.persistence.prefixesForServerId[serverId] || this.defaultPrefixes_;
+   * Get the command prefixes associated with a server ID. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
+   * @param {string} serverId
+   * @returns {string[]}
+   * @example
+const serverId = '123456789';
+const prefixes = persistence.getPrefixesForServer(serverId);
+const firstPrefix = prefixes[0];
+const numberOfPrefixes = prefixes.length;
+   */
+  getPrefixesForServer(serverId) {
+    return this.prefixesForServerId_[serverId] || this.defaultPrefixes_;
   }
 
   /**
-  * Get the first prefix for the location where a message is sent.
-  * @param {Eris.Message} msg - The message.
-  * @returns {String} The primary prefix.
-  */
-  getPrimaryPrefixFromMsg(msg) {
-    return this.getPrefixesForServerId(msg.locationId)[0];
+   * Get the primary prefix for the location where msg was sent. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
+   * @param {external:"Eris.Message"} msg
+   * @returns {string}
+   */
+  getPrimaryPrefixForMessage(msg) {
+    return this.getPrefixesForMessage(msg)[0];
   }
 
   /**
-  * Convenience method to get get prefixes based on a message instead of server ID.
-  * @param {Message} msg - A message sent on the server you want to get the prefixes for.
-  * @returns {Array<String>} An array of prefixes.
-  */
+   * Get the prefixes for the location where msg was sent. This method is synchronous, in order to avoid the overhead
+   * of using promises. If called very soon after the bot starts, it might not return the correct prefixes. It
+   * might return the default prefixes even though the server has custom prefixes.
+   * @param {external:"Eris.Message"} msg
+   * @returns {string[]}
+   */
   getPrefixesForMessage(msg) {
-    return this.getPrefixesForServerId(msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
+    return this.getPrefixesForServer(msg.channel.guild ? msg.channel.guild.id : msg.channel.id);
   }
 
-  editData(key, editFunction) {
+  /**
+   * Edit the data associated with a key. This function is atomic in the sense
+   * that no one else can be editing the value for the same key at the same time.
+   * @param {string} key
+   * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+await persistence.editData('some_key', (data) => {
+  data.randomNumber = Math.random() * 100;
+
+  if (!data.numberOfTimesEdited) {
+    data.numberOfTimesEdited = 0;
+  }
+
+  data.numberOfTimesEdited += 1;
+
+  return data;
+});
+   */
+  async editData(key, editFunction) {
     return storage.editItem(key, data => {
       if (!data) {
         data = {};
@@ -116,44 +178,72 @@ class Persistence {
   }
 
   /**
-  * Edit data associated with a userId
-  * @param {String} userId - The id of the user to set data associated with.
-  * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
-  * @returns {Promise} a promise that will be fulfilled when the data has been edited.
-  */
-  editDataForUser(userId, editDataFunction) {
+   * Edit the data associated with a user. This function is atomic in the sense
+   * that no one else can be editing the value for the same key at the same time.
+   * @param {string} userId
+   * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+const userId = '123456789';
+await editDataForUser(userId, (data) => {
+  data.userIsWorthMyTime = false;
+  return data;
+});
+   */
+  async editDataForUser(userId, editFunction) {
     let key = keyForUserId(userId);
-    return this.editData(key, editDataFunction);
+    return this.editData(key, editFunction);
   }
 
   /**
-  * Edit data associated with a userId
-  * @param {String} serverId - The id of the server to set data associated with.
-  * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
-  * @returns {Promise} a promise that will be fulfilled when the data has been edited.
-  */
-  editDataForServer(serverId, editDataFunction) {
+   * Edit the data associated with a server. This function is atomic in the sense
+   * that no one else can be editing the value for the same key at the same time.
+   * @param {string} serverId
+   * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example
+const serverId = '123456789';
+await editDataForServer(serverId, (data) => {
+  data.favoriteUserInServer = 'nobody';
+  return data;
+});
+   */
+  async editDataForServer(serverId, editFunction) {
     let key = keyForServerId(serverId);
-    return this.editData(key, editDataFunction);
+    return this.editData(key, editFunction);
   }
 
   /**
-  * Edit global data
-  * @param {function(data)} editFunction - The callback to perform the edit on the data. It should return the edited data.
-  * @returns {Promise} a promise that will be fulfilled when the data has been edited.
-  */
-  editGlobalData(editDataFunction) {
-    return this.editData(GLOBAL_DATA_KEY, editDataFunction);
+   * Edit the data global data. This function is atomic in the sense
+   * that no one else can be editing the value for the same key at the same time.
+   * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @example await editGlobalData((data) => {
+  if (!data.scoreboard) {
+    data.scoreboard = {};
+  }
+
+  data.scoreboard['John Wick'] = 100;
+  return data;
+});
+   */
+  async editGlobalData(editFunction) {
+    return this.editData(GLOBAL_DATA_KEY, editFunction);
   }
 
   /**
-  * Edit the prefixes for a server
-  * @param {String} serverId - The id of the server to get prefixes for.
-  * @param {Array<String>} prefixes - The new prefixes.
-  * @returns {Promise} a promise that will be fulfilled when the prefixes have been edited.
-  */
-  editPrefixesForServerId(serverId, prefixes) {
-    state.persistence.prefixesForServerId[serverId] = prefixes;
+   * Edit the prefixes associated with a server.
+   * @param {string} serverId
+   * @param {string[]} prefixes - The new prefixes for the server.
+   * @example
+const serverId = '123456789';
+const newPrefixes = ['!', '@', '&!'];
+await editPrefixesForServer(serverId, newPrefixes);
+   */
+  async editPrefixesForServerId(serverId, prefixes) {
+    if (!prefixes) {
+      delete this.prefixesForServerId_[serverId];
+    } else {
+      this.prefixesForServerId_[serverId] = prefixes;
+    }
+
     return this.editData(GLOBAL_DATA_KEY, data => {
       data.prefixes = data.prefixes || {};
       data.prefixes[serverId] = prefixes;
@@ -161,13 +251,12 @@ class Persistence {
     });
   }
 
-  resetPrefixesForServerId(serverId) {
-    delete state.persistence.prefixesForServerId[serverId];
-    return this.editData(GLOBAL_DATA_KEY, data => {
-      data.prefixes = data.prefixes || {};
-      delete data.prefixes[serverId];
-      return data;
-    });
+  /**
+   * Reset the prefixes associated with a server.
+   * @param {string} serverId
+   */
+  async resetPrefixesForServerId(serverId) {
+    return this.editPrefixesForServerId(serverId, undefined);
   }
 }
 

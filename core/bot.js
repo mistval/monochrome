@@ -1,4 +1,3 @@
-'use strict'
 const reload = require('require-reload')(require);
 const Eris = require('eris');
 const request = require('request-promise');
@@ -8,12 +7,22 @@ const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const constants = require('./constants.js');
 const Blacklist = require('./blacklist.js');
+const MessageProcessorManager = require('./message_processor_manager.js');
+const Settings = require('./settings.js');
+const CommandManager = require('./command_manager.js');
+const assert = require('assert');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
 const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
+
+function updateStatusFromQueue(bot, queue) {
+  let nextStatus = queue.shift();
+  bot.editStatus({name: nextStatus});
+  queue.push(nextStatus);
+}
 
 function updateDiscordBotsDotOrg(config, bot, logger) {
   if (!config.discordBotsDotOrgAPIKey) {
@@ -25,11 +34,11 @@ function updateDiscordBotsDotOrg(config, bot, logger) {
       'Authorization': config.discordBotsDotOrgAPIKey,
       'Accept': 'application/json',
     },
-    uri: 'https://discordbots.org/api/bots/' + bot.user.id + '/stats',
-    body: '{"server_count": ' + bot.guilds.size.toString() + '}',
+    uri: `https://discordbots.org/api/bots/${bot.user.id}/stats`,
+    body: `{"server_count": ${bot.guilds.size.toString()}}`,
     method: 'POST',
   }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, 'Sent stats to discordbots.org: ' + bot.guilds.size.toString() + ' servers.');
+    logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${bot.guilds.size.toString()} servers.`);
   }).catch(err => {
     logger.logFailure(LOGGER_TITLE, 'Error sending stats to discordbots.org', err);
   });
@@ -45,11 +54,11 @@ function updateBotsDotDiscordDotPw(config, bot, logger) {
       'Authorization': config.botsDotDiscordDotPwAPIKey,
       'Accept': 'application/json',
     },
-    uri: 'https://bots.discord.pw/api/bots/' + bot.user.id + '/stats',
-    body: '{"server_count": ' + bot.guilds.size.toString() + '}',
+    uri: `https://bots.discord.pw/api/bots/${bot.user.id}/stats`,
+    body: `{"server_count": ${bot.guilds.size.toString()}}`,
     method: 'POST',
   }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, 'Sent stats to bots.discord.pw: ' + bot.guilds.size.toString() + ' servers.');
+    logger.logSuccess(LOGGER_TITLE, `Sent stats to bots.discord.pw: ${bot.guilds.size.toString()} servers.`);
   }).catch(err => {
     logger.logFailure(LOGGER_TITLE, 'Error sending stats to bots.discord.pw', err);
   });
@@ -63,8 +72,9 @@ function updateStats(config, bot, logger) {
 function createGuildLeaveJoinLogString(guild, logger) {
   try {
     let owner = guild.members.get(guild.ownerID).user;
-    return guild.name + ' owned by ' + owner.username + '#' + owner.discriminator;
+    return `${guild.name} owned by ${owner.username}#${owner.discriminator}`;
   } catch (err) {
+    // Sometimes this happens because the owner isn't cached or something.
     logger.logFailure(LOGGER_TITLE, 'Couldn\'t create join/leave guild log string', err);
     return '<Error getting guild name or owner name>';
   }
@@ -90,6 +100,8 @@ function validateAndSanitizeOptions(options) {
     if (!options.statusRotationIntervalInSeconds && options.statusRotation.length > 1) {
       throw new Error('If statusRotation is provided and has more than one status, statusRotationIntervalInSeconds must also be provided');
     }
+  } else {
+    options.statusRotation = [];
   }
 
   if (options.botAdminIds && !Array.isArray(options.botAdminIds)) {
@@ -117,80 +129,188 @@ function validateAndSanitizeOptions(options) {
   return options;
 }
 
+ /**
+  * The Eris Client object that monochrome is built on top of.
+  * @external "Eris.Client"
+  * @see {@link https://abal.moe/Eris/docs/Client}
+  */
+
+/**
+ * Represents a message received from the Discord API.
+ * @external "Eris.Message"
+ * @see {@link https://abal.moe/Eris/docs/Message}
+ */
+
+/**
+ * Represents a channel in a Discord server. Usually you would get this from the
+ * .channel property on {@link external:"Eris.Message"}.
+ * @external "Eris.TextChannel"
+ * @see {@link https://abal.moe/Eris/docs/TextChannel}
+ */
+
+/**
+ * The main entry point into the framework. You construct this and call connect()
+ * on it to start your bot.
+ @example
+const path = require('path');
+
+const bot = new monochrome({
+  botToken: require('./my-gitignored-config-file.json').myBotToken,
+  prefixes: ['!', '@'],
+  commandsDirectoryPath: path.join(__dirname, 'commands'),
+  messageProcessorsDirectoryPath: path.join(__dirname, 'message_processors'),
+  logDirectoryPath: path.join(__dirname, 'logs'),
+  persistenceDirectoryPath: path.join(__dirname, 'persistence')
+  settingsFilePath: path.join(__dirname, 'settings.js'),
+  useANSIColorsInLogFiles: true,
+  genericErrorMessage: 'Sorry, there was an error with that command. It has been logged and will be addressed.',
+  missingPermissionsErrorMessage: 'I do not have permission to reply to that command in this channel.',
+  genericDMReply: 'Say **<prefix>help** to see my commands!',
+  genericMentionReply: 'Hi <@user>, say **<prefix>help** to see my commands!',
+  inviteLinkDmReply: 'You can invite me to your server with this link! https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot',
+  statusRotation: ['cooking dinner', 'eating dinner', 'cleaning kitchen'],
+  statusRotationIntervalInSeconds: 600,
+  discordBotsDotOrgAPIKey: require('./my-gitignored-config-file.json').myDiscordBotsDotOrgAPIkey,
+  botsDotDiscordDotPwAPIKey: require('./my-gitignored-config-file.json').myBotDotDiscordDotPwAPIKey,
+  erisOptions: { maxShards: 'auto' },
+});
+
+bot.connect();
+ */
 class Monochrome {
+  /**
+   * @param {Object} options - Options to customize bot behavior.
+   * @param {string} options.botToken - Your bot's token.
+   * @param {string[]} [options.prefixes=['']] - The bot's default command prefixes.
+   * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command files exist.
+   * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor files exist.
+   * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
+   * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist)
+   * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
+   * @param {boolean} [options.useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
+   * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
+   * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send messages in the channel)
+   * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response.
+   * @param {string} [options.genericMentionReply] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message.
+   * @param {string} [options.inviteLinkDmReply] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server.
+   * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
+   * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
+   * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.botsDotDiscordDotPwAPIKey] - If you have an API key from {@link https://bots.discord.pw/} you can provide it here and your server count will be sent regularly.
+   * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
+   */
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger_);
-    this.logger_ = new Logger();
 
-    this.botMentionString_ = '';
-    this.persistence_ = new Persistence(undefined, this.options_);
-    this.blacklist_ = new Blacklist(this.persistence_, this.options_.botAdminIds);
-    this.logger_.initialize(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
+    this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
+    this.persistence_ = new Persistence(this.options_.prefixes, this.logger_, this.options_.persistenceDirectoryPath);
+    this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
+
     this.reload();
   }
 
+  /**
+   * Get the Eris client object.
+   * You can subscribe to events on the client, use it to lookup users, etc.
+   * @returns {external:"Eris.Client"}
+   * @see {@link https://abal.moe/Eris/docs/Client}
+   */
   getErisBot() {
+    assert(this.bot_, 'The bot object is not available (probably a bug in monochrome)');
     return this.bot_;
   }
 
+  /**
+   * Get the Logger, which you can use to log messages.
+   * @returns {Logger}
+   */
   getLogger() {
+    assert(this.logger_, 'Logger not available (probably a bug in monochrome)');
     return this.logger_;
   }
 
+  /**
+   * Get the NavigationManager, with which you can send navigations.
+   * @returns {NavigationManager}
+   */
   getNavigationManager() {
+    assert(this.navigationManager_, 'NavigationManager not available (probably a bug in monochrome)');
     return this.navigationManager_;
   }
 
+  /**
+   * Get the Persistence object, with which you can read and store persistent data.
+   * @returns {Persistence}
+   */
   getPersistence() {
+    assert(this.persistence_, 'Persistence not available (probably a bug in monochrome)');
     return this.persistence_;
   }
 
+  /**
+   * Get the Blacklist, which you can use to blacklist users and manage blacklisted users.
+   * @returns {Blacklist}
+   */
   getBlacklist() {
+    assert(this.blacklist_, 'Blacklist not available (probably a bug in monochrome)');
     return this.blacklist_;
   }
 
+  /**
+   * Get the Settings object, with which you can read and store persistent settings.
+   * @returns {Settings}
+   */
   getSettings() {
+    assert(this.settings_, 'Settings not available (probably a bug in monochrome)');
     return this.settings_;
   }
 
-  getConfig() {
-    return this.options_;
+  getSettingsIconUri() {
+    return this.options_.settingsIconUri;
   }
 
+  getBotAdminIds() {
+    return this.options_.botAdminIds;
+  }
+
+  getGenericErrorMessage() {
+    return this.options_.genericErrorMessage;
+  }
+
+  getMissingPermissionsErrorMessage() {
+    return this.options_.missingPermissionsErrorMessage;
+  }
+
+  /**
+   * Get the CommandManager.
+   * @returns {CommandManager}
+   */
   getCommandManager() {
+    assert(this.commandManager_, 'Command manager not available (probably a bug in monochrome)');
     return this.commandManager_;
   }
 
+  /**
+   * Reload your commands, message processors, and settings. You can use this
+   * to add, remove, and edit commands and other code, without having to restart
+   * your bot.
+   */
   reload() {
-    this.logger_.reload();
-    this.navigationManager_.reload();
-
-    const MessageProcessorManager = reload('./message_processor_manager.js');
-    const Settings = reload('./settings.js');
-    const CommandManager = reload('./command_manager.js');
-    const RepeatingQueue = reload('./repeating_queue.js');
-
-    this.statusQueue_ = new RepeatingQueue(this.options_.statusRotation);
-    this.messageProcessorManager_ = new MessageProcessorManager(this.logger_, this.persistence_);
     this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
-    this.commandManager_ = new CommandManager(
-      this.logger_,
-      this.options_,
-      this.settings_,
-      this.persistence_,
-    );
-
-    this.commandManager_.load(this.options_.commandsDirectoryPath, this);
-    this.messageProcessorManager_.load(this.options_.messageProcessorsDirectoryPath, this);
-
-    if (this.ready_) {
-      this.loadExtensions_();
-    }
+    this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this.options_.prefixes, this);
+    this.commandManager_.load();
+    this.messageProcessorManager_ = new MessageProcessorManager(this.options_.messageProcessorsDirectoryPath, this);
+    this.messageProcessorManager_.load();
   }
 
+  /**
+   * Check if the sender of a message is a server admin (or bot admin).
+   * @param {external:"Eris.Message"} - The Eris message. {@link https://abal.moe/Eris/docs/Message}
+   * @returns {boolean}
+   */
   userIsServerAdmin(msg) {
     if (!msg.channel.guild) {
       return true;
@@ -205,14 +325,6 @@ class Monochrome {
       return true;
     }
 
-    let serverAdminRole = msg.channel.guild.roles.find((role) => {
-      return role.name.toLowerCase() === this.options_.serverAdminRoleName.toLowerCase();
-    });
-
-    if (serverAdminRole && msg.member.roles.indexOf(serverAdminRole.id) !== -1) {
-      return true;
-    }
-
     if (this.options_.botAdminIds.indexOf(msg.author.id) !== -1) {
       return true;
     }
@@ -220,16 +332,17 @@ class Monochrome {
     return false;
   }
 
+  /**
+   * Connect to Discord and start listening for users to send commands to the bot.
+   */
   connect() {
     if (this.connected_) {
       return;
     }
+
     this.connected_ = true;
     this.bot_.on('ready', () => {
-      this.ready_ = true;
-      this.loadExtensions_();
       this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
-      this.botMentionString_ = '<@' + this.bot_.user.id + '>';
       this.rotateStatuses_();
       this.startUpdateStatsInterval_();
     });
@@ -246,7 +359,7 @@ class Monochrome {
     this.bot_.on('error', (err, shardId) => {
       let errorMessage = 'Error';
       if (shardId) {
-        errorMessage += ' on shard ' + shardId;
+        errorMessage += ` on shard ${shardId}`;
       }
       this.logger_.logFailure(LOGGER_TITLE, errorMessage, err);
     });
@@ -256,19 +369,19 @@ class Monochrome {
     });
 
     this.bot_.on('shardDisconnect', (err, id) => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Shard ' + id + ' disconnected', err);
+      this.logger_.logFailure(LOGGER_TITLE, `Shard ${id} disconnected`, err);
     });
 
     this.bot_.on('shardResume', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' reconnected');
+      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} reconnected`);
     });
 
     this.bot_.on('warn', message => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Warning: ' + message);
+      this.logger_.logFailure(LOGGER_TITLE, `Warning: ${message}`);
     });
 
     this.bot_.on('shardReady', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, 'Shard ' + id + ' connected');
+      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} connected`);
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
@@ -289,9 +402,9 @@ class Monochrome {
         this.logger_.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
       }
       this.persistence_.resetPrefixesForServerId(guild.id).then(() => {
-        this.logger_.logSuccess('RESET PREFIXES', `For ${guild.name}`);
+        this.logger_.logSuccess('RESET PREFIXES', `for ${guild.name}`);
       }).catch(err => {
-        this.logger_.logFailure('RESET PREFIXES', `For ${guild.name}`, err);
+        this.logger_.logFailure('RESET PREFIXES', `for ${guild.name}`, err);
       });
     });
 
@@ -300,25 +413,14 @@ class Monochrome {
     });
   }
 
-  loadExtensions_() {
-    if (this.options_.extensionsDirectoryPath_) {
-      this.extensionManager_ = new (reload('./extension_manager.js'))();
-      this.extensionManager_.load(this.extensionsDirectoryPath_, this);
-    }
-  }
-
   onMessageCreate_(msg) {
     try {
-      if (!this.ready_) {
-        return;
-      }
       if (msg.author.bot && this.options_.ignoreOtherBots) {
         return;
       }
-      if (this.blacklist_.isUserBlacklisted(msg.author.id)) {
+      if (this.blacklist_.isUserBlacklistedQuick(msg.author.id)) {
         return;
       }
-      msg.locationId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
       if (this.commandManager_.processInput(this.bot_, msg)) {
         return;
       }
@@ -332,9 +434,11 @@ class Monochrome {
         return;
       }
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level', err);
+      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level (probably a bug in monochrome)', err);
       if (this.options_.genericErrorMessage) {
-        msg.channel.createMessage(this.options_.genericErrorMessage);
+        msg.channel.createMessage(this.options_.genericErrorMessage).catch(err => {
+          this.logger_.logFailure(LOGGER_TITLE, 'Error sending error message', err);
+        });
       }
     }
   }
@@ -352,25 +456,27 @@ class Monochrome {
   }
 
   rotateStatuses_() {
-    try {
-      if (this.rotateStatusesTimeoutHandle_) {
-        clearTimeout(this.rotateStatusesTimeoutHandle_);
-      }
-      if (this.options_.statusRotation) {
-        if (this.options_.statusRotation.length > 1) {
-          this.rotateStatusesTimeoutHandle_ = setTimeout(() => this.rotateStatuses_(), this.options_.statusRotationIntervalInSeconds * 1000);
-        }
+    let statusRotation = this.options_.statusRotation;
+    if (statusRotation.length === 0) {
+      return;
+    }
 
-        let nextStatus = this.statusQueue_.pop();
-        this.bot_.editStatus({name: nextStatus});
-      }
-    } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+    updateStatusFromQueue(this.bot_, statusRotation);
+
+    if (statusRotation.length > 1) {
+      let intervalInMs = this.options_.statusRotationIntervalInSeconds * 1000;
+      setInterval(() => {
+        try {
+          updateStatusFromQueue(this.bot_, statusRotation);
+        } catch (err) {
+          this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+        }
+      }, intervalInMs);
     }
   }
 
   sendDmOrMentionReply_(toMsg, replyTemplate) {
-    toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
+    return toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
       this.logger_.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
     });
   }
@@ -394,8 +500,12 @@ class Monochrome {
   }
 
   tryHandleMention_(msg) {
+    if (!this.bot_.user) {
+      return;
+    }
+
     try {
-      if (msg.mentions.length > 0 && msg.content.indexOf(this.botMentionString_) === 0 && this.options_.genericMentionReply) {
+      if (msg.mentions.length > 0 && msg.content.indexOf(this.bot_.user.mention) === 0 && this.options_.genericMentionReply) {
         this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
         this.logger_.logInputReaction('MENTION', msg, '', true);
         return true;
@@ -409,9 +519,9 @@ class Monochrome {
 
   createDMOrMentionReply_(configReply, msg) {
     try {
-      let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, '<@' + msg.author.id + '>');
+      let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, msg.author.mention);
       reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
-      const prefix = this.persistence_.getPrefixesForMessage(msg)[0];
+      const prefix = this.persistence_.getPrimaryPrefixForMessage(msg);
       reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       return reply;
     } catch (err) {

@@ -1,6 +1,12 @@
 const reload = require('require-reload')(require);
 const assert = require('assert');
 
+/**
+ * Strings describing why a setting update failed.
+ * @memberof Settings
+ * @readonly
+ * @enum {string}
+ */
 const UpdateRejectionReason = {
   NOT_ADMIN: 'not admin',
   INVALID_VALUE: 'invalid value',
@@ -15,6 +21,19 @@ const SettingScope = {
   CHANNEL: 'channel',
   USER: 'user',
 };
+
+/**
+ * The result of an attempted setting update.
+ * @typedef {Object} Settings~SettingUpdateResult
+ * @type {Object}
+ * @property {boolean} accepted - Whether or not the update was applied.
+ * @property {Object} [setting] - The setting that was (or wasn't) updated (only present if a matching setting was found)
+ * @property {Settings.UpdateRejectionReason} [reason] - Why the update failed (only present if accepted is false)
+ * @property {string} [rejectedUserFacingValue] - The user facing value that was rejected (only present if reason === UpdateRejectionReason.INVALID_VALUE)
+ * @property {string} [nonExistentUniqueId] - The unique ID that the caller tried to change the setting value for (only present if reason === UpdateRejectionReason.SETTING_DOES_NOT_EXIST)
+ * @property {string} [newUserFacingValue] - The new user facing value that the setting was updated to (only if accepted === true)
+ * @property {string} [newInternalValue] - The new internal value that the setting was updated to (only if accepted === true)
+ */
 
 function createUpdateRejectionResultUserNotAdmin(treeNode) {
   return {
@@ -269,6 +288,11 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
   }
 }
 
+/**
+ * Get and set settings with server, channel, and user scope.
+ * Settings can be accessed via {@link Monochrome#getSettings}.
+ * @hideconstructor
+ */
 class Settings {
   constructor(persistence, logger, settingsFilePath) {
     this.persistence_ = persistence;
@@ -292,19 +316,47 @@ class Settings {
     }
   }
 
+  /**
+   * Get the settings tree that you specified in your settings file.
+   * It may not be exactly the same due to the application of default values.
+   * @returns {Object[]} The array of settings at the root.
+   */
   getRawSettingsTree() {
     return this.settingsTree_;
   }
 
+  /**
+   * Get the setting or category with the specified unique ID, or undefined if it doesn't exist.
+   * @param {string} uniqueId
+   * @returns {Object|undefined}
+   */
   getTreeNodeForUniqueId(uniqueId) {
     return getTreeNodeForUniqueId(this.settingsTree_, uniqueId);
   }
 
+  /**
+   * Check if a user facing value is valid for a setting.
+   * @param {Object} setting - The setting, found by calling getTreeNodeForUniqueId or by traversing
+   *   the settings tree accessed via the getRawSettingsTree method.
+   * @param {string} userFacingValue - The user facing value to check for validity.
+   * @returns {boolean}
+   */
   async userFacingValueIsValidForSetting(setting, userFacingValue) {
     const internalValue = await setting.convertUserFacingValueToInternalValue(userFacingValue);
     return setting.validateInternalValue(internalValue);
   }
 
+  /**
+   * Get the internal value for a setting given the current server, channel, and user context.
+   * If there's a matching user setting value, it overrides any matching channel setting value, which overrides
+   * any matching server setting value. If there are no server, channel, or user settings values set, the default
+   * value specified in the settings definition is returned.
+   * @param {string} settingUniqueId
+   * @param {string} serverId - The ID of the server where the setting is being accessed.
+   * @param {string} channelId - The ID of the channel where the setting is being accessed.
+   * @param {string} userId - The ID of the user using the setting.
+   * @returns {Object|undefined} The internal value of the setting, or undefined if no setting is found.
+   */
   getInternalSettingValue(settingUniqueId, serverId, channelId, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
@@ -314,6 +366,17 @@ class Settings {
     return treeNode.getInternalSettingValue(this.persistence_, treeNode, serverId, channelId, userId);
   }
 
+  /**
+   * Get the user facing value for a setting given the current server, channel, and user context.
+   * If there's a matching user setting value, it overrides any matching channel setting value, which overrides
+   * any matching server setting value. If there are no server, channel, or user settings values set, the default
+   * value specified in the settings definition is returned.
+   * @param {string} settingUniqueId
+   * @param {string} serverId - The ID of the server where the setting is being accessed.
+   * @param {string} channelId - The ID of the channel where the setting is being accessed.
+   * @param {string} userId - The ID of the user using the setting.
+   * @returns {string|undefined} The user facing value of the setting, or undefined if no setting is found.
+   */
   async getUserFacingSettingValue(settingUniqueId, serverId, channelId, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
@@ -326,15 +389,40 @@ class Settings {
     return userFacingValue;
   }
 
-  setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin) {
+  /**
+   * Set a setting value server wide. This also wipes out any channel settings in the server
+   * for the setting with the specified unique ID. User settings are unaffected.
+   * @param {string} settingUniqueId
+   * @param {string} serverId - The ID of the server where the setting is being set.
+   * @param {string} newUserFacingValue - The user facing value of the new setting value.
+   * @param {boolean} userIsServerAdmin - Whether or not the user is a server admin.
+   * @returns {Settings~SettingUpdateResult}
+   */
+  async setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin) {
     return this.setSettingValue_(settingUniqueId, serverId, undefined, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.SERVER);
   }
 
-  setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin) {
+  /**
+   * Set a setting value for a channel.
+   * @param {string} settingUniqueId
+   * @param {string} serverId - The ID of the server where the setting is being set.
+   * @param {string} channelId - The ID of the channel where the setting is being set.
+   * @param {string} newUserFacingValue - The user facing value of the new setting value.
+   * @param {boolean} userIsServerAdmin - Whether or not the user is a server admin.
+   * @returns {Settings~SettingUpdateResult} The result of the attempt to update the setting.
+   */
+  async setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin) {
     return this.setSettingValue_(settingUniqueId, serverId, channelId, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.CHANNEL);
   }
 
-  setUserSettingValue(settingUniqueId, userId, newUserFacingValue) {
+  /**
+   * Set a setting value for a user.
+   * @param {string} settingUniqueId
+   * @param {string} userId - The ID of the server to set the setting value for.
+   * @param {string} newUserFacingValue - The user facing value of the new setting value.
+   * @returns {Settings~SettingUpdateResult} The result of the attempt to update the setting.
+   */
+  async setUserSettingValue(settingUniqueId, userId, newUserFacingValue) {
     return this.setSettingValue_(settingUniqueId, undefined, undefined, userId, newUserFacingValue, false, SettingScope.USER);
   }
 

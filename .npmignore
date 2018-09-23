@@ -1,5 +1,4 @@
-nav.gif
-public_error_log.png
-public_error_message.png
-settings_example.png
+documentation/
 test/
+.node-persist/
+.nyc-output/

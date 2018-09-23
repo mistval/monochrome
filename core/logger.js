@@ -1,87 +1,188 @@
-'use strict'
-const reload = require('require-reload')(require);
 const fs = require('fs');
+const AnsiColor = require('./util/ansi_color_codes.js');
+const LogMessageBuilder = require('./util/log_message_builder');
+const mkdirpSync = require('mkdirp').sync;
+const path = require('path');
 
-const LOGGER_TITLE = 'LOGGER';
+const LOG_FILE_PREFIX = 'log_';
+
+function addPrecedingZero(timeString) {
+  if (timeString.length === 1) {
+    return `0${timeString}`;
+  }
+  return timeString;
+}
+
+function createTimestamp() {
+  let now = new Date();
+  let year = now.getFullYear().toString();
+  let month = (now.getMonth() + 1).toString();
+  let day = now.getDate().toString();
+  let hour = now.getHours().toString();
+  let minute = now.getMinutes().toString();
+  let second = now.getSeconds().toString();
+  hour = addPrecedingZero(hour);
+  minute = addPrecedingZero(minute);
+  second = addPrecedingZero(second);
+  return `[${month}/${day}/${year} ${hour}:${minute}:${second}]`;
+}
 
 /**
-* Logs text to both the console and to log files. Singleton.
-* @property {boolean} closed - True if close() has been called and the logger is closed. No further methods should be called on the logger if this is true.
-*/
+ * Log events to the console and to the log file.
+ * The Logger can be
+ * accessed via {@link Monochrome~getLogger}.
+ * @hideconstructor
+ */
 class Logger {
-  /**
-  * @param {String} [logDirectoryPath=undefined] - The directory to save logs to. If undefined or empty, logs will not be logged to disk.
-  * @param {Boolean} [useANSIColorsInLogFiles=false] - Whether ANSI color codes should be printed to the log file or not. If you're going to cat the files in a console, you probably want this to be true. If you're going to open them in notepad, false.
-  */
-  initialize(logDirectoryPath, useANSIColorsInLogFiles) {
-    this.reload();
-    if (this.logToFile_ !== undefined) {
-      this.implementation_.logFailure(this, LOGGER_TITLE, 'Logger already initialized. Someone is trying to initialize it again', new Error('Logger error'));
-      return;
-    }
-
-    try {
-      fs.mkdirSync(logDirectoryPath);
-    } catch (err) { }
-
+  constructor(logDirectoryPath, useAnsiColorsInLogFile, consoleOverride) {
+    this.console_ = consoleOverride || console;
     this.closed_ = false;
     this.logToFile_ = !!logDirectoryPath;
-    this.useANSIColorsInLogFiles_ = !!useANSIColorsInLogFiles;
+    this.userAnsiColorsInLogFile_ = !!useAnsiColorsInLogFile;
+
     if (this.logToFile_) {
-      let logFilePath = logDirectoryPath + '/log_' + new Date().toISOString() + '.log';
+      try {
+        mkdirpSync(logDirectoryPath);
+      } catch (err) {
+        this.console_.warn(`Error creating log directory: ${err}. Disabling logging to file.`);
+        this.logToFile_ = false;
+      }
+
+      let logFilePath = path.join(logDirectoryPath, `${LOG_FILE_PREFIX}${new Date().toISOString()}.log`);
       this.fileStream_ = fs.createWriteStream(logFilePath);
       this.fileStream_.on('error', (err) => {
         this.logToFile_ = false;
-        this.implementation_.logFailure(this, LOGGER_TITLE, 'Error logging to file. Disabling logging to file.', err);
+        this.logFailure(LOGGER_TITLE, 'Error logging to file. Disabling logging to file.', err);
       });
     }
   }
 
-  /**
-  * Reload the class' main implementation. Since this class holds a file handle that we don't want to close, we do not reload this class itself.
-  */
-  reload() {
-    this.implementation_ = reload('./implementations/logger_implementation.js');
-  }
-
-  /**
-  * Log when the bot reacts to a message.
-  * @param {String} title - The title of the log message.
-  * @param {Eris.Message} msg - The message that was reacted to.
-  * @param {String} inputReactorTitle - If this was in response to a message processor, then the name of that message processor. If no title, pass in an empty string.
-  * @param {Boolean} succeeded - Whether the log message should appear as a successful event (green), or unsuccessful one (red).
-  * @param {String} [failureMessage] - If the reaction failed, a brief description of why.
-  */
   logInputReaction(title, msg, inputReactorTitle, succeeded, failureMessage) {
-    this.implementation_.logInputReaction(this, title, msg, inputReactorTitle, succeeded, failureMessage);
+    let turnAroundTimeMs = Date.now() - msg.timestamp;
+    let logMessageBuilder = new LogMessageBuilder();
+    logMessageBuilder.setColor(AnsiColor.YELLOW);
+    if (msg.channel.guild) {
+      logMessageBuilder.append(msg.channel.guild.name);
+      logMessageBuilder.setColor(AnsiColor.RESET);
+      logMessageBuilder.append(' >> ');
+      logMessageBuilder.setColor(AnsiColor.YELLOW);
+      logMessageBuilder.append(msg.channel.name);
+      logMessageBuilder.setColor(AnsiColor.RESET);
+      logMessageBuilder.append(' >> ');
+    }
+    logMessageBuilder.setColor(AnsiColor.BLUE);
+    logMessageBuilder.append(msg.author.username);
+    logMessageBuilder.append('#');
+    logMessageBuilder.append(msg.author.discriminator);
+    logMessageBuilder.setColor(AnsiColor.RESET);
+    logMessageBuilder.append(' >> ');
+    if (inputReactorTitle) {
+      logMessageBuilder.append(`[${inputReactorTitle}]`);
+      logMessageBuilder.append(' ');
+    }
+    logMessageBuilder.setColor(AnsiColor.MAGENTA);
+    logMessageBuilder.append(msg.content);
+
+    if (succeeded) {
+      logMessageBuilder.setColor(AnsiColor.RESET);
+      logMessageBuilder.append(' ');
+      logMessageBuilder.append(`(${turnAroundTimeMs}ms turnaround)`);
+    }
+
+    if (succeeded) {
+      this.logSuccess(title, logMessageBuilder);
+    } else {
+      if (failureMessage) {
+        logMessageBuilder.setColor(AnsiColor.RED);
+        logMessageBuilder.append(' ');
+        logMessageBuilder.append(`FAILED (${failureMessage})`);
+      }
+      this.logFailure(title, logMessageBuilder);
+    }
   }
 
   /**
-  * Log a message with a success color (green).
-  * @param {String} title - The title of the message, which will be displayed in green.
-  * @param {(String|LogMessageBuilder)} message - The message to log.
-  */
+   * Log a message with a successful green color.
+   * @param {string} title - The title of the message to log.
+   * @param {string} message - The body of the message to log.
+   */
   logSuccess(title, message) {
-    this.implementation_.logSuccess(this, title, message);
+    this.checkState_();
+    this.logMessage(title, '\u001b[32m', message);
   }
 
   /**
-  * Log a message with a failure color (red).
-  * @param {String} title - The title of the message, which will be displayed in red.
-  * @param {(String|LogMessageBuilder)} message - The message to log.
-  * @param {Error} [err] - The error object, if there was one.
-  */
+   * Log a message with an unsuccessful red color.
+   * @param {string} title - The title of the message to log.
+   * @param {string} message - The body of the message to log.
+   * @param {Error} [err] - The exception that occurred, if applicable. Its stack trace will be logged.
+   */
   logFailure(title, message, err) {
-    this.implementation_.logFailure(this, title, message, err);
+    this.checkState_();
+    this.logMessage(title, '\u001b[31m', message, err);
   }
 
-  /**
-  * Closes and finalizes the logger.
-  * @returns {Promise} A promise that is fulfilled when the logger is successfully closed.
-  */
+  logMessage(title, titleColor, message, err) {
+    this.checkState_();
+
+    let messageBuilder = new LogMessageBuilder();
+    let timeStamp = createTimestamp();
+    messageBuilder.append(timeStamp);
+    messageBuilder.append(' ');
+    messageBuilder.setColor(titleColor);
+    messageBuilder.append(title);
+    messageBuilder.append(' ');
+    messageBuilder.setColor(AnsiColor.RESET);
+    messageBuilder.append(message);
+    messageBuilder.setColor(AnsiColor.RESET);
+
+    if (err) {
+      messageBuilder.append(' ');
+      messageBuilder.setColor(AnsiColor.RED);
+      messageBuilder.append(err.stack);
+      messageBuilder.setColor(AnsiColor.RESET);
+    }
+
+    const messageWithFormatting = messageBuilder.getMessageWithFormatting();
+    this.console_.log(messageWithFormatting);
+
+    if (this.logToFile_) {
+      if (this.useAnsiColorsInLogFile) {
+        this.fileStream_.write(`${messageWithFormatting}\n`);
+      } else {
+        this.fileStream_.write(`${messageBuilder.getMessageWithoutFormatting()}\n`);
+      }
+    }
+  }
+
   close() {
-    return this.implementation_.close(this);
+    if (this.closed_) {
+      return Promise.resolve();
+    }
+
+    this.closed_ = true;
+
+    return new Promise((fulfill, reject) => {
+      if (!this.fileStream_) {
+        fulfill();
+      } else {
+        this.fileStream_.end(err => {
+          if (err) {
+            this.console_.warn('Error closing log stream');
+            return reject(err);
+          }
+          return fulfill();
+        });
+      }
+    });
+  }
+
+  checkState_() {
+    if (this.closed_) {
+      throw new Error('The logger has been closed');
+    }
   }
 }
 
 module.exports = Logger;
+module.exports.LOG_FILE_PREFIX = LOG_FILE_PREFIX;
