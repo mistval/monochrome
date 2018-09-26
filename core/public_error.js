@@ -57,47 +57,53 @@ class PublicError extends Error {
   }
 
   async output(loggerTitle, msg, forceSilentFail, monochrome) {
-    const logger = monochrome.getLogger();
-    const prefix = monochrome.getPersistence().getPrimaryPrefixForMessage(msg);
+    try {
+      const logger = monochrome.getLogger();
+      const prefix = monochrome.getPersistence().getPrimaryPrefixForMessage(msg);
 
-    let publicMessage = this.publicMessage_;
-    if (forceSilentFail) {
-      publicMessage = PublicMessageType.NONE;
-    }
-    if (publicMessage === PublicMessageType.GENERIC) {
-      publicMessage = monochrome.getGenericErrorMessage();
-    } else if (publicMessage === PublicMessageType.INSUFFICIENT_PRIVILEGE) {
-      publicMessage = monochrome.getMissingPermissionsErrorMessage();
-    } else if (publicMessage === PublicMessageType.NONE) {
-      publicMessage = undefined;
-    }
-
-    if (publicMessage) {
-      if (typeof publicMessage === typeof '') {
-        publicMessage = publicMessage.replace(constants.PREFIX_REPLACE_REGEX, prefix);
-      } else if (typeof publicMessage.content === typeof '') {
-        publicMessage.content = publicMessage.content.replace(constants.PREFIX_REPLACE_REGEX, prefix);
+      let publicMessage = this.publicMessage_;
+      if (forceSilentFail) {
+        publicMessage = PublicMessageType.NONE;
+      }
+      if (publicMessage === PublicMessageType.GENERIC) {
+        publicMessage = monochrome.getGenericErrorMessage();
+      } else if (publicMessage === PublicMessageType.INSUFFICIENT_PRIVILEGE) {
+        publicMessage = monochrome.getMissingPermissionsErrorMessage();
+      } else if (publicMessage === PublicMessageType.NONE) {
+        publicMessage = undefined;
       }
 
-      try {
-        if (this.deleteAutomatically_) {
-          await sendMessageAndDelete(msg, publicMessage, logger);
-        } else {
-          await msg.channel.createMessage(publicMessage, undefined, msg);
+      if (publicMessage) {
+        if (typeof publicMessage === typeof '') {
+          publicMessage = publicMessage.replace(constants.PREFIX_REPLACE_REGEX, prefix);
+        } else if (typeof publicMessage.content === typeof '') {
+          publicMessage.content = publicMessage.content.replace(constants.PREFIX_REPLACE_REGEX, prefix);
         }
-      } catch(err) {
-        logger.logFailure(INTERNAL_LOGGER_TITLE, 'Error sending public error message for error.', err);
+
+        try {
+          if (this.deleteAutomatically_) {
+            await sendMessageAndDelete(msg, publicMessage, logger);
+          } else {
+            await msg.channel.createMessage(publicMessage, undefined, msg);
+          }
+        } catch(err) {
+          logger.logFailure(INTERNAL_LOGGER_TITLE, 'Error sending public error message for error.', err);
+        }
       }
-    }
 
-    let logDescription = this.logDescription_;
-    if (!logDescription) {
-      logDescription = 'Error';
-    }
+      let logDescription = this.logDescription_;
+      if (!logDescription) {
+        logDescription = 'Error';
+      }
 
-    logger.logInputReaction(loggerTitle, msg, '', false, logDescription);
-    if (this.internalErr_) {
-      logger.logFailure(loggerTitle, `Command '${msg.content}' errored.`, this.internalErr_);
+      logger.logInputReaction(loggerTitle, msg, '', false, logDescription);
+      if (this.internalErr_) {
+        logger.logFailure(loggerTitle, `Command '${msg.content}' errored.`, this.internalErr_);
+      }
+    } catch (err) {
+      const consoleError = `Error outputting error ${err}`;
+      console.log(consoleError);
+      console.warn(consoleError);
     }
   }
 }

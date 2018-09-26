@@ -60,8 +60,8 @@ class MessageProcessorManager {
           this.monochrome_.getLogger().logFailure(loggerTitle, `Message processor '${processor.name}' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.`);
         }
       } catch (err) {
-        handleError(msg, err, this.monochrome_.getLogger(), this.monochrome_.getPersistence());
-        return true
+        handleError(msg, err, this.monochrome_);
+        return true;
       };
     }
 
