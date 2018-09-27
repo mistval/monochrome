@@ -62,13 +62,14 @@ class Blacklist {
 
   async leaveGuildIfBlacklisted(guild) {
     await this.ready;
-    const blacklisted = this.isUserBlacklisted(guild.ownerID);
+    const blacklisted = await this.isUserBlacklisted(guild.ownerID);
     if (!blacklisted) {
-      return;
+      return false;
     }
 
     const reason = this.reasonForUserId_[guild.ownerID];
-    return leaveGuildWithExplanation(this.bot_, guild, reason);
+    await leaveGuildWithExplanation(this.bot_, guild, reason);
+    return true;
   }
 
   /**

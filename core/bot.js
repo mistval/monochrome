@@ -353,7 +353,13 @@ class Monochrome {
 
     this.bot_.on('guildCreate', guild => {
       this.logger_.logSuccess('JOINED GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
-      this.blacklist_.leaveGuildIfBlacklisted(this.bot_, guild);
+      this.blacklist_.leaveGuildIfBlacklisted(guild).then((left) => {
+        if (left) {
+          this.logger_.logFailure(LOGGER_TITLE, 'Left blacklisted guild');
+        }
+      }).catch(err => {
+        this.logger_.logFailure(LOGGER_TITLE, 'Error leaving blacklisted guild', err);
+      });
     });
 
     this.bot_.on('error', (err, shardId) => {
