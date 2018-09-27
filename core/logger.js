@@ -136,7 +136,7 @@ class Logger {
     messageBuilder.append(message);
     messageBuilder.setColor(AnsiColor.RESET);
 
-    if (err) {
+    if (err && err.stack) {
       messageBuilder.append(' ');
       messageBuilder.setColor(AnsiColor.RED);
       messageBuilder.append(err.stack);
