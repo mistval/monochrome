@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>blacklist.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="Logger.html">Logger</a><ul class='methods'><li data-type='method'><a href="Logger.html#logFailure">logFailure</a></li><li data-type='method'><a href="Logger.html#logSuccess">logSuccess</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li></ul></li><li><a href="Navigation.html">Navigation</a><ul class='methods'><li data-type='method'><a href="Navigation.html#.fromOneDimensionalContents">fromOneDimensionalContents</a></li><li data-type='method'><a href="Navigation.html#.fromOneNavigationChapter">fromOneNavigationChapter</a></li></ul></li><li><a href="NavigationChapter.html">NavigationChapter</a><ul class='methods'><li data-type='method'><a href="NavigationChapter.html#.fromContent">fromContent</a></li></ul></li><li><a href="NavigationManager.html">NavigationManager</a><ul class='methods'><li data-type='method'><a href="NavigationManager.html#show">show</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">blacklist.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const PublicError = require('./public_error.js');
+
+const BLACKLIST_PERSISTENCE_KEY = 'blacklist';
+
+function getWriteableChannel(bot, guild) {
+  return guild.channels.find(
+    channel => channel.type === 0 &amp;&amp; channel.permissionsOf(bot.user.id).json.sendMessages);
+}
+
+async function leaveGuildWithExplanation(bot, guild, reason) {
+  const writeableChannel = getWriteableChannel(bot, guild);
+  if (writeableChannel) {
+    await writeableChannel.createMessage(`I'm leaving this guild because its owner was blacklisted from using me.\n\nBlacklist reason: \`\`\`${reason}\`\`\``);
+  }
+
+  return guild.leave();
+}
+
+function leaveGuildsWithExplanation(bot, guilds, reason) {
+  return Promise.all(guilds.map(guild => leaveGuildWithExplanation(bot, guild, reason)));
+}
+
+/**
+ * Maintains a list of blacklisted users with whom the bot should not interact.
+ * The final resting place of command spammers and people you don't like.
+ * The Blacklist can be accessed via {@link Monochrome#getBlacklist}.
+ * @hideconstructor
+ */
+class Blacklist {
+  constructor(bot, persistence, botAdminIds) {
+    this.reasonForUserId_ = {};
+    this.persistence_ = persistence;
+    this.botAdminIds_ = botAdminIds;
+    this.bot_ = bot;
+
+    this.ready = persistence.getData(BLACKLIST_PERSISTENCE_KEY).then(data => {
+      this.reasonForUserId_ = data;
+    });
+  }
+
+  /**
+  * Blacklist a user. The user will be completely ignored by the bot, and any guilds
+  * that they own will be left.
+  * @param {string} userId - The ID of the user to blacklist.
+  * @param {string} reason - The reason the user was blacklisted. If the user is a guild owner,
+  *   the bot will send a message with this reason to a channel in the guild before leaving.
+  *   If the user is not a guild owner, they will just be silently ignored and will not see
+  *   this reason.
+  */
+  async blacklistUser(userId, reason) {
+    await this.ready;
+    if (this.botAdminIds_.indexOf(userId) !== -1) {
+      throw PublicError.createWithCustomPublicMessage(`&lt;@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
+    }
+
+    this.reasonForUserId_[userId] = reason;
+    await this.updatePersistence_();
+
+    const blacklistedGuilds = this.bot_.guilds.filter(guild => guild.ownerID === userId);
+    return leaveGuildsWithExplanation(this.bot_, blacklistedGuilds, reason);
+  }
+
+  async leaveGuildIfBlacklisted(guild) {
+    await this.ready;
+    const blacklisted = await this.isUserBlacklisted(guild.ownerID);
+    if (!blacklisted) {
+      return false;
+    }
+
+    const reason = this.reasonForUserId_[guild.ownerID];
+    await leaveGuildWithExplanation(this.bot_, guild, reason);
+    return true;
+  }
+
+  /**
+   * Remove a user from the blacklist so that they can interact with the bot again.
+   * @param {string} userId - The ID of the user to unblacklist.
+   */
+  async unblacklistUser(userId) {
+    await this.ready;
+    delete this.reasonForUserId_[userId];
+    return this.updatePersistence_();
+  }
+
+  /**
+   * Check if a user is blacklisted without first checking if the blacklist
+   * has loaded. This function is meant to be called in hot paths and may incorrectly
+   * return false if called immediately after the bot is started. Consider using
+   * {@link Blacklist#isUserBlacklisted} instead. It will always return the correct result.
+   * @param {string} userId - The ID of the user to check the blacklist for.
+   * @return {boolean}
+   */
+  isUserBlacklistedQuick(userId) {
+    return !!this.reasonForUserId_[userId];
+  }
+
+  /**
+   * Check if a user is blacklisted.
+   * @param {string} userId - The ID of the user to check the blacklist for.
+   * @return {boolean}
+   */
+  async isUserBlacklisted(userId) {
+    await this.ready;
+    return !!this.reasonForUserId_[userId];
+  }
+
+  async updatePersistence_() {
+    await this.ready;
+    return this.persistence_.editData(BLACKLIST_PERSISTENCE_KEY, () => this.reasonForUserId_);
+  }
+}
+
+module.exports = Blacklist;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 30 2018 11:51:23 GMT+0800 (+08) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

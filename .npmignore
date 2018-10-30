@@ -2,4 +2,4 @@ documentation/
 test/
 .node-persist/
 .nyc-output/
-api_docs/
+docs/

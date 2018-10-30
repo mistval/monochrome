@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Navigation - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="Logger.html">Logger</a><ul class='methods'><li data-type='method'><a href="Logger.html#logFailure">logFailure</a></li><li data-type='method'><a href="Logger.html#logSuccess">logSuccess</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li></ul></li><li><a href="Navigation.html">Navigation</a><ul class='methods'><li data-type='method'><a href="Navigation.html#.fromOneDimensionalContents">fromOneDimensionalContents</a></li><li data-type='method'><a href="Navigation.html#.fromOneNavigationChapter">fromOneNavigationChapter</a></li></ul></li><li><a href="NavigationChapter.html">NavigationChapter</a><ul class='methods'><li data-type='method'><a href="NavigationChapter.html#.fromContent">fromContent</a></li></ul></li><li><a href="NavigationManager.html">NavigationManager</a><ul class='methods'><li data-type='method'><a href="NavigationManager.html#show">show</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Navigation</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Navigation
+        </h2>
+        
+            <div class="class-description">Represents a collection of messages that can be navigated in two dimensions
+via reaction buttons below the message. A navigation is a collection of <a href="NavigationChapter.html">NavigationChapter</a>s.
+Each navigation chapter controls a one-dimensional slice of navigable content.
+The user can move forward and backward within a chapter by using the arrow reaction
+buttons, and can switch chapters by using the other reaction buttons.<br><br>
+Once a Navigation is constructed, it can be shown to the user by using <a href="NavigationManager.html#show">NavigationManager#show</a></div>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Navigation"><span class="type-signature"></span>new Navigation<span class="signature">(ownerId, showPageArrows, initialEmojiName, chapterForEmojiName)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="navigation.js.html">navigation.js</a>, <a href="navigation.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Construct a Navigation. If this Navigation only has one <a href="NavigationChapter.html">NavigationChapter</a>, use the
+<a href="Navigation.html#.fromOneNavigationChapter">Navigation.fromOneNavigationChapter</a> factory method instead. If you only
+need left and right pagination, and you already have all the content you want to display
+to the user, use the <a href="Navigation.html#.fromOneDimensionalContents">Navigation.fromOneDimensionalContents</a> factory method instead.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user ID of the user who is allowed to use the reaction buttons to navigate.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showPageArrows</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether to show the arrow reactions or not. If you know in advance
+  that none of your <a href="NavigationChapter.html">NavigationChapter</a>s have more than one page, you can set this to false.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initialEmojiName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The name of the emoji for the chapter to show initially.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chapterForEmojiName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, <a href="NavigationChapter.html">NavigationChapter</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object where the keys are emoji names and the values are <a href="NavigationChapter.html">NavigationChapter</a>s.
+  When the emoji is clicked, control will switch to the specified chapter. To find the name of an emoji, enter the emoji in
+  Discord's chat box, put a \ in front of it, and hit enter.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".fromOneDimensionalContents"><span class="type-signature">(static) </span>fromOneDimensionalContents<span class="signature">(ownerId, contents)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="navigation.js.html">navigation.js</a>, <a href="navigation.js.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Construct a Navigation from an array of <a href="https://discordapp.com/developers/docs/resources/channel#embed-object">Discord embed structures</a> (or strings).
+Only the arrow reactions will be shown and navigation will only be possible in one dimension.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user ID of the user who is allowed to use the reaction buttons to navigate.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The strings or <a href="https://discordapp.com/developers/docs/resources/channel#embed-object">Discord embed structures</a>
+  to show in the navigation.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".fromOneNavigationChapter"><span class="type-signature">(static) </span>fromOneNavigationChapter<span class="signature">(ownerId, navigationChapter)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="navigation.js.html">navigation.js</a>, <a href="navigation.js.html#line60">line 60</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Construct a Navigation with just one chapter. Only the arrow reactions will
+be shown and navigation will only be possible in one dimension.
+If you already have all the content you want to display to the user,
+you can use the <a href="Navigation.html#.fromOneDimensionalContents">Navigation.fromOneDimensionalContents</a> factory method instead
+and avoid having to construct a <a href="NavigationChapter.html">NavigationChapter</a> yourself.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user ID of the user who is allowed to use the reaction buttons to navigate.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>navigationChapter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="NavigationChapter.html">NavigationChapter</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The <a href="NavigationChapter.html">NavigationChapter</a> to show.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 30 2018 11:51:23 GMT+0800 (+08) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

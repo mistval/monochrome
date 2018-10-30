@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Settings - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="Logger.html">Logger</a><ul class='methods'><li data-type='method'><a href="Logger.html#logFailure">logFailure</a></li><li data-type='method'><a href="Logger.html#logSuccess">logSuccess</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li></ul></li><li><a href="Navigation.html">Navigation</a><ul class='methods'><li data-type='method'><a href="Navigation.html#.fromOneDimensionalContents">fromOneDimensionalContents</a></li><li data-type='method'><a href="Navigation.html#.fromOneNavigationChapter">fromOneNavigationChapter</a></li></ul></li><li><a href="NavigationChapter.html">NavigationChapter</a><ul class='methods'><li data-type='method'><a href="NavigationChapter.html#.fromContent">fromContent</a></li></ul></li><li><a href="NavigationManager.html">NavigationManager</a><ul class='methods'><li data-type='method'><a href="NavigationManager.html#show">show</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Settings</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        Settings
+        </h2>
+        
+            <div class="class-description">Get and set settings with server, channel, and user scope.
+Settings can be accessed via <a href="Monochrome.html#getSettings">Monochrome#getSettings</a>.
+Settings are specified by creating an array of <a href="Settings.html#~SettingsCategory">SettingsCategory</a>s
+and <a href="Settings.html#~Setting">Setting</a>s in a javascript file and passing the path to that file
+into the <a href="Monochrome.html">Monochrome constructor</a>.</div>
+        
+    
+</header>
+
+<article>
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".UpdateRejectionReason"><span class="type-signature">(static, constant) </span>UpdateRejectionReason<span class="type-signature"> :string</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>NOT_ADMIN</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>INVALID_VALUE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>SETTING_DOES_NOT_EXIST</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>NOT_ALLOWED_IN_SERVER</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>NOT_ALLOWED_IN_CHANNEL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>NOT_ALLOWED_FOR_USER</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Strings describing why a setting update failed.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getInternalSettingValue"><span class="type-signature"></span>getInternalSettingValue<span class="signature">(settingUniqueId, serverId, channelId, userId)</span><span class="type-signature"> &rarr; {Object|undefined}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line389">line 389</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the internal value for a setting given the current server, channel, and user context.
+If there's a matching user setting value, it overrides any matching channel setting value, which overrides
+any matching server setting value. If there are no server, channel, or user settings values set, the default
+value specified in the settings definition is returned.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settingUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the server where the setting is being accessed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>channelId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the channel where the setting is being accessed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the user using the setting.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The internal value of the setting, or undefined if no setting is found.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getRawSettingsTree"><span class="type-signature"></span>getRawSettingsTree<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line353">line 353</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the settings tree that you specified in your settings file.
+It may not be exactly the same due to the application of default values.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The array of settings at the root.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getTreeNodeForUniqueId"><span class="type-signature"></span>getTreeNodeForUniqueId<span class="signature">(uniqueId)</span><span class="type-signature"> &rarr; {Object|undefined}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the setting or category with the specified unique ID, or undefined if it doesn't exist.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>uniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getUserFacingSettingValue"><span class="type-signature">(async) </span>getUserFacingSettingValue<span class="signature">(settingUniqueId, serverId, channelId, userId)</span><span class="type-signature"> &rarr; {string|undefined}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line409">line 409</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the user facing value for a setting given the current server, channel, and user context.
+If there's a matching user setting value, it overrides any matching channel setting value, which overrides
+any matching server setting value. If there are no server, channel, or user settings values set, the default
+value specified in the settings definition is returned.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settingUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the server where the setting is being accessed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>channelId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the channel where the setting is being accessed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the user using the setting.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The user facing value of the setting, or undefined if no setting is found.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setChannelSettingValue"><span class="type-signature">(async) </span>setChannelSettingValue<span class="signature">(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin)</span><span class="type-signature"> &rarr; {<a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line443">line 443</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Set a setting value for a channel.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settingUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the server where the setting is being set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>channelId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the channel where the setting is being set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user facing value of the new setting value.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userIsServerAdmin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not the user is a server admin.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The result of the attempt to update the setting.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setServerWideSettingValue"><span class="type-signature">(async) </span>setServerWideSettingValue<span class="signature">(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin)</span><span class="type-signature"> &rarr; {<a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line430">line 430</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Set a setting value server wide. This also wipes out any channel settings in the server
+for the setting with the specified unique ID. User settings are unaffected.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settingUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the server where the setting is being set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user facing value of the new setting value.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userIsServerAdmin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not the user is a server admin.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setUserSettingValue"><span class="type-signature">(async) </span>setUserSettingValue<span class="signature">(settingUniqueId, userId, newUserFacingValue)</span><span class="type-signature"> &rarr; {<a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line454">line 454</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Set a setting value for a user.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settingUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The ID of the server to set the setting value for.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user facing value of the new setting value.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The result of the attempt to update the setting.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Settings.html#~SettingUpdateResult">Settings~SettingUpdateResult</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="userFacingValueIsValidForSetting"><span class="type-signature">(async) </span>userFacingValueIsValidForSetting<span class="signature">(setting, userFacingValue)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line373">line 373</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Check if a user facing value is valid for a setting.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>setting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The setting, found by calling getTreeNodeForUniqueId or by traversing
+  the settings tree accessed via the getRawSettingsTree method.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user facing value to check for validity.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="~Setting">Setting</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line291">line 291</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>userFacingName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The name of the setting</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A description of the setting</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>allowedValuesDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A description of what values the setting allows.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A unique ID for the setting. Can be anything, and should not be changed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The default user facing (string) value of the setting.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userSetting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last">Whether the setting can be applied on a user-by-user basis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>channelSetting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last">Whether the setting can be applied on a channel-by-channel basis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverSetting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last">Whether the setting can be applied server-wide.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>convertUserFacingValueToInternalValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A function that takes a user facing string value and returns
+  the value you want to use and store internally. If omitted, no such conversion is performed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>convertInternalValueToUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A function that takes an internal value and returns a user facing
+  string value. If omitted, the internal value is simply stringified if not already a string.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validateInternalValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A function that takes an internal setting value and returns true if it's valid,
+   false if it's not. If omitted, not validation is performed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Represents one setting
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~SettingsCategory">SettingsCategory</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line310">line 310</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>userFacingName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The name of the category</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>children</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;(<a href="Settings.html#~SettingsCategory">Settings~SettingsCategory</a>|<a href="Settings.html#~Setting">Settings~Setting</a>)></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of child categories, or settings leafs.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Represents a category of settings
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="~SettingUpdateResult">SettingUpdateResult</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>accepted</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Whether or not the update was applied.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The setting that was (or wasn't) updated (only present if a matching setting was found)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reason</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Settings.html#.UpdateRejectionReason">Settings.UpdateRejectionReason</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Why the update failed (only present if accepted is false)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rejectedUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The user facing value that was rejected (only present if reason === UpdateRejectionReason.INVALID_VALUE)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nonExistentUniqueId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The unique ID that the caller tried to change the setting value for (only present if reason === UpdateRejectionReason.SETTING_DOES_NOT_EXIST)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newUserFacingValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The new user facing value that the setting was updated to (only if accepted === true)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newInternalValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The new internal value that the setting was updated to (only if accepted === true)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    The result of an attempted setting update.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 30 2018 11:51:23 GMT+0800 (+08) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
