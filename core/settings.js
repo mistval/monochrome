@@ -289,8 +289,37 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
 }
 
 /**
+ * Represents one setting
+ * @typedef {Object} Settings~Setting
+ * @property {string} userFacingName - The name of the setting
+ * @property {string} description - A description of the setting
+ * @property {string} allowedValuesDescription - A description of what values the setting allows.
+ * @property {string} uniqueId - A unique ID for the setting. Can be anything, and should not be changed.
+ * @property {string} defaultUserFacingValue - The default user facing (string) value of the setting.
+ * @property {boolean} [userSetting=true] - Whether the setting can be applied on a user-by-user basis.
+ * @property {boolean} [channelSetting=true] - Whether the setting can be applied on a channel-by-channel basis.
+ * @property {boolean} [serverSetting=true] - Whether the setting can be applied server-wide.
+ * @property {function} [convertUserFacingValueToInternalValue] - A function that takes a user facing string value and returns
+ *   the value you want to use and store internally. If omitted, no such conversion is performed.
+ * @property {function} [convertInternalValueToUserFacingValue] - A function that takes an internal value and returns a user facing
+ *   string value. If omitted, the internal value is simply stringified if not already a string.
+ * @property {function} [validateInternalValue] - A function that takes an internal setting value and returns true if it's valid,
+ *    false if it's not. If omitted, not validation is performed.
+ */
+
+/**
+ * Represents a category of settings
+ * @typedef {Object} Settings~SettingsCategory
+ * @property {string} userFacingName - The name of the category
+ * @property {Array<(Settings~SettingsCategory|Settings~Setting)>} children - An array of child categories, or settings leafs.
+ */
+
+/**
  * Get and set settings with server, channel, and user scope.
  * Settings can be accessed via {@link Monochrome#getSettings}.
+ * Settings are specified by creating an array of [SettingsCategory]{@link Settings~SettingsCategory}s
+ * and [Setting]{@link Settings~Setting}s in a javascript file and passing the path to that file
+ * into the [Monochrome constructor]{@link Monochrome}.
  * @hideconstructor
  */
 class Settings {

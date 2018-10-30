@@ -105,7 +105,7 @@ function sanitizeCommandData(commandData) {
  * @property {boolean} [botAdminOnly=false] - If true, only a bot admin can use this command. Bot admins are specified as a constructor option to {@link Monochrome}.
  * @property {boolean} [canBeChannelRestricted=!botAdminOnly] - If true, server admins can disable this command in any channel in their server.
  * @property {string[]} [requiredSettings=[]] - An array of setting unique IDs that are required for this command. When this command is invoked, the values of
- *   those settings are looked up and passed into your [commandAction function]{@link CommandDefinition~commandAction}.
+ *   those settings are looked up and passed into your [commandAction]{@link Command~commandAction} function.
  * @property {string[]} [aliasesForHelp] - If you don't want to show some of the command aliases in the help, you can specify which ones you do want to show here.
  *   By default, all aliases are shown in the help.
  * @example
