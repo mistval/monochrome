@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "nyc mocha",
-    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/"
+    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./api_docs"
   },
   "repository": {
     "type": "git",
