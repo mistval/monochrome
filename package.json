@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "nyc mocha",
-    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./api_docs"
+    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./api_docs -R README.md"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,7 @@
     "setting",
     "settings"
   ],
-  "author": "rschmidt",
+  "author": "mistval",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/mistval/monochrome/issues"
