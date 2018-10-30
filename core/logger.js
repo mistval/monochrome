@@ -30,7 +30,7 @@ function createTimestamp() {
 /**
  * Log events to the console and to the log file.
  * The Logger can be
- * accessed via {@link Monochrome~getLogger}.
+ * accessed via {@link Monochrome#getLogger}.
  * @hideconstructor
  */
 class Logger {

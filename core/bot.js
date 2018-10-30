@@ -156,6 +156,7 @@ const path = require('path');
 
 const bot = new monochrome({
   botToken: require('./my-gitignored-config-file.json').myBotToken,
+  botAdminIds: ['my_user_id'],
   prefixes: ['!', '@'],
   commandsDirectoryPath: path.join(__dirname, 'commands'),
   messageProcessorsDirectoryPath: path.join(__dirname, 'message_processors'),
@@ -181,18 +182,19 @@ class Monochrome {
   /**
    * @param {Object} options - Options to customize bot behavior.
    * @param {string} options.botToken - Your bot's token.
+   * @param {string[]} [options.botAdminIds=[]] - A list of IDs of users who are allowed to run bot admin commands.
    * @param {string[]} [options.prefixes=['']] - The bot's default command prefixes.
-   * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command files exist.
-   * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor files exist.
-   * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist)
-   * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist)
-   * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exist (must exist)
+   * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command modules exist. If this is omitted, no commands with be loaded.
+   * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor modules exist. If this is omitted, no message processors will be loaded.
+   * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist). If this is omitted, logs will not be saved to disk.
+   * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist).
+   * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exists. If this is omitted, no settings will be loaded.
    * @param {boolean} [options.useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
-   * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel.
-   * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send messages in the channel)
-   * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response.
-   * @param {string} [options.genericMentionReply] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message.
-   * @param {string} [options.inviteLinkDmReply] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server.
+   * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel where the command was used. The exception is message processors. Errors caught from message processors will not be broadcast to the channel. This avoids the possibility of your message processor throwing on any input and spamming errors to the channel.
+   * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send even plain text messages in the channel). If this is omitted, no message is sent to the channel.
+   * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response. If this is omitted, no message is sent.
+   * @param {string} [options.genericMentionReply] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message. If this is omitted, no message is sent.
+   * @param {string} [options.inviteLinkDmReply] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server. If this is omitted, no message is sent.
    * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
    * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.

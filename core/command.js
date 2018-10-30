@@ -90,17 +90,17 @@ function sanitizeCommandData(commandData) {
  * @typedef {Object} Command~CommandDefinition
  * @property {string[]} commandAliases - The part of the command that follows the prefix. For example if
  *   your prefixes (specified as a constructor option to {@link Monochrome}) contain "command!"" and your command
- *   aliases contain "ping", then "command!ping" will trigger this command (if the prefix has not been customized in the server)
+ *   aliases contain "ping", then "command!ping" will trigger this command (if the prefix has not been customized in the server).
  * @property {string} uniqueId - A unique ID to identify the command. This can be anything, and won't be shown to users. You should
  *   never change it.
  * @property {Command~commandAction} action - A function to perform the command.
  * @property {number} [cooldown=0] - A period of time (in seconds) to prevent that user from using this command after they previously used it.
  * @property {string} [shortDescription] - A brief description of what the command does. This is intended to be displayed by the help command.
- *    If "<prefix>" is present in this string, it will be replaced with the primary command prefix in the server.
+ *    If "&lt;prefix&gt;" is present in this string, it will be replaced with the primary command prefix in the server.
  * @property {string} [longDescription] - A longer description of what the command does. This is intended to be displayed by the help command when
- *   the user requests to see the advanced help for the command. If "<prefix>" is present in this string, it will be replaced with the primary
+ *   the user requests to see the advanced help for the command. If "&lt;prefix&gt;" is present in this string, it will be replaced with the primary
  *   command prefix in the server.
- * @property {string} [usageExample] - An example of how to use the command. If "<prefix>" is present in this string, it will be replaced with the primary
+ * @property {string} [usageExample] - An example of how to use the command. If "&lt;prefix&gt;" is present in this string, it will be replaced with the primary
  *   command prefix in the server.
  * @property {boolean} [botAdminOnly=false] - If true, only a bot admin can use this command. Bot admins are specified as a constructor option to {@link Monochrome}.
  * @property {boolean} [canBeChannelRestricted=!botAdminOnly] - If true, server admins can disable this command in any channel in their server.

@@ -21,7 +21,7 @@ function leaveGuildsWithExplanation(bot, guilds, reason) {
 }
 
 /**
- * Maintains a list of blacklisted users whom the bot should not interact with.
+ * Maintains a list of blacklisted users with whom the bot should not interact.
  * The final resting place of command spammers and people you don't like.
  * The Blacklist can be accessed via {@link Monochrome#getBlacklist}.
  * @hideconstructor
