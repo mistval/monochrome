@@ -2,6 +2,7 @@
  * Handles displaying and controlling {@link Navigation}s.
  * The NavigationManager can be
  * accessed via {@link Monochrome#getNavigationManager}.
+ * For an example of creating a navigation, see the [demo navigation command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/navigation.js}.
  * @hideconstructor
  */
 class NavigationManager {

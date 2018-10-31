@@ -24,8 +24,10 @@ function keyForServerId(serverId) {
  * The persistence is a key-value store backed by [node-persist]{@link https://www.npmjs.com/package/node-persist}.
  * You can store values for any key, but there are convenience methods provided for storing data
  * attached to a particular user or server, or in a global store.
- * Persistence can be
- * accessed via {@link Monochrome#getPersistence}.
+ * Persistence can be accessed via {@link Monochrome#getPersistence}.
+ * For examples of using persistence to store and retrieve persistent data, see the
+ * [demo addQuote command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/addquote.js}
+ * and [demo getRandomQuote command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/getrandomquote.js}.
  * @hideconstructor
  */
 class Persistence {

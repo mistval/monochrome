@@ -51,8 +51,10 @@
 The persistence is a key-value store backed by <a href="https://www.npmjs.com/package/node-persist">node-persist</a>.
 You can store values for any key, but there are convenience methods provided for storing data
 attached to a particular user or server, or in a global store.
-Persistence can be
-accessed via <a href="Monochrome.html#getPersistence">Monochrome#getPersistence</a>.</div>
+Persistence can be accessed via <a href="Monochrome.html#getPersistence">Monochrome#getPersistence</a>.
+For examples of using persistence to store and retrieve persistent data, see the
+<a href="https://github.com/mistval/monochrome-demo/blob/master/commands/addquote.js">demo addQuote command</a>
+and <a href="https://github.com/mistval/monochrome-demo/blob/master/commands/getrandomquote.js">demo getRandomQuote command</a>.</div>
         
     
 </header>
@@ -92,7 +94,7 @@ accessed via <a href="Monochrome.html#getPersistence">Monochrome#getPersistence<
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line164">line 164</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line166">line 166</a>
     </li></ul></dd>
     
 
@@ -264,7 +266,7 @@ that no one else can be editing the value for the same key at the same time.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line209">line 209</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line211">line 211</a>
     </li></ul></dd>
     
 
@@ -430,7 +432,7 @@ await editDataForServer(serverId, (data) => {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line192">line 192</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line194">line 194</a>
     </li></ul></dd>
     
 
@@ -596,7 +598,7 @@ await editDataForUser(userId, (data) => {
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line227">line 227</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line229">line 229</a>
     </li></ul></dd>
     
 
@@ -742,7 +744,7 @@ that no one else can be editing the value for the same key at the same time.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line240">line 240</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line242">line 242</a>
     </li></ul></dd>
     
 
@@ -905,7 +907,7 @@ await editPrefixesForServer(serverId, newPrefixes);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line59">line 59</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -1067,7 +1069,7 @@ console.log(JSON.stringify(data));</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line92">line 92</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line94">line 94</a>
     </li></ul></dd>
     
 
@@ -1230,7 +1232,7 @@ console.log(JSON.stringify(data));</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line78">line 78</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -1393,7 +1395,7 @@ console.log(JSON.stringify(data));</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line104">line 104</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -1506,7 +1508,7 @@ console.log(JSON.stringify(data));</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line142">line 142</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line144">line 144</a>
     </li></ul></dd>
     
 
@@ -1659,7 +1661,7 @@ might return the default prefixes even though the server has custom prefixes.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line120">line 120</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -1820,7 +1822,7 @@ const numberOfPrefixes = prefixes.length;</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line131">line 131</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -1973,7 +1975,7 @@ might return the default prefixes even though the server has custom prefixes.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line258">line 258</a>
+        <a href="persistence.js.html">persistence.js</a>, <a href="persistence.js.html#line260">line 260</a>
     </li></ul></dd>
     
 
@@ -2264,7 +2266,7 @@ might return the default prefixes even though the server has custom prefixes.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Oct 30 2018 11:51:23 GMT+0800 (+08) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Oct 31 2018 16:25:19 GMT+0800 (+08) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -2,6 +2,8 @@
  * Assists in creating a help command.
  * The HelpCommandHelper can be
  * accessed via {@link CommandManager#getHelpCommandHelper}.
+ * For an example of how to use the HelpCommandHelper, see the [monochrome demo help command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/help.js}
+ * You can use the demo help command in your bot. Just fill out the configuration section at the top.
  * @hideconstructor
  */
 class HelpCommandHelper {

@@ -151,10 +151,13 @@ function validateAndSanitizeOptions(options) {
 /**
  * The main entry point into the framework. You construct this and call connect()
  * on it to start your bot.
+ * See the [monochrome demo]{@link https://github.com/mistval/monochrome-demo/blob/master/bot.js}
+ * for a full working example bot.
  @example
+const Monochrome = require('monochrome-bot');
 const path = require('path');
 
-const bot = new monochrome({
+const bot = new Monochrome({
   botToken: require('./my-gitignored-config-file.json').myBotToken,
   botAdminIds: ['my_user_id'],
   prefixes: ['!', '@'],

@@ -24,6 +24,9 @@ function leaveGuildsWithExplanation(bot, guilds, reason) {
  * Maintains a list of blacklisted users with whom the bot should not interact.
  * The final resting place of command spammers and people you don't like.
  * The Blacklist can be accessed via {@link Monochrome#getBlacklist}.
+ * See [the demo blacklist]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/blacklist.js}
+ * and [demo unblacklist]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/unblacklist.js}
+ * commands for examples of using the blacklist. The demo commands can be used in your bot without requiring any modification.
  * @hideconstructor
  */
 class Blacklist {

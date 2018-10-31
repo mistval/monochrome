@@ -46,6 +46,7 @@ const reload = require('require-reload')(require);
  * message processor definition modules in your message processors directory (specified as a constructor option to {@link Monochrome})
  * and constructs message processors accordingly. For help constructing a message processor definition,
  * and an example, see {@link MessageProcessor~MessageProcessorDefinition}.
+ * For a full working example of a message processor, see the [example palindrome command]{@link https://github.com/mistval/monochrome-demo/blob/master/message_processors/palindrome.js}.
  */
 class MessageProcessor {
   constructor(processorData, monochrome) {

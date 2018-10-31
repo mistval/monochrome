@@ -320,6 +320,11 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
  * Settings are specified by creating an array of [SettingsCategory]{@link Settings~SettingsCategory}s
  * and [Setting]{@link Settings~Setting}s in a javascript file and passing the path to that file
  * into the [Monochrome constructor]{@link Monochrome}.
+ * For a simple example of a settings definition file, see [the monochrome demo]{@link https://github.com/mistval/monochrome-demo/blob/master/server_settings.js}.
+ * For a more advanced example, see [Kotoba's settings definition file]{@link https://github.com/mistval/kotoba/blob/master/src/user_settings.js}.
+ * For an example of using the settings module, see the [monochrome demo settings command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/settings.js}.
+ * The demo settings command can be used in your bot. Just edit the configuration section at the top. If you use the demo settings command,
+ * you may never need to interact with the settings module directly.
  * @hideconstructor
  */
 class Settings {

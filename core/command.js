@@ -132,6 +132,7 @@ function sanitizeCommandData(commandData) {
  * Commands are constructed by the {@link CommandManager} which reads the command
  * definition modules in your commands directory (specified as a constructor option to {@link Monochrome})
  * and constructs commands accordingly. For help writing a command definition, and an example, see {@link Command~CommandDefinition}.
+ * For fully-functional example commands, see the [monochrome demo]{@link https://github.com/mistval/monochrome-demo/tree/master/commands}.
  * @property {string[]} aliases
  * @property {string} shortDescription
  * @property {string} longDescription

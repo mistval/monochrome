@@ -43,7 +43,8 @@ const LOGGER_TITLE = 'NAVIGATION';
  * and backward within a chapter. Using other reaction buttons
  * switches to the NavigationChapter associated with that reaction.
  * A NavigationChapter is a sub-unit of a {@link Navigation}.
- * For more information about what a Navigation is, see {@link Navigation}
+ * For more information about what a Navigation is, see {@link Navigation}.
+ * For an example of creating a navigation, see the [demo navigation command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/navigation.js}.
  */
 class NavigationChapter {
   /**
