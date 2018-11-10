@@ -48,7 +48,9 @@ class MessageProcessorManager {
             if (typeof innerResult === typeof '') {
               throw PublicError.createWithGenericPublicMessage(false, innerResult);
             }
-            this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
+            if (innerResult !== false) {
+              this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
+            }
           }).catch(err => handleError(msg, err, this.monochrome_));
           return true;
         } else if (typeof result === typeof '') {
