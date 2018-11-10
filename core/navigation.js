@@ -57,10 +57,11 @@ class Navigation {
    * and avoid having to construct a {@link NavigationChapter} yourself.
    * @param {string} ownerId - The user ID of the user who is allowed to use the reaction buttons to navigate.
    * @param {NavigationChapter} navigationChapter - The {@link NavigationChapter} to show.
+   * @param {boolean} showPageArrows - Whether to show the page arrows or not.
    */
-  static fromOneNavigationChapter(ownerId, navigationChapter) {
+  static fromOneNavigationChapter(ownerId, navigationChapter, showPageArrows=true) {
     const chapterForEmojiName = { a: navigationChapter };
-    return new Navigation(ownerId, true, 'a', chapterForEmojiName);
+    return new Navigation(ownerId, showPageArrows, 'a', chapterForEmojiName);
   }
 
   /**
@@ -72,7 +73,7 @@ class Navigation {
    */
   static fromOneDimensionalContents(ownerId, contents) {
     const chapter = NavigationChapter.fromContent(contents);
-    return Navigation.fromOneNavigationChapter(ownerId, chapter);
+    return Navigation.fromOneNavigationChapter(ownerId, chapter, contents.length > 1);
   }
 
   createMessage(channel, parentMsg, logger) {
