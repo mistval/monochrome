@@ -15,7 +15,7 @@ The best way to get started is to clone the [monochrome demo](https://github.com
 
 For more advanced help and API documentation, see the [full documentation](https://mistval.github.io/monochrome/Monochrome.html).
 
-For a production bot using monochrome, see [Kotoba](https://discordbots.org/bot/251239170058616833).
+For a production bot using monochrome, see [Kotoba](http://kotobaweb.com/bot).
 
 Version 2.0.0 contains many breaking changes. Updating from version 1.x.x will break your bot. There is no urgent need to update if you don't need any of the new features. Until you're ready to update, make sure to specify the version you need in your package.json file.
 
