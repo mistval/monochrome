@@ -260,6 +260,13 @@ await editPrefixesForServer(serverId, newPrefixes);
   async resetPrefixesForServerId(serverId) {
     return this.editPrefixesForServerId(serverId, undefined);
   }
+
+  /*
+   * Tell persistence that it should stop allowing write operations.
+   */
+  stop() {
+    return storage.stop();
+  }
 }
 
 module.exports = Persistence;

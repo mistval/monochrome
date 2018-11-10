@@ -338,6 +338,25 @@ class Monochrome {
   }
 
   /**
+   * Disconnect and stop the bot. Connect() cannot be called again and some operations may fail.
+   * You should call this as a final part of preparing to exit the process.
+   */
+  async stop() {
+    this.logger_.logSuccess(LOGGER_TITLE, 'Stopping');
+    this.bot_.disconnect();
+
+    try {
+      await Promise.all([
+        this.persistence_.stop(),
+        this.logger_.close(),
+      ]);
+    } catch (err) {
+      this.logger_.logFailure(LOGGER_TITLE, 'Error stopping', err);
+      throw err;
+    }
+  }
+
+  /**
    * Connect to Discord and start listening for users to send commands to the bot.
    */
   connect() {

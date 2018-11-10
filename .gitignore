@@ -3,6 +3,5 @@ config.js
 .node-persist
 server_settings.js
 .nyc_output/
-bot.js
 logs/
 persistence/

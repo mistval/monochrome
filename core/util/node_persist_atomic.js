@@ -8,9 +8,21 @@ class EditLock {
     this.key_ = key;
     this.queue_ = [];
     this.editing_ = false;
+    this.stopped_ = false;
+  }
+
+  stop() {
+    this.stopped_ = true;
+    this.queue_ = [];
+    return new Promise((fulfill, reject) => {
+      this.editFinished_ = fulfill;
+    });
   }
 
   edit(editFunction) {
+    if (this.stopped_) {
+      throw new Error('Persistence has been stopped. No new edit jobs can be accepted.');
+    }
     return new Promise((fulfill, reject) => {
       this.queue_.push({editFunction: editFunction, fulfill: fulfill, reject: reject});
       this.tryEditNext_();
@@ -50,6 +62,10 @@ class EditLock {
       delete editLockForKey[this.key_];
     }
 
+    if (this.editFinished_) {
+      this.editFinished_();
+    }
+
     this.editing_ = false;
     this.tryEditNext_();
   }
@@ -87,8 +103,13 @@ async function getItem(itemKey) {
   return storage.getItem(itemKey);
 };
 
+function stop() {
+  return Promise.all(Object.values(editLockForKey).map(editLock => editLock.stop()));
+}
+
 module.exports = {
   init,
   editItem,
   getItem,
+  stop,
 };
