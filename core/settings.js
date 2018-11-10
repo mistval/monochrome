@@ -259,8 +259,9 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
   treeNode.updateSetting = treeNode.updateSetting || defaultUpdateSetting;
   treeNode.getInternalSettingValue = treeNode.getInternalSettingValue || defaultGetInternalSettingValue;
-
-  /**/
+  treeNode.onServerSettingChanged = treeNode.onServerSettingChanged || (() => {});
+  treeNode.onChannelSettingChanged = treeNode.onChannelSettingChanged || (() => {});
+  treeNode.onUserSettingChanged = treeNode.onUserSettingChanged || (() => {});
 
   uniqueIdsEncountered.push(uniqueId);
 }
@@ -285,6 +286,18 @@ function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
     } else {
       sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered);
     }
+  }
+}
+
+function onSettingChanged(treeNode, settingScope, serverId, channelId, userId, newSettingValidationResult) {
+  if (settingScope === SettingScope.USER) {
+    return treeNode.onUserSettingChanged(treeNode, userId, newSettingValidationResult);
+  } else if (settingScope === SettingScope.CHANNEL) {
+    return treeNode.onChannelSettingChanged(treeNode, channelId, newSettingValidationResult);
+  } else if (settingScope === SettingScope.SERVER) {
+    return treeNode.onServerSettingChanged(treeNode, serverId, newSettingValidationResult);
+  } else {
+    assert(false, 'Unknown setting scope');
   }
 }
 
@@ -472,6 +485,14 @@ class Settings {
         userId,
         newSettingValidationResult.newInternalValue,
         settingScope,
+      );
+      await onSettingChanged(
+        treeNode,
+        settingScope,
+        serverId,
+        channelId,
+        userId,
+        newSettingValidationResult,
       );
     }
 
