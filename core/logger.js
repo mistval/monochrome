@@ -3,6 +3,7 @@ const AnsiColor = require('./util/ansi_color_codes.js');
 const LogMessageBuilder = require('./util/log_message_builder');
 const mkdirpSync = require('mkdirp').sync;
 const path = require('path');
+const LOGGER_TITLE = 'LOGGER';
 
 const LOG_FILE_PREFIX = 'log_';
 
