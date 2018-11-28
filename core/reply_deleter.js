@@ -1,5 +1,7 @@
-let ownerIdForSentMessageId = {};
-let responseMessageIdForCommandMessageId = {};
+const LOGGER_TITLE = 'DELETE MESSAGE';
+
+const ownerIdForSentMessageId = {};
+const responseMessageIdForCommandMessageId = {};
 
 function initialize(eris) {
   let oldCreateMessageProtoype = eris.TextChannel.prototype.createMessage;
@@ -14,17 +16,21 @@ function initialize(eris) {
   };
 }
 
-function handleMessageDeleted(deletedMsg) {
+function handleMessageDeleted(deletedMsg, logger) {
   let responseMessageId = responseMessageIdForCommandMessageId[deletedMsg.id];
   if (responseMessageId) {
-    deletedMsg.channel.deleteMessage(responseMessageId, 'The message that invoked the command was deleted.');
+    deletedMsg.channel.deleteMessage(responseMessageId, 'The message that invoked the command was deleted.').catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Failed to delete bot message in response to user message deletion', err);
+    });
   }
 }
 
-function handleReaction(msg, userId, emoji) {
+function handleReaction(msg, userId, emoji, logger) {
   let ownerId = ownerIdForSentMessageId[msg.id];
   if (ownerId && userId === ownerId && emoji.name === '❌') {
-    msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with ❌ to delete it.');
+    msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with ❌ to delete it.').catch(err => {
+      logger.logFailure(LOGGER_TITLE, 'Failed to delete bot message in response to user message deletion', err);
+    });
   }
 }
 

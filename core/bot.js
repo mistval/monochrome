@@ -416,11 +416,11 @@ class Monochrome {
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
       this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
-      replyDeleter.handleReaction(msg, userId, emoji);
+      replyDeleter.handleReaction(msg, userId, emoji, this.logger_);
     });
 
     this.bot_.on('messageDelete', msg => {
-      replyDeleter.handleMessageDeleted(msg);
+      replyDeleter.handleMessageDeleted(msg, this.logger_);
     });
 
     this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
