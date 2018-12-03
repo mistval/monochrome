@@ -210,7 +210,10 @@ class CommandManager {
     }
     try {
       await commandToExecute.handle(bot, msg, suffix);
-      this.monochrome_.getLogger().logInputReaction(LOGGER_TITLE, msg, '', true);
+      const logger = this.monochrome_.getLogger();
+      if (!logger.closed) {
+        logger.logInputReaction(LOGGER_TITLE, msg, '', true);Z
+      }
     } catch (err) {
       handleCommandError(msg, err, this.monochrome_);
     }

@@ -37,7 +37,7 @@ function createTimestamp() {
 class Logger {
   constructor(logDirectoryPath, useAnsiColorsInLogFile, consoleOverride) {
     this.console_ = consoleOverride || console;
-    this.closed_ = false;
+    this.closed = false;
     this.logToFile_ = !!logDirectoryPath;
     this.userAnsiColorsInLogFile_ = !!useAnsiColorsInLogFile;
 
@@ -157,11 +157,11 @@ class Logger {
   }
 
   close() {
-    if (this.closed_) {
+    if (this.closed) {
       return Promise.resolve();
     }
 
-    this.closed_ = true;
+    this.closed = true;
 
     return new Promise((fulfill, reject) => {
       if (!this.fileStream_) {
@@ -179,7 +179,7 @@ class Logger {
   }
 
   checkState_() {
-    if (this.closed_) {
+    if (this.closed) {
       throw new Error('The logger has been closed');
     }
   }

@@ -1,4 +1,3 @@
-const reload = require('require-reload')(require);
 const Eris = require('eris');
 const request = require('request-promise');
 const Logger = require('./logger.js');
@@ -11,6 +10,7 @@ const MessageProcessorManager = require('./message_processor_manager.js');
 const Settings = require('./settings.js');
 const CommandManager = require('./command_manager.js');
 const assert = require('assert');
+const onExit = require('async-on-exit');
 
 const LOGGER_TITLE = 'CORE';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -129,6 +129,12 @@ function validateAndSanitizeOptions(options) {
   return options;
 }
 
+function stopDelay() {
+  return new Promise((fulfill) => {
+    setTimeout(fulfill, 1000);
+  });
+}
+
  /**
   * The Eris Client object that monochrome is built on top of.
   * @external "Eris.Client"
@@ -215,6 +221,7 @@ class Monochrome {
     this.navigationManager_ = new NavigationManager(this.logger_);
 
     this.reload();
+    onExit(() => this.stop(), true);
   }
 
   /**
@@ -350,6 +357,7 @@ class Monochrome {
         this.persistence_.stop(),
         this.logger_.close(),
       ]);
+      await stopDelay();
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Error stopping', err);
       throw err;
