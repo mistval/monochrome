@@ -28,6 +28,12 @@ function updateDiscordBotsDotOrg(config, bot, logger) {
   if (!config.discordBotsDotOrgAPIKey) {
     return;
   }
+
+  const payload = {
+    server_count: bot.guilds.size,
+    shard_count: bot.shards.size,
+  };
+
   request({
     headers: {
       'Content-Type': 'application/json',
@@ -35,7 +41,7 @@ function updateDiscordBotsDotOrg(config, bot, logger) {
       'Accept': 'application/json',
     },
     uri: `https://discordbots.org/api/bots/${bot.user.id}/stats`,
-    body: `{"server_count": ${bot.guilds.size.toString()}}`,
+    body: JSON.stringify(payload),
     method: 'POST',
   }).then(() => {
     logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${bot.guilds.size.toString()} servers.`);
@@ -44,29 +50,39 @@ function updateDiscordBotsDotOrg(config, bot, logger) {
   });
 }
 
-function updateBotsDotDiscordDotPw(config, bot, logger) {
-  if (!config.botsDotDiscordDotPwAPIKey) {
+function updateDiscordDotBotsDotGg(config, bot, logger) {
+  if (!config.discordDotBotsDotGgAPIKey) {
     return;
   }
+
+  const payload = {
+    guildCount: bot.guilds.size,
+    shardCount: bot.shards.size,
+  };
+
   request({
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': config.botsDotDiscordDotPwAPIKey,
+      'Authorization': config.discordDotBotsDotGgAPIKey,
       'Accept': 'application/json',
     },
-    uri: `https://bots.discord.pw/api/bots/${bot.user.id}/stats`,
-    body: `{"server_count": ${bot.guilds.size.toString()}}`,
+    uri: `https://discord.bots.gg/api/v1/bots/${bot.user.id}/stats`,
+    body: JSON.stringify(payload),
     method: 'POST',
   }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, `Sent stats to bots.discord.pw: ${bot.guilds.size.toString()} servers.`);
+    logger.logSuccess(LOGGER_TITLE, `Sent stats to discord.bots.gg: ${bot.guilds.size.toString()} servers.`);
   }).catch(err => {
-    logger.logFailure(LOGGER_TITLE, 'Error sending stats to bots.discord.pw', err);
+    logger.logFailure(LOGGER_TITLE, 'Error sending stats to discord.bots.gg', err);
   });
 }
 
 function updateStats(config, bot, logger) {
-  updateBotsDotDiscordDotPw(config, bot, logger);
-  updateDiscordBotsDotOrg(config, bot, logger);
+  try {
+    updateDiscordDotBotsDotGg(config, bot, logger);
+    updateDiscordBotsDotOrg(config, bot, logger);
+  } catch (err) {
+    logger.logFailure(LOGGER_TITLE, 'Failed to send stats to bot trackers.', err);
+  }
 }
 
 function createGuildLeaveJoinLogString(guild, logger) {
@@ -181,7 +197,7 @@ const bot = new Monochrome({
   statusRotation: ['cooking dinner', 'eating dinner', 'cleaning kitchen'],
   statusRotationIntervalInSeconds: 600,
   discordBotsDotOrgAPIKey: require('./my-gitignored-config-file.json').myDiscordBotsDotOrgAPIkey,
-  botsDotDiscordDotPwAPIKey: require('./my-gitignored-config-file.json').myBotDotDiscordDotPwAPIKey,
+  discordDotBotsDotGgAPIKey: require('./my-gitignored-config-file.json').myDiscordDotBotsDotGgAPIKey,
   erisOptions: { maxShards: 'auto' },
 });
 
@@ -207,7 +223,7 @@ class Monochrome {
    * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
    * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
-   * @param {string} [options.botsDotDiscordDotPwAPIKey] - If you have an API key from {@link https://bots.discord.pw/} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.discordDotBotsDotGgAPIKey] - If you have an API key from {@link https://discord.bots.gg/} you can provide it here and your server count will be sent regularly.
    * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
    */
   constructor(options) {
@@ -485,7 +501,7 @@ class Monochrome {
     if (this.updateStatsTimeoutHandle_) {
       return;
     }
-    if (this.options_.discordBotsDotOrgAPIKey || this.options_.botsDotDiscordDotPwAPIKey) {
+    if (this.options_.discordBotsDotOrgAPIKey || this.options_.discordDotBotsDotGgAPIKey) {
       this.updateStatsTimeoutHandle_ = setTimeout(() => {
         updateStats(this.options_, this.bot_, this.logger_);
         this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.options_, this.bot_, this.logger_);
