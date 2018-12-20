@@ -160,18 +160,6 @@ class CommandManager {
     let prefixes = this.persistence_.getPrefixesForServer(serverId);
     let msgContent = msg.content;
 
-    // Break out early if no matching prefixes
-    const numPrefixes = prefixes.length;
-    const lastIndex = numPrefixes - 1;
-    for (let i = 0; i < numPrefixes; ++i) {
-      if (msgContent.startsWith(prefixes[i])) {
-        break
-      }
-      if (i === lastIndex) {
-        return false;
-      }
-    }
-
     msgContent = msgContent.replace('\u3000', ' ');
     let spaceIndex = msgContent.indexOf(' ');
     let commandText = '';
@@ -180,6 +168,8 @@ class CommandManager {
     } else {
       commandText = msgContent.substring(0, spaceIndex);
     }
+
+    commandText = commandText.toLowerCase();
 
     for (let prefix of prefixes) {
       for (let command of this.commands_) {

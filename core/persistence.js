@@ -13,6 +13,24 @@ function keyForServerId(serverId) {
   return SERVER_DATA_KEY_PREFIX + serverId;
 }
 
+// This code only needs to run once. It fixes the database which used to
+// allow uppercase prefixes but no longer does.
+function fixUppercasePrefixes(persistence, prefixesForServerId, logger) {
+  const serverIds = Object.keys(prefixesForServerId);
+  let queue = Promise.resolve();
+  serverIds.forEach((serverId) => {
+    const prefixes = prefixesForServerId[serverId];
+    if (prefixes.some(prefix => prefix.toLowerCase() !== prefix)) {
+      logger.logSuccess('PERSISTENCE', `Lowercasing prefixes for ${serverId}`);
+      queue = queue.then(() => persistence.editPrefixesForServerId(serverId, prefixes));
+    }
+  });
+
+  queue.catch(err => {
+    logger.logFailure('PERSISTENCE', `Error lowercasing prefixes. Uh oh.`, err);
+  });
+}
+
 /**
  * @callback Persistence~editFunction
  * @param {Object} data - The current data associated with the key. If there is none, an empty object {} is given. This data can be manipulated and then returned to persist it.
@@ -44,6 +62,7 @@ class Persistence {
 
     this.getGlobalData().then(data => {
       this.prefixesForServerId_ = data.prefixes || {};
+      fixUppercasePrefixes(this, this.prefixesForServerId_, logger);
     }).catch(err => {
       logger.logFailure('PERSISTENCE', 'Error loading prefixes', err);
     });
@@ -243,12 +262,14 @@ await editPrefixesForServer(serverId, newPrefixes);
     if (!prefixes) {
       delete this.prefixesForServerId_[serverId];
     } else {
-      this.prefixesForServerId_[serverId] = prefixes;
+      const lowercasePrefixes = prefixes.map(prefix => prefix.toLowerCase());
+      const uniqueLowercasePrefixes = lowercasePrefixes.filter((prefix, i) => lowercasePrefixes.indexOf(prefix) === i);
+      this.prefixesForServerId_[serverId] = uniqueLowercasePrefixes;
     }
 
     return this.editData(GLOBAL_DATA_KEY, data => {
       data.prefixes = data.prefixes || {};
-      data.prefixes[serverId] = prefixes;
+      data.prefixes[serverId] = this.prefixesForServerId_[serverId];
       return data;
     });
   }
