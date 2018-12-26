@@ -118,11 +118,11 @@ class CommandManager {
     return this.helpCommandHelper_;
   }
 
-  async load() {
+  load() {
     this.commands_ = [];
 
     if (this.directory_) {
-      const commandFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
+      const commandFiles = FileSystemUtils.getFilesInDirectory(this.directory_);
       for (let commandFile of commandFiles) {
         try {
           let newCommandData = reload(commandFile);

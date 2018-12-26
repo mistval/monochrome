@@ -20,12 +20,12 @@ class MessageProcessorManager {
     this.directory_ = directory;
   }
 
-  async load() {
+  load() {
     const loggerTitle = 'MESSAGE MANAGER';
     this.processors_ = [];
 
     if (this.directory_) {
-      const processorFiles = await FileSystemUtils.getFilesInDirectory(this.directory_);
+      const processorFiles = FileSystemUtils.getFilesInDirectory(this.directory_);
       for (let processorFile of processorFiles) {
         try {
           let processorInformation = reload(processorFile);
