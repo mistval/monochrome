@@ -23,11 +23,11 @@ class TrackerStatsUpdater {
     if (!this.botsOnDiscordDotXyzAPIKey) {
       return;
     }
-  
+
     const payload = {
       guildCount: this.bot.guilds.size,
     };
-  
+
     request({
       headers: {
         'Content-Type': 'application/json',
@@ -48,12 +48,12 @@ class TrackerStatsUpdater {
     if (!this.discordBotsDotOrgAPIKey) {
       return;
     }
-  
+
     const payload = {
       server_count: this.bot.guilds.size,
       shard_count: this.bot.shards.size,
     };
-  
+
     request({
       headers: {
         'Content-Type': 'application/json',
@@ -74,12 +74,12 @@ class TrackerStatsUpdater {
     if (!this.discordDotBotsDotGgAPIKey) {
       return;
     }
-  
+
     const payload = {
       guildCount: this.bot.guilds.size,
       shardCount: this.bot.shards.size,
     };
-  
+
     request({
       headers: {
         'Content-Type': 'application/json',
