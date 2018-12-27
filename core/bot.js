@@ -1,5 +1,4 @@
 const Eris = require('eris');
-const request = require('request-promise');
 const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
@@ -11,10 +10,9 @@ const Settings = require('./settings.js');
 const CommandManager = require('./command_manager.js');
 const assert = require('assert');
 const onExit = require('async-on-exit');
+const TrackerStatsUpdater = require('./tracker_stats_updater.js');
 
 const LOGGER_TITLE = 'CORE';
-const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
-const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
 
@@ -22,67 +20,6 @@ function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
   bot.editStatus({name: nextStatus});
   queue.push(nextStatus);
-}
-
-function updateDiscordBotsDotOrg(config, bot, logger) {
-  if (!config.discordBotsDotOrgAPIKey) {
-    return;
-  }
-
-  const payload = {
-    server_count: bot.guilds.size,
-    shard_count: bot.shards.size,
-  };
-
-  request({
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': config.discordBotsDotOrgAPIKey,
-      'Accept': 'application/json',
-    },
-    uri: `https://discordbots.org/api/bots/${bot.user.id}/stats`,
-    body: JSON.stringify(payload),
-    method: 'POST',
-  }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${bot.guilds.size.toString()} servers.`);
-  }).catch(err => {
-    logger.logFailure(LOGGER_TITLE, 'Error sending stats to discordbots.org', err);
-  });
-}
-
-function updateDiscordDotBotsDotGg(config, bot, logger) {
-  if (!config.discordDotBotsDotGgAPIKey) {
-    return;
-  }
-
-  const payload = {
-    guildCount: bot.guilds.size,
-    shardCount: bot.shards.size,
-  };
-
-  request({
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': config.discordDotBotsDotGgAPIKey,
-      'Accept': 'application/json',
-    },
-    uri: `https://discord.bots.gg/api/v1/bots/${bot.user.id}/stats`,
-    body: JSON.stringify(payload),
-    method: 'POST',
-  }).then(() => {
-    logger.logSuccess(LOGGER_TITLE, `Sent stats to discord.bots.gg: ${bot.guilds.size.toString()} servers.`);
-  }).catch(err => {
-    logger.logFailure(LOGGER_TITLE, 'Error sending stats to discord.bots.gg', err);
-  });
-}
-
-function updateStats(config, bot, logger) {
-  try {
-    updateDiscordDotBotsDotGg(config, bot, logger);
-    updateDiscordBotsDotOrg(config, bot, logger);
-  } catch (err) {
-    logger.logFailure(LOGGER_TITLE, 'Failed to send stats to bot trackers.', err);
-  }
 }
 
 function createGuildLeaveJoinLogString(guild, logger) {
@@ -224,6 +161,7 @@ class Monochrome {
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
    * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
    * @param {string} [options.discordDotBotsDotGgAPIKey] - If you have an API key from {@link https://discord.bots.gg/} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.botsOnDiscordDotXyzAPIKey] - If you have an API key from {@link https://bots.ondiscord.xyz} you can provide it here and your server count will be sent regularly. 
    * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
    */
   constructor(options) {
@@ -235,6 +173,13 @@ class Monochrome {
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
+    this.trackerStatsUpdater = new TrackerStatsUpdater(
+      this.bot_,
+      this.logger_,
+      options.discordBotsDotOrgAPIKey,
+      options.discordDotBotsDotGgAPIKey,
+      options.botsOnDiscordDotXyzAPIKey,
+    );
 
     this.reload();
     onExit(() => this.stop(), true);
@@ -392,7 +337,7 @@ class Monochrome {
     this.bot_.on('ready', () => {
       this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
       this.rotateStatuses_();
-      this.startUpdateStatsInterval_();
+      this.trackerStatsUpdater.startUpdateLoop();
     });
 
     this.bot_.on('messageCreate', msg => {
@@ -494,18 +439,6 @@ class Monochrome {
           this.logger_.logFailure(LOGGER_TITLE, 'Error sending error message', err);
         });
       }
-    }
-  }
-
-  startUpdateStatsInterval_() {
-    if (this.updateStatsTimeoutHandle_) {
-      return;
-    }
-    if (this.options_.discordBotsDotOrgAPIKey || this.options_.discordDotBotsDotGgAPIKey) {
-      this.updateStatsTimeoutHandle_ = setTimeout(() => {
-        updateStats(this.options_, this.bot_, this.logger_);
-        this.updateStatsTimeoutHandle_ = setInterval(updateStats, UPDATE_STATS_INTERVAL_IN_MS, this.options_, this.bot_, this.logger_);
-      }, UPDATE_STATS_INITIAL_DELAY_IN_MS);
     }
   }
 
