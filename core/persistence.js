@@ -1,5 +1,5 @@
-const storage = require('./util/node_persist_atomic.js');
 const path = require('path');
+const FPersist = require('fpersist');
 
 const USER_DATA_KEY_PREFIX = 'User';
 const SERVER_DATA_KEY_PREFIX = 'Server';
@@ -50,13 +50,7 @@ function fixUppercasePrefixes(persistence, prefixesForServerId, logger) {
  */
 class Persistence {
   constructor(defaultPrefixes, logger, persistenceDirectory) {
-    const nodePersistOptions = {};
-    if (persistenceDirectory) {
-      const directoryRelative = path.relative(process.cwd(), persistenceDirectory);
-      nodePersistOptions.dir = directoryRelative;
-    }
-
-    storage.init(nodePersistOptions);
+    this.storage = new FPersist(persistenceDirectory);
     this.defaultPrefixes_ = defaultPrefixes;
     this.prefixesForServerId_ = {};
 
@@ -73,17 +67,13 @@ class Persistence {
    * an empty object {} is returned.
    * @param {string} key
    * @returns {Object} The value associated with the specified key.
+   * @async
    * @example
 const data = await persistence.getData('some_key');
 console.log(JSON.stringify(data));
    */
-  async getData(key) {
-    const data = await storage.getItem(key);
-    if (data) {
-      return data;
-    } else {
-      return {};
-    }
+  getData(key) {
+    return this.storage.getItem(key, {});
   }
 
   /**
@@ -91,12 +81,13 @@ console.log(JSON.stringify(data));
    * object {} is returned.
    * @param {string} userId
    * @returns {Object} The value associated with the specified userId
+   * @async
    * @example
 const userId = '123456789';
 const data = await persistence.getDataForUser(userId);
 console.log(JSON.stringify(data));
    */
-  async getDataForUser(userId) {
+  getDataForUser(userId) {
     return this.getData(keyForUserId(userId));
   }
 
@@ -105,12 +96,13 @@ console.log(JSON.stringify(data));
    * object {} is returned.
    * @param {string} serverId
    * @returns {Object} The value associated with the specified serverId
+   * @async
    * @example
 const serverId = '123456789';
 const data = await persistence.getDataForServer(serverId);
 console.log(JSON.stringify(data));
    */
-  async getDataForServer(serverId) {
+  getDataForServer(serverId) {
     return this.getData(keyForServerId(serverId));
   }
 
@@ -118,11 +110,12 @@ console.log(JSON.stringify(data));
    * Get the global data. If no such data exists, an empty
    * object {} is returned.
    * @returns {Object} The global data.
+   * @async
    * @example
 const data = await persistence.getGlobalData();
 console.log(JSON.stringify(data));
    */
-  async getGlobalData() {
+  getGlobalData() {
     return this.getData(GLOBAL_DATA_KEY);
   }
 
@@ -169,6 +162,7 @@ const numberOfPrefixes = prefixes.length;
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} key
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @async
    * @example
 await persistence.editData('some_key', (data) => {
   data.randomNumber = Math.random() * 100;
@@ -182,20 +176,8 @@ await persistence.editData('some_key', (data) => {
   return data;
 });
    */
-  async editData(key, editFunction) {
-    return storage.editItem(key, data => {
-      if (!data) {
-        data = {};
-      }
-
-      const result = editFunction(data);
-
-      if (result === undefined) {
-        throw new Error('Cannot set data to undefined. Use a different value, like false, to signify no value.');
-      }
-
-      return result;
-    });
+  editData(key, editFunction) {
+    return this.storage.editItem(key, editFunction, {});
   }
 
   /**
@@ -203,6 +185,7 @@ await persistence.editData('some_key', (data) => {
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} userId
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @async
    * @example
 const userId = '123456789';
 await editDataForUser(userId, (data) => {
@@ -210,7 +193,7 @@ await editDataForUser(userId, (data) => {
   return data;
 });
    */
-  async editDataForUser(userId, editFunction) {
+  editDataForUser(userId, editFunction) {
     let key = keyForUserId(userId);
     return this.editData(key, editFunction);
   }
@@ -220,6 +203,7 @@ await editDataForUser(userId, (data) => {
    * that no one else can be editing the value for the same key at the same time.
    * @param {string} serverId
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @async
    * @example
 const serverId = '123456789';
 await editDataForServer(serverId, (data) => {
@@ -227,7 +211,7 @@ await editDataForServer(serverId, (data) => {
   return data;
 });
    */
-  async editDataForServer(serverId, editFunction) {
+  editDataForServer(serverId, editFunction) {
     let key = keyForServerId(serverId);
     return this.editData(key, editFunction);
   }
@@ -236,6 +220,7 @@ await editDataForServer(serverId, (data) => {
    * Edit the data global data. This function is atomic in the sense
    * that no one else can be editing the value for the same key at the same time.
    * @param {Persistence~editFunction} editFunction - The function that performs the edit.
+   * @async
    * @example await editGlobalData((data) => {
   if (!data.scoreboard) {
     data.scoreboard = {};
@@ -245,7 +230,7 @@ await editDataForServer(serverId, (data) => {
   return data;
 });
    */
-  async editGlobalData(editFunction) {
+  editGlobalData(editFunction) {
     return this.editData(GLOBAL_DATA_KEY, editFunction);
   }
 
@@ -253,12 +238,13 @@ await editDataForServer(serverId, (data) => {
    * Edit the prefixes associated with a server.
    * @param {string} serverId
    * @param {string[]} prefixes - The new prefixes for the server.
+   * @async
    * @example
 const serverId = '123456789';
 const newPrefixes = ['!', '@', '&!'];
 await editPrefixesForServer(serverId, newPrefixes);
    */
-  async editPrefixesForServerId(serverId, prefixes) {
+  editPrefixesForServerId(serverId, prefixes) {
     if (!prefixes) {
       delete this.prefixesForServerId_[serverId];
     } else {
@@ -277,16 +263,18 @@ await editPrefixesForServer(serverId, newPrefixes);
   /**
    * Reset the prefixes associated with a server.
    * @param {string} serverId
+   * @async
    */
-  async resetPrefixesForServerId(serverId) {
+  resetPrefixesForServerId(serverId) {
     return this.editPrefixesForServerId(serverId, undefined);
   }
 
-  /*
+  /**
    * Tell persistence that it should stop allowing write operations.
+   * @async
    */
   stop() {
-    return storage.stop();
+    return this.storage.close();
   }
 }
 
