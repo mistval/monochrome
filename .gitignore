@@ -1,6 +1,5 @@
 node_modules/
 config.js
-.node-persist
 server_settings.js
 .nyc_output/
 logs/

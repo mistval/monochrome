@@ -39,7 +39,7 @@ function fixUppercasePrefixes(persistence, prefixesForServerId, logger) {
 
 /**
  * Read or write persistent data that is persisted even if the process is killed.
- * The persistence is a key-value store backed by [node-persist]{@link https://www.npmjs.com/package/node-persist}.
+ * The persistence is a key-value store backed by [fpersist]{@link https://www.npmjs.com/package/fpersist}.
  * You can store values for any key, but there are convenience methods provided for storing data
  * attached to a particular user or server, or in a global store.
  * Persistence can be accessed via {@link Monochrome#getPersistence}.
