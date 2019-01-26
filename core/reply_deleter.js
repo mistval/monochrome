@@ -45,5 +45,7 @@ async function handleReaction(msg, userId, emoji, logger) {
   }
 }
 
-module.exports.handleMessageDeleted = handleMessageDeleted;
-module.exports.handleReaction = handleReaction;
+module.exports = {
+  handleMessageDeleted,
+  handleReaction,
+};
