@@ -171,7 +171,6 @@ class Monochrome {
     this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger_, this.options_.persistenceDirectoryPath);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
-    replyDeleter.initialize(Eris);
     this.navigationManager_ = new NavigationManager(this.logger_);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,
