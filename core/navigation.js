@@ -3,14 +3,17 @@ const NavigationChapter = require('./navigation_chapter.js');
 const LOGGER_TITLE = 'NAVIGATION';
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
-function sendReactions(msg, reactions, logger) {
-  let promise = Promise.resolve();
-  for (let reaction of reactions) {
-    promise = promise.then(() => {
-      return msg.channel.addMessageReaction(msg.id, reaction);
-    }).catch(err => {
+async function sendReactions(msg, reactions, logger) {
+  for (let i = 0; i < reactions.length; i += 1) {
+    const reaction = reactions[i];
+    try {
+      await msg.channel.addMessageReaction(msg.id, reaction);
+    } catch (err) {
       logger.logFailure(LOGGER_TITLE, 'Failed to add reaction button to navigation', err);
-    });
+      if (err.code === 50013) {
+        return; // Missing permissions error. Don't bother trying to send the other reactions.
+      }
+    }
   }
 }
 
