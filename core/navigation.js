@@ -10,8 +10,8 @@ async function sendReactions(msg, reactions, logger) {
       await msg.channel.addMessageReaction(msg.id, reaction);
     } catch (err) {
       logger.logFailure(LOGGER_TITLE, 'Failed to add reaction button to navigation', err);
-      if (err.code === 50013) {
-        return; // Missing permissions error. Don't bother trying to send the other reactions.
+      if (err.code === 50013 || err.code === 10008) {
+        return; // Missing permissions error or unknown message error (probably already deleted). Don't bother trying to send the other reactions.
       }
     }
   }
