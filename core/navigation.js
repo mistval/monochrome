@@ -79,35 +79,33 @@ class Navigation {
     return Navigation.fromOneNavigationChapter(ownerId, chapter, contents.length > 1);
   }
 
-  createMessage(channel, parentMsg, logger) {
-    let chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
-    return chapter.getCurrentPage(logger).then(navigationPage => {
-      if (!navigationPage) {
-        throw new Error('Navigation failed to create initial page.');
-      }
-      if (navigationPage.showPageArrows !== undefined) {
-        this.showPageArrows_ = navigationPage.showPageArrows;
-      }
-      return channel.createMessage(navigationPage, undefined, parentMsg);
-    }).then(sentMessage => {
-      let emojis = Object.keys(this.chapterForEmojiName_);
-      let reactionsToSend = [];
-      if (emojis.length > 1) {
-        reactionsToSend = reactionsToSend.concat(emojis);
-      }
+  async createMessage(channel, parentMsg, logger) {
+    const chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
+    const navigationPage = await chapter.getCurrentPage(logger);
 
-      if (this.showPageArrows_) {
-        reactionsToSend.push('⬅');
-        reactionsToSend.push('➡');
-      }
+    if (!navigationPage) {
+      throw new Error('Navigation failed to create initial page.');
+    }
+    if (navigationPage.showPageArrows !== undefined) {
+      this.showPageArrows_ = navigationPage.showPageArrows;
+    }
 
-      sendReactions(sentMessage, reactionsToSend, logger);
-      this.message_ = sentMessage;
-      return sentMessage.id;
-    }).catch(err => {
-      logger.logFailure(LOGGER_TITLE, 'Failed to create navigation.', err);
-      throw err;
-    });
+    const sentMessage = await channel.createMessage(navigationPage, undefined, parentMsg);
+
+    const emojis = Object.keys(this.chapterForEmojiName_);
+    const reactionsToSend = [];
+    if (emojis.length > 1) {
+      reactionsToSend.push(...emojis);
+    }
+
+    if (this.showPageArrows_) {
+      reactionsToSend.push('⬅');
+      reactionsToSend.push('➡');
+    }
+
+    sendReactions(sentMessage, reactionsToSend, logger);
+    this.message_ = sentMessage;
+    return sentMessage.id;
   }
 
   handleEmojiToggled(bot, emoji, userId, logger) {
@@ -119,32 +117,32 @@ class Navigation {
       return;
     }
 
-    this.actionAccumulator_.enqueue(() => {
-      let pagePromise = undefined;
+    this.actionAccumulator_.enqueue(async () => {
       let desiredEmojiName = emoji.name;
 
-      if (this.showPageArrows_ && emoji.name === '⬅') {
-        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToPreviousPage(logger);
-        desiredEmojiName = this.currentEmojiName_;
-      } else if (this.showPageArrows_ && emoji.name === '➡') {
-        pagePromise = this.getChapterForEmojiName_(this.currentEmojiName_).flipToNextPage(logger);
-        desiredEmojiName = this.currentEmojiName_;
-      } else {
-        let chapter = this.getChapterForEmojiName_(emoji.name);
-        if (!chapter) {
-          return;
+      try {
+        let navigationPage;
+        if (this.showPageArrows_ && emoji.name === '⬅') {
+          desiredEmojiName = this.currentEmojiName_;
+          navigationPage = await this.getChapterForEmojiName_(this.currentEmojiName_).flipToPreviousPage(logger);
+        } else if (this.showPageArrows_ && emoji.name === '➡') {
+          desiredEmojiName = this.currentEmojiName_;
+          navigationPage = await this.getChapterForEmojiName_(this.currentEmojiName_).flipToNextPage(logger);
+        } else {
+          let chapter = this.getChapterForEmojiName_(emoji.name);
+          if (!chapter) {
+            return;
+          }
+          this.currentEmojiName_ = emoji.name;
+          navigationPage = await chapter.getCurrentPage(logger);
         }
-        this.currentEmojiName_ = emoji.name;
-        pagePromise = chapter.getCurrentPage(logger);
-      }
 
-      pagePromise.then(navigationPage => {
         if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
-          return this.message_.edit(navigationPage);
+          await this.message_.edit(navigationPage);
         }
-      }).catch(err => {
+      } catch (err) {
         logger.logFailure(LOGGER_TITLE, 'Error navigating.', err);
-      });
+      }
     });
   }
 
