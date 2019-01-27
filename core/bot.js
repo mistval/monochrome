@@ -88,6 +88,16 @@ function stopDelay() {
   });
 }
 
+class MessageWaiter {
+  constructor(checkMessage) {
+    this.checkMessage = checkMessage;
+    this.promise = new Promise((fulfill, reject) => {
+      this.fulfill = fulfill;
+      this.reject = reject;
+    });
+  }
+}
+
  /**
   * The Eris Client object that monochrome is built on top of.
   * @external "Eris.Client"
@@ -180,6 +190,7 @@ class Monochrome {
       options.botsOnDiscordDotXyzAPIKey,
     );
 
+    this.messageWaiters_ = [];
     this.reload();
     onExit(() => this.stop(), true);
   }
@@ -325,6 +336,36 @@ class Monochrome {
   }
 
   /**
+   * Wait for a message to arrive.
+   * @param {Number} timeoutMs - A timeout in milliseconds.
+   * @param {Function} messageCheck - A function that takes a message
+   *   and returns true if the waitee wants to accept the message.
+   *   Accepting the message (returning true) ends the wait.
+   *   Returning false continues waiting.
+   * @returns {external:"Eris.Message"} The matching message. If none arrives
+   *   and the timeout lapses, the promise will reject with a WAITER TIMEOUT
+   *   error.
+   * @async
+   */
+  waitForMessage(timeoutMs, messageCheck) {
+    const messageWaiter = new MessageWaiter(messageCheck);
+    this.messageWaiters_.push(messageWaiter);
+
+    setTimeout(() => {
+      const waiterIndex = this.messageWaiters_.indexOf(messageWaiter);
+      if (waiterIndex === -1) {
+        return;
+      }
+
+      const waiter = this.messageWaiters_[waiterIndex];
+      this.messageWaiters_.splice(waiterIndex, 1);
+      waiter.reject(new Error('WAITER TIMEOUT'));
+    }, timeoutMs);
+
+    return messageWaiter.promise;
+  }
+
+  /**
    * Connect to Discord and start listening for users to send commands to the bot.
    */
   connect() {
@@ -411,12 +452,32 @@ class Monochrome {
     });
   }
 
+  tryGiveMessageToWaiter_(msg) {
+    for (let i = 0; i < this.messageWaiters_.length; i += 1) {
+      const waiter = this.messageWaiters_[i];
+      try {
+        if (waiter.checkMessage(msg)) {
+          this.messageWaiters_.splice(i, 1);
+          waiter.fulfill(msg);
+          return true;
+        }
+      } catch (err) {
+        this.logger_.logFailure(LOGGER_TITLE, 'A message waiter\'s checkMessage function threw.', err);
+      }
+    }
+
+    return false;
+  }
+
   onMessageCreate_(msg) {
     try {
       if (msg.author.bot && this.options_.ignoreOtherBots) {
         return;
       }
       if (this.blacklist_.isUserBlacklistedQuick(msg.author.id)) {
+        return;
+      }
+      if (this.tryGiveMessageToWaiter_(msg)) {
         return;
       }
       if (this.commandManager_.processInput(this.bot_, msg)) {
