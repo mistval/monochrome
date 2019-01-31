@@ -214,7 +214,7 @@ async function defaultGetInternalSettingValue(persistence, setting, serverId, ch
   return defaultInternalValue;
 }
 
-function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
+function sanitizeAndValidateSettingsLeaf(treeNode, parent, uniqueIdsEncountered, path) {
   const uniqueId = treeNode.uniqueId;
   let errorMessage = '';
 
@@ -262,29 +262,35 @@ function sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered) {
   treeNode.onServerSettingChanged = treeNode.onServerSettingChanged || (() => {});
   treeNode.onChannelSettingChanged = treeNode.onChannelSettingChanged || (() => {});
   treeNode.onUserSettingChanged = treeNode.onUserSettingChanged || (() => {});
+  treeNode.path = path;
+  treeNode.parent = parent;
 
   uniqueIdsEncountered.push(uniqueId);
 }
 
-function sanitizeAndValidateSettingsCategory(treeNode, uniqueIdsEncountered) {
+function sanitizeAndValidateSettingsCategory(treeNode, parent, uniqueIdsEncountered, path) {
   if (!treeNode.userFacingName) {
     throw new Error('A settings category does not have a user facing name.');
   }
 
-  sanitizeAndValidateSettingsTree(treeNode.children, uniqueIdsEncountered);
+  treeNode.path = path;
+  treeNode.parent = parent;
+  sanitizeAndValidateSettingsTree(treeNode.children, treeNode, uniqueIdsEncountered, path);
 }
 
-function sanitizeAndValidateSettingsTree(settingsTree, uniqueIdsEncountered) {
-  uniqueIdsEncountered = uniqueIdsEncountered || [];
-
+function sanitizeAndValidateSettingsTree(settingsTree, parent, uniqueIdsEncountered = [], path = []) {
   if (!Array.isArray(settingsTree)) {
     throw new Error('The settings, or a setting category\'s children property, is not an array');
   }
-  for (const treeNode of settingsTree) {
+
+  for (let i = 0; i < settingsTree.length; i += 1) {
+    const treeNode = settingsTree[i];
+    const childPath = path.slice();
+    childPath.push(i);
     if (treeNode.children) {
-      sanitizeAndValidateSettingsCategory(treeNode, uniqueIdsEncountered);
+      sanitizeAndValidateSettingsCategory(treeNode, parent || settingsTree, uniqueIdsEncountered, childPath);
     } else {
-      sanitizeAndValidateSettingsLeaf(treeNode, uniqueIdsEncountered);
+      sanitizeAndValidateSettingsLeaf(treeNode, parent || settingsTree, uniqueIdsEncountered, childPath);
     }
   }
 }

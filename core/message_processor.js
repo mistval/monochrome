@@ -20,6 +20,7 @@ const reload = require('require-reload')(require);
  * @typedef {Object} MessageProcessor~MessageProcessorDefinition
  * @property {string} name - A name for the message processor. This can be anything, and will not be shown to users.
  *   It exists solely for logging purposes.
+ * @property {boolean} [suppressLogging=false] - Don't log even when this message processor returns true.
  * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
  * @example
  * module.exports = {
@@ -66,6 +67,7 @@ class MessageProcessor {
     this.name = processorData.name;
     this.action_ = processorData.action;
     this.monochrome_ = monochrome;
+    this.suppressLogging = !!processorData.suppressLogging;
   }
 
   handle(erisBot, msg) {

@@ -38,33 +38,26 @@ class MessageProcessorManager {
     }
   }
 
-  processInput(erisBot, msg) {
+  processInput(bot, msg) {
     const loggerTitle = 'MESSAGE';
     for (let processor of this.processors_) {
       try {
-        let result = processor.handle(erisBot, msg);
-        if (result && result.then) {
-          result.then(innerResult => {
-            if (typeof innerResult === typeof '') {
-              throw PublicError.createWithGenericPublicMessage(false, innerResult);
-            }
-            if (innerResult !== false) {
-              this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
-            }
-          }).catch(err => handleError(msg, err, this.monochrome_));
+        let result = processor.handle(bot, msg);
+        if (result) {
+          if (result.then) {
+            result.then(() => {}).catch(err => handleError(msg, err, this.monochrome_));
+          }
+
+          if (!processor.suppressLogging) {
+            this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
+          }
+
           return true;
-        } else if (typeof result === typeof '') {
-          throw PublicError.createWithGenericPublicMessage(false, result);
-        } else if (result === true) {
-          this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
-          return true;
-        } else if (result !== false) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, `Message processor '${processor.name}' returned an invalid value. It should return true if it will handle the message, false if it will not. A promise will be treated as true and resolved.`);
         }
       } catch (err) {
         handleError(msg, err, this.monochrome_);
         return true;
-      };
+      }
     }
 
     return false;
