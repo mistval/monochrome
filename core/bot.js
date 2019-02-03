@@ -494,11 +494,6 @@ class Monochrome {
       }
     } catch (err) {
       this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level (probably a bug in monochrome)', err);
-      if (this.options_.genericErrorMessage) {
-        msg.channel.createMessage(this.options_.genericErrorMessage).catch(err => {
-          this.logger_.logFailure(LOGGER_TITLE, 'Error sending error message', err);
-        });
-      }
     }
   }
 
