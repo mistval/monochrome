@@ -42,8 +42,8 @@ function toStringLowercase(value) {
   return toString(value).toLowerCase();
 }
 
-function createMapConverter(map) {
-  return value => map[value];
+function createMapConverter(map, lowercase) {
+  return value => lowercase ? map[value.toLowerCase()] : map[value];
 }
 
 function createInverseMapConverter(map) {
