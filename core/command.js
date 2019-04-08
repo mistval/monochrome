@@ -2,6 +2,7 @@ const PublicError = require('./public_error.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const Constants = require('./constants.js');
+const { userStringForPermission } = require('./permissions.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
@@ -67,6 +68,13 @@ function sanitizeCommandData(commandData) {
   if (commandData.requiredSettings.find(setting => typeof setting !== typeof '')) {
     throw new Error('A required setting is not a string.');
   }
+  if (!commandData.requiredBotPermissions) {
+    commandData.requiredBotPermissions = [];
+  }
+  const unknownPermission = commandData.requiredBotPermissions.find(perm => !userStringForPermission[perm]);
+  if (unknownPermission) {
+    throw new Error(`Unknown bot permission: ${unknownPermission}. See https://abal.moe/Eris/docs/reference for allowed permissions. Voice permissions are not valid here.`);
+  }
   return commandData;
 }
 
@@ -108,6 +116,7 @@ function sanitizeCommandData(commandData) {
  *   those settings are looked up and passed into your [commandAction]{@link Command~commandAction} function.
  * @property {string[]} [aliasesForHelp] - If you don't want to show some of the command aliases in the help, you can specify which ones you do want to show here.
  *   By default, all aliases are shown in the help.
+ * @property {string[]} [requiredBotPermissions] - The permissions that the bot must have in order to execute the command. See Eris.Constants.Permissions at {@link https://abal.moe/Eris/docs/reference}.
  * @example
  * module.exports = {
    commandAliases: ['ping', 'p'],
@@ -120,6 +129,7 @@ function sanitizeCommandData(commandData) {
    canBeChannelRestricted: true,
    requiredSetting: ['unique_id_of_some_setting'],
    aliasesForHelp: ['ping'],
+   requiredBotPermissions: ['readMessages', 'sendMessages'],
    action(bot, msg, suffix, monochrome, requestedSettings) {
      return msg.channel.createMessage('Pong!', null, msg);
    },
@@ -161,6 +171,7 @@ class Command {
     this.requiredSettings_.push(this.getEnabledSettingUniqueId());
     this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
     this.hidden = !!commandData.hidden;
+    this.requiredBotPermissions_ = commandData.requiredBotPermissions;
     if (commandData.initialize) {
       commandData.initialize(this.monochrome_);
     }
@@ -201,9 +212,19 @@ class Command {
       let publicErrorMessage = `${msg.author.username}, that command has a ${this.cooldown_} second cooldown.`;
       throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, 'Not cooled down');
     }
+
     let isBotAdmin = this.monochrome_.getBotAdminIds().indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
       throw PublicError.createWithCustomPublicMessage('Only a bot admin can use that command.', true, 'User is not a bot admin');
+    }
+
+    if (msg.channel.permissionsOf) {
+      const botPermissions = msg.channel.permissionsOf(bot.user.id).json;
+      const missingBotPermissions = this.requiredBotPermissions_.filter(perm => !botPermissions[perm]);
+      if (missingBotPermissions.length > 0) {
+        const requiredPermissionsString = missingBotPermissions.map(perm => userStringForPermission[perm]).join(', ');
+        throw PublicError.createWithCustomPublicMessage(`I do not have the permissions I need to respond to that command. I need: **${requiredPermissionsString}**. A server admin can give me the permissions I need in the server settings.`, false, 'Missing permissions');
+      }
     }
 
     const settingsPromises = this.requiredSettings_.map(requiredSetting => {
