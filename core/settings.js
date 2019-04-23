@@ -469,6 +469,28 @@ class Settings {
   }
 
   /**
+   * Reset all settings for a user.
+   * @param {string} userId - The ID for the user to reset settings for.
+   */
+  async resetUserSettings(userId) {
+    return this.persistence_.editDataForUser(userId, userData => {
+      delete userData.settings;
+      return userData;
+    });
+  }
+
+  /**
+   * Reset all settings (both server-wide and channel-specific settings) in a server.
+   * @param {string} userId - The ID for the user to reset settings for.
+   */
+  async resetServerAndChannelSettings(serverId) {
+    return this.persistence_.editDataForServer(serverId, serverData => {
+      delete serverData.settings;
+      return serverData;
+    });
+  }
+
+  /**
    * Set a setting value for a user.
    * @param {string} settingUniqueId
    * @param {string} userId - The ID of the server to set the setting value for.
