@@ -541,13 +541,31 @@ class Monochrome {
     return false;
   }
 
+  isMention_(msg) {
+    if (!msg.content.startsWith('<')) {
+      return false;
+    }
+
+    const botId = this.bot_.user.id;
+
+    if (msg.content.startsWith(`<@${botId}>`)) {
+      return true;
+    }
+
+    if (msg.content.startsWith(`<@!${botId}>`)) {
+      return true;
+    }
+
+    return false;
+  }
+
   tryHandleMention_(msg) {
     if (!this.bot_.user) {
       return;
     }
 
     try {
-      if (msg.mentions.length > 0 && msg.content.indexOf(this.bot_.user.mention) === 0 && this.options_.genericMentionReply) {
+      if (this.isMention_(msg) && this.options_.genericMentionReply) {
         this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
         this.logger_.logInputReaction('MENTION', msg, '', true);
         return true;
