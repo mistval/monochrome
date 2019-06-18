@@ -1,6 +1,6 @@
 {
   "name": "monochrome-bot",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "A flexible Discord bot core based on Eris",
   "main": "monochrome.js",
   "directories": {
@@ -34,7 +34,7 @@
   "dependencies": {
     "async-on-exit": "0.1.0",
     "eris": "0.10.0",
-    "fpersist": "^0.0.1",
+    "fpersist": "^0.0.2",
     "mkdirp": "^0.5.1",
     "request": "2.88.0",
     "request-promise": "4.2.2",
