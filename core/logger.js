@@ -1,7 +1,6 @@
 const fs = require('fs');
 const AnsiColor = require('./util/ansi_color_codes.js');
 const LogMessageBuilder = require('./util/log_message_builder');
-const mkdirpSync = require('mkdirp').sync;
 const path = require('path');
 const LOGGER_TITLE = 'LOGGER';
 
@@ -43,7 +42,7 @@ class Logger {
 
     if (this.logToFile_) {
       try {
-        mkdirpSync(logDirectoryPath);
+        fs.mkdirSync(logDirectoryPath, { recursive: true });
       } catch (err) {
         this.console_.warn(`Error creating log directory: ${err}. Disabling logging to file.`);
         this.logToFile_ = false;

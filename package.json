@@ -35,7 +35,6 @@
     "async-on-exit": "0.1.0",
     "eris": "0.10.0",
     "fpersist": "^0.0.4",
-    "mkdirp": "^0.5.1",
     "request": "2.88.0",
     "request-promise": "4.2.2",
     "require-reload": "0.2.2"
