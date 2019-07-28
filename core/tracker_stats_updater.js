@@ -1,4 +1,4 @@
-const request = require('request-promise');
+const axios = require('axios');
 
 const LOGGER_TITLE = 'STATS';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
@@ -19,7 +19,7 @@ class TrackerStatsUpdater {
     this.botsOnDiscordDotXyzAPIKey = botsOnDiscordDotXyzAPIKey;
   }
 
-  updateBotsOnDiscordDotXyz() {
+  async updateBotsOnDiscordDotXyz() {
     if (!this.botsOnDiscordDotXyzAPIKey) {
       return;
     }
@@ -28,23 +28,25 @@ class TrackerStatsUpdater {
       guildCount: this.bot.guilds.size,
     };
 
-    request({
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.botsOnDiscordDotXyzAPIKey,
-        'Accept': 'application/json',
-      },
-      uri: `https://bots.ondiscord.xyz/bot-api/bots/${this.bot.user.id}/guilds`,
-      body: JSON.stringify(payload),
-      method: 'POST',
-    }).then(() => {
+    try {
+      await axios({
+        method: 'POST',
+        url: `https://bots.ondiscord.xyz/bot-api/bots/${this.bot.user.id}/guilds`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.botsOnDiscordDotXyzAPIKey,
+          'Accept': 'application/json',
+        },
+        data: payload,
+      });
+
       this.logger.logSuccess(LOGGER_TITLE, `Sent stats to bots.ondiscord.xyz: ${payload.guildCount} servers.`);
-    }).catch(err => {
+    } catch (err) {
       this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to bots.ondiscord.xyz', err);
-    });
+    }
   }
 
-  updateDiscordBotsDotOrg() {
+  async updateDiscordBotsDotOrg() {
     if (!this.discordBotsDotOrgAPIKey) {
       return;
     }
@@ -54,23 +56,25 @@ class TrackerStatsUpdater {
       shard_count: this.bot.shards.size,
     };
 
-    request({
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.discordBotsDotOrgAPIKey,
-        'Accept': 'application/json',
-      },
-      uri: `https://discordbots.org/api/bots/${this.bot.user.id}/stats`,
-      body: JSON.stringify(payload),
-      method: 'POST',
-    }).then(() => {
+    try {
+      await axios({
+        method: 'POST',
+        url: `https://discordbots.org/api/bots/${this.bot.user.id}/stats`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.discordBotsDotOrgAPIKey,
+          'Accept': 'application/json',
+        },
+        data: payload,
+      });
+
       this.logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${payload.server_count} servers and ${payload.shard_count} shards.`);
-    }).catch(err => {
+    } catch (err) {
       this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to discordbots.org', err);
-    });
+    }
   }
 
-  updateDiscordDotBotsDotGg() {
+  async updateDiscordDotBotsDotGg() {
     if (!this.discordDotBotsDotGgAPIKey) {
       return;
     }
@@ -80,20 +84,22 @@ class TrackerStatsUpdater {
       shardCount: this.bot.shards.size,
     };
 
-    request({
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.discordDotBotsDotGgAPIKey,
-        'Accept': 'application/json',
-      },
-      uri: `https://discord.bots.gg/api/v1/bots/${this.bot.user.id}/stats`,
-      body: JSON.stringify(payload),
-      method: 'POST',
-    }).then(() => {
+    try {
+      await axios({
+        method: 'POST',
+        url: `https://discord.bots.gg/api/v1/bots/${this.bot.user.id}/stats`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.discordDotBotsDotGgAPIKey,
+          'Accept': 'application/json',
+        },
+        data: payload,
+      });
+
       this.logger.logSuccess(LOGGER_TITLE, `Sent stats to discord.bots.gg: ${payload.guildCount} servers and ${payload.shardCount} shards.`);
-    }).catch(err => {
+    } catch (err) {
       this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to discord.bots.gg', err);
-    });
+    }
   }
 
   hasApiKey() {
