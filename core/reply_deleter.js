@@ -37,7 +37,7 @@ async function handleReaction(msg, userId, emoji, logger) {
   let ownerId = ownerIdForSentMessageId[msg.id];
   if (ownerId && userId === ownerId && deletionEmoji[emoji.name]) {
     try {
-      await msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with ❌ to delete it.');
+      await msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with X to delete it.');
       logger.logSuccess(LOGGER_TITLE, 'Deleted bot message in response to user ❌ reaction.');
     } catch (err) {
       logger.logFailure(LOGGER_TITLE, 'Failed to delete bot message in response to user ❌ reaction', err);
