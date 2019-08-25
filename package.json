@@ -40,6 +40,6 @@
   },
   "devDependencies": {
     "docdash": "^1.0.0",
-    "jsdoc": "^3.6.2"
+    "jsdoc": "^3.6.3"
   }
 }
