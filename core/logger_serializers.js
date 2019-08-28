@@ -19,10 +19,10 @@ function serializeGuild(guild) {
   return {
     name: guild.name,
     memberCount: guild.memberCount,
-    owner: serializeUser(guild.members.get(guild.ownerID)),
     joinedAt: guild.joinedAt,
     iconUri: guild.iconURL,
     createdAt: guild.createdAt,
+    id: guild.id,
   };
 }
 
@@ -49,6 +49,7 @@ function serializeMessage(msg) {
   return {
     content: msg.content,
     embeds: msg.embeds,
+    id: msg.id,
   };
 }
 
