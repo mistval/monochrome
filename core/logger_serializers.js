@@ -50,6 +50,7 @@ function serializeMessage(msg) {
     content: msg.content,
     embeds: msg.embeds,
     id: msg.id,
+    author: serializeUser(msg.author),
   };
 }
 
