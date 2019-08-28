@@ -1,6 +1,5 @@
 const NavigationChapter = require('./navigation_chapter.js');
 
-const LOGGER_TITLE = 'NAVIGATION';
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
 async function sendReactions(msg, reactions, logger) {
@@ -9,7 +8,10 @@ async function sendReactions(msg, reactions, logger) {
     try {
       await msg.channel.addMessageReaction(msg.id, reaction);
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Failed to add reaction button to navigation', err);
+      logger.error({
+        event: 'FAILED TO ADD REACTION BUTTONS',
+        err,
+      });
       if (err.code === 50001 || err.code === 50013 || err.code === 10008) {
         return; // Missing permissions error or unknown message error (probably already deleted). Don't bother trying to send the other reactions.
       }
@@ -141,7 +143,10 @@ class Navigation {
           await this.message_.edit(navigationPage);
         }
       } catch (err) {
-        logger.logFailure(LOGGER_TITLE, 'Error navigating.', err);
+        logger.error({
+          event: 'ERROR NAVIGATING',
+          err,
+        });
       }
     });
   }

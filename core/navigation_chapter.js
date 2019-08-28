@@ -1,5 +1,3 @@
-const LOGGER_TITLE = 'NAVIGATION';
-
 /**
  * This function is called when the user first navigates to this navigation chapter.
  * If you need to, for example, make an HTTP request to an API that does not support pagination,
@@ -87,8 +85,10 @@ class NavigationChapter {
         }
         return this.getCurrentPageFromPreparedData_(logger);
       } catch (err) {
-        logger.logFailure(LOGGER_TITLE, 'Error preparing data for navigation.', err);
-        throw err;
+        logger.error({
+          event: 'ERROR PREPARING DATA FOR NAVIGATION',
+          err,
+        });
       }
     } else {
       return this.getCurrentPageFromPreparedData_(logger);
@@ -129,7 +129,10 @@ class NavigationChapter {
           return undefined;
         }
       } catch (err) {
-        logger.logFailure(LOGGER_TITLE, 'Error getting navigation page from prepared data.', err);
+        logger.error({
+          event: 'ERROR GETTING CONTENT FROM PREPARED DATA',
+          err,
+        });
         await this.flipToPreviousPage(logger);
         return undefined;
       }

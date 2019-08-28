@@ -1,5 +1,4 @@
 const Eris = require('eris');
-const Logger = require('./logger.js');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
@@ -11,8 +10,9 @@ const CommandManager = require('./command_manager.js');
 const assert = require('assert');
 const onExit = require('async-on-exit');
 const TrackerStatsUpdater = require('./tracker_stats_updater.js');
+const NoopLogger = require('./noop_logger.js');
+const loggerSerializers = require('./logger_serializers.js');
 
-const LOGGER_TITLE = 'CORE';
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
 const USER_NAME_REPLACE_REGEX = /<user>/g;
 
@@ -20,17 +20,6 @@ function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
   bot.editStatus({name: nextStatus});
   queue.push(nextStatus);
-}
-
-function createGuildLeaveJoinLogString(guild, logger) {
-  try {
-    let owner = guild.members.get(guild.ownerID).user;
-    return `${guild.name} owned by ${owner.username}#${owner.discriminator}`;
-  } catch (err) {
-    // Sometimes this happens because the owner isn't cached or something.
-    logger.logFailure(LOGGER_TITLE, 'Couldn\'t create join/leave guild log string', err);
-    return '<Error getting guild name or owner name>';
-  }
 }
 
 function stringContainsInviteLink(str) {
@@ -71,12 +60,12 @@ function validateAndSanitizeOptions(options) {
     options.prefixes = [''];
   }
 
-  if (typeof options.useANSIColorsInLogFiles !== 'boolean') {
-    options.useANSIColorsInLogFiles = true;
-  }
-
   if (options.ignoreOtherBots === undefined) {
     options.ignoreOtherBots = true;
+  }
+
+  if (options.logger === undefined) {
+    options.logger = new NoopLogger();
   }
 
   return options;
@@ -118,6 +107,12 @@ class MessageWaiter {
  */
 
 /**
+ * A logger created with bunyan.createLogger().
+ * @external "bunyan.Logger"
+ * @see {@link https://www.npmjs.com/package/bunyan#constructor-api}
+ */
+
+/**
  * The main entry point into the framework. You construct this and call connect()
  * on it to start your bot.
  * See the [monochrome demo]{@link https://github.com/mistval/monochrome-demo/blob/master/bot.js}
@@ -135,7 +130,6 @@ const bot = new Monochrome({
   logDirectoryPath: path.join(__dirname, 'logs'),
   persistenceDirectoryPath: path.join(__dirname, 'persistence')
   settingsFilePath: path.join(__dirname, 'settings.js'),
-  useANSIColorsInLogFiles: true,
   genericErrorMessage: 'Sorry, there was an error with that command. It has been logged and will be addressed.',
   missingPermissionsErrorMessage: 'I do not have permission to reply to that command in this channel.',
   genericDMReply: 'Say **<prefix>help** to see my commands!',
@@ -156,12 +150,12 @@ class Monochrome {
    * @param {string} options.botToken - Your bot's token.
    * @param {string[]} [options.botAdminIds=[]] - A list of IDs of users who are allowed to run bot admin commands.
    * @param {string[]} [options.prefixes=['']] - The bot's default command prefixes.
+   * @param {external:"bunyan.Logger"} [options.logger] - A bunyan logger, or something with the same interface. Monochrome will use addSerializers to add a 'user', 'guild', and 'channel' serializer to your logger.
    * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command modules exist. If this is omitted, no commands with be loaded.
    * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor modules exist. If this is omitted, no message processors will be loaded.
    * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist). If this is omitted, logs will not be saved to disk.
    * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist).
    * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exists. If this is omitted, no settings will be loaded.
-   * @param {boolean} [options.useANSIColorsInLogFiles=true] - Whether log files should contain the ANSI color codes that make the console output pretty.
    * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel where the command was used. The exception is message processors. Errors caught from message processors will not be broadcast to the channel. This avoids the possibility of your message processor throwing on any input and spamming errors to the channel.
    * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send even plain text messages in the channel). If this is omitted, no message is sent to the channel.
    * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response. If this is omitted, no message is sent.
@@ -175,20 +169,25 @@ class Monochrome {
    * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
    */
   constructor(options) {
-    this.options_ = validateAndSanitizeOptions(options, this.logger_);
+    this.options_ = validateAndSanitizeOptions(options, this.logger);
 
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
-    this.logger_ = new Logger(this.options_.logDirectoryPath, this.options_.useANSIColorsInLogFiles);
-    this.persistence_ = new Persistence(this.options_.prefixes, this.logger_, this.options_.persistenceDirectoryPath);
+    this.logger = options.logger;
+    this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.persistenceDirectoryPath);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
-    this.navigationManager_ = new NavigationManager(this.logger_);
+    this.navigationManager_ = new NavigationManager(this.logger);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,
-      this.logger_,
+      this.logger,
       options.discordBotsDotOrgAPIKey,
       options.discordDotBotsDotGgAPIKey,
       options.botsOnDiscordDotXyzAPIKey,
     );
+
+    this.logger.addSerializers(loggerSerializers);
+    this.coreLogger = this.logger.child({
+      component: 'Monochrome::Core',
+    });
 
     this.messageWaiters_ = [];
     this.reload();
@@ -208,11 +207,11 @@ class Monochrome {
 
   /**
    * Get the Logger, which you can use to log messages.
-   * @returns {Logger}
+   * @returns {external:"bunyan.Logger"}
    */
   getLogger() {
-    assert(this.logger_, 'Logger not available (probably a bug in monochrome)');
-    return this.logger_;
+    assert(this.logger, 'Logger not available (probably a bug in monochrome)');
+    return this.logger;
   }
 
   /**
@@ -282,7 +281,7 @@ class Monochrome {
    * your bot.
    */
   reload() {
-    this.settings_ = new Settings(this.persistence_, this.logger_, this.options_.settingsFilePath);
+    this.settings_ = new Settings(this.persistence_, this.logger, this.options_.settingsFilePath);
     this.commandManager_ = new CommandManager(this.options_.commandsDirectoryPath, this.options_.prefixes, this);
     this.commandManager_.load();
     this.messageProcessorManager_ = new MessageProcessorManager(this.options_.messageProcessorsDirectoryPath, this);
@@ -320,17 +319,16 @@ class Monochrome {
    * You should call this as a final part of preparing to exit the process.
    */
   async stop() {
-    this.logger_.logSuccess(LOGGER_TITLE, 'Stopping');
+    this.coreLogger.info({ event: 'BOT STOPPING' });
     this.bot_.disconnect();
 
     try {
       await Promise.all([
         this.persistence_.stop(),
-        this.logger_.close(),
       ]);
       await stopDelay();
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error stopping', err);
+      this.coreLogger.error({ event: 'ERROR STOPPING BOT', err });
       throw err;
     }
   }
@@ -375,7 +373,7 @@ class Monochrome {
 
     this.connected_ = true;
     this.bot_.on('ready', () => {
-      this.logger_.logSuccess(LOGGER_TITLE, 'Bot ready.');
+      this.coreLogger.info({ event: 'ALL SHARDS CONNECTED' });
       this.rotateStatuses_();
       this.trackerStatsUpdater.startUpdateLoop();
     });
@@ -385,51 +383,47 @@ class Monochrome {
     });
 
     this.bot_.on('guildCreate', guild => {
-      this.logger_.logSuccess('JOINED GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
+      this.coreLogger.info({ event: 'JOINED GUILD', guild });
       this.blacklist_.leaveGuildIfBlacklisted(guild).then((left) => {
         if (left) {
-          this.logger_.logFailure(LOGGER_TITLE, 'Left blacklisted guild');
+          this.coreLogger.info({ event: 'LEAVING BLACKLISTED GUILD', guild });
         }
       }).catch(err => {
-        this.logger_.logFailure(LOGGER_TITLE, 'Error leaving blacklisted guild', err);
+        this.coreLogger.error({ event: 'LEAVING BLACKLISTED GUILD', guild, err });
       });
     });
 
     this.bot_.on('error', (err, shardId) => {
-      let errorMessage = 'Error';
-      if (shardId) {
-        errorMessage += ` on shard ${shardId}`;
-      }
-      this.logger_.logFailure(LOGGER_TITLE, errorMessage, err);
+      this.coreLogger.error({ event: 'ERROR', shardId, err });
     });
 
     this.bot_.on('disconnect', () => {
-      this.logger_.logFailure(LOGGER_TITLE, 'All shards disconnected');
+      this.coreLogger.info({ event: 'ALL SHARDS DISCONNECTED' });
     });
 
-    this.bot_.on('shardDisconnect', (err, id) => {
-      this.logger_.logFailure(LOGGER_TITLE, `Shard ${id} disconnected`, err);
+    this.bot_.on('shardDisconnect', (err, shardId) => {
+      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err })
     });
 
-    this.bot_.on('shardResume', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} reconnected`);
+    this.bot_.on('shardResume', (shardId) => {
+      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId });
     });
 
     this.bot_.on('warn', message => {
-      this.logger_.logFailure(LOGGER_TITLE, `Warning: ${message}`);
+      this.coreLogger.warn({ event: 'WARNING', message });
     });
 
-    this.bot_.on('shardReady', id => {
-      this.logger_.logSuccess(LOGGER_TITLE, `Shard ${id} connected`);
+    this.bot_.on('shardReady', (shardId) => {
+      this.coreLogger.info({ event: 'SHARD READY', shardId });
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
       this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
-      replyDeleter.handleReaction(msg, userId, emoji, this.logger_);
+      replyDeleter.handleReaction(msg, userId, emoji, this.logger);
     });
 
     this.bot_.on('messageDelete', msg => {
-      replyDeleter.handleMessageDeleted(msg, this.logger_);
+      replyDeleter.handleMessageDeleted(msg, this.logger);
     });
 
     this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
@@ -438,17 +432,19 @@ class Monochrome {
 
     this.bot_.on('guildDelete', (guild, unavailable) => {
       if (!unavailable) {
-        this.logger_.logFailure('LEFT GUILD', createGuildLeaveJoinLogString(guild, this.logger_));
+        this.coreLogger.info({ event: 'LEFT GUILD', guild });
       }
-      this.persistence_.resetPrefixesForServerId(guild.id).then(() => {
-        this.logger_.logSuccess('RESET PREFIXES', `for ${guild.name}`);
-      }).catch(err => {
-        this.logger_.logFailure('RESET PREFIXES', `for ${guild.name}`, err);
+      this.persistence_.resetPrefixesForServerId(guild.id).catch(err => {
+        this.coreLogger.error({
+          event: 'ERROR RESETTING PREFIXES AFTER LEAVING GUILD',
+          guild,
+          err,
+        });
       });
     });
 
     this.bot_.connect().catch(err => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error logging in', err);
+      this.coreLogger.error({ event: 'ERROR LOGGING IN', err });
     });
   }
 
@@ -462,7 +458,7 @@ class Monochrome {
           return true;
         }
       } catch (err) {
-        this.logger_.logFailure(LOGGER_TITLE, 'A message waiter\'s checkMessage function threw.', err);
+        this.coreLogger.error({ event: 'MESSAGE WAITER ERROR', err }, 'A message waiter\'s checkMessage function threw.');
       }
     }
 
@@ -493,7 +489,7 @@ class Monochrome {
         return;
       }
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error caught at top level (probably a bug in monochrome)', err);
+      this.coreLogger.error({ event: 'TOP LEVEL ERROR', err }, 'Error caught at top level (probably a bug in monochrome)');
     }
   }
 
@@ -511,7 +507,7 @@ class Monochrome {
         try {
           updateStatusFromQueue(this.bot_, statusRotation);
         } catch (err) {
-          this.logger_.logFailure(LOGGER_TITLE, 'Error rotating statuses', err);
+          this.coreLogger.error({ event: 'ERROR ROTATING STATUS', err });
         }
       }, intervalInMs);
     }
@@ -519,14 +515,21 @@ class Monochrome {
 
   sendDmOrMentionReply_(toMsg, replyTemplate) {
     return toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error sending reply to DM or message', err);
+      this.coreLogger.error({
+        event: 'ERROR REPLYING TO DM OR MENTION',
+        err,
+        message: toMsg,
+        guild: toMsg.channel.guild,
+        channel: toMsg.channel,
+        user: toMsg.author,
+      });
     });
   }
 
   tryHandleDm_(msg) {
     try {
       if (!msg.channel.guild) {
-        this.logger_.logInputReaction('DIRECT MESSAGE', msg, '', true);
+        this.coreLogger.info({ event: 'DIRECT MESSAGE', message: msg, user: msg.author });
         if (this.options_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
           this.sendDmOrMentionReply_(msg, this.options_.inviteLinkDmReply);
         } else if (this.options_.genericDMReply) {
@@ -535,7 +538,7 @@ class Monochrome {
         return true;
       }
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error handling DM', err);
+      this.coreLogger.error({ event: 'ERROR REPLYING TO DM', err, message: msg, user: msg.author });
     }
 
     return false;
@@ -567,11 +570,25 @@ class Monochrome {
     try {
       if (this.isMention_(msg) && this.options_.genericMentionReply) {
         this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
-        this.logger_.logInputReaction('MENTION', msg, '', true);
+        this.coreLogger.info({
+          event: 'MENTION',
+          message: msg,
+          user: msg.user,
+          guild: msg.channel.guild,
+          channel: msg.channel,
+        });
+
         return true;
       }
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Error handling mention', err);
+      this.coreLogger.error({
+        event: 'ERROR REPLYING TO MENTION',
+        message: msg,
+        err,
+        user: msg.user,
+        guild: msg.channel.guild,
+        channel: msg.channel,
+      });
     }
 
     return false;
@@ -585,7 +602,15 @@ class Monochrome {
       reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
       return reply;
     } catch (err) {
-      this.logger_.logFailure(LOGGER_TITLE, 'Couldn\'t create DM or mention reply', err);
+      this.coreLogger.error({
+        event: 'ERROR REPLYING TO DM OR MENTION',
+        err,
+        message: msg,
+        user: msg.author,
+        channel: msg.channel,
+        guild: msg.channel.guild,
+      });
+
       return this.options_.genericErrorMessage;
     }
   }

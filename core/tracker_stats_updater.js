@@ -13,7 +13,10 @@ class TrackerStatsUpdater {
     botsOnDiscordDotXyzAPIKey,
   ) {
     this.bot = bot;
-    this.logger = logger;
+    this.logger = logger.child({
+      component: 'Monochrome::StatsReporter',
+    });
+
     this.discordBotsDotOrgAPIKey = discordBotsDotOrgAPIKey;
     this.discordDotBotsDotGgAPIKey = discordDotBotsDotGgAPIKey;
     this.botsOnDiscordDotXyzAPIKey = botsOnDiscordDotXyzAPIKey;
@@ -40,9 +43,15 @@ class TrackerStatsUpdater {
         data: payload,
       });
 
-      this.logger.logSuccess(LOGGER_TITLE, `Sent stats to bots.ondiscord.xyz: ${payload.guildCount} servers.`);
+      this.logger.info({
+        event: 'SENT STATS TO BOTS.ONDISCORD.XYZ',
+        guildCount: payload.guildCount,
+      });
     } catch (err) {
-      this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to bots.ondiscord.xyz', err);
+      this.logger.warn({
+        event: 'ERROR SENDING STATS TO BOTS.ONDISCORD.XYZ',
+        err,
+      });
     }
   }
 
@@ -68,9 +77,16 @@ class TrackerStatsUpdater {
         data: payload,
       });
 
-      this.logger.logSuccess(LOGGER_TITLE, `Sent stats to discordbots.org: ${payload.server_count} servers and ${payload.shard_count} shards.`);
+      this.logger.info({
+        event: 'SENT STATS TO DISCORDBOTS.ORG',
+        guildCount: payload.server_count,
+        shardCount: payload.shard_count,
+      });
     } catch (err) {
-      this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to discordbots.org', err);
+      this.logger.warn({
+        event: 'ERROR SENDING STATS TO DISCORDBOTS.ORG',
+        err,
+      });
     }
   }
 
@@ -96,9 +112,16 @@ class TrackerStatsUpdater {
         data: payload,
       });
 
-      this.logger.logSuccess(LOGGER_TITLE, `Sent stats to discord.bots.gg: ${payload.guildCount} servers and ${payload.shardCount} shards.`);
+      this.logger.info({
+        event: 'SENT STATS TO BOTS.DISCORD.GG',
+        guildCount: payload.guildCount,
+        shardCount: payload.shardCount,
+      });
     } catch (err) {
-      this.logger.logFailure(LOGGER_TITLE, 'Error sending stats to discord.bots.gg', err);
+      this.logger.warn({
+        event: 'ERROR SENDING STATS TO BOTS.DISCORD.GG',
+        err,
+      });
     }
   }
 
@@ -113,7 +136,10 @@ class TrackerStatsUpdater {
       this.updateDiscordBotsDotOrg();
       this.updateBotsOnDiscordDotXyz();
     } catch (err) {
-      this.logger.logFailure(LOGGER_TITLE, 'Failed to send stats to bot trackers.', err);
+      this.logger.warn({
+        event: 'ERROR SENDING STATS',
+        err,
+      });
     }
   }
 

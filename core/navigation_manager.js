@@ -7,8 +7,10 @@
  */
 class NavigationManager {
   constructor(logger) {
+    this.logger = logger.child({
+      component: 'Monochrome::NavigationManager',
+    });
     this.navigationForMessageId_ = {};
-    this.logger_ = logger;
   }
 
   /**
@@ -24,7 +26,7 @@ class NavigationManager {
    *   behavior.
    */
   show(navigation, expirationTimeInMs, channel, parentMsg) {
-    return navigation.createMessage(channel, parentMsg, this.logger_).then(messageId => {
+    return navigation.createMessage(channel, parentMsg, this.logger).then(messageId => {
       this.navigationForMessageId_[messageId] = navigation;
       setTimeout(() => delete this.navigationForMessageId_[messageId], expirationTimeInMs);
     });
@@ -33,7 +35,7 @@ class NavigationManager {
   handleEmojiToggled(bot, msg, emoji, userId) {
     let navigation = this.navigationForMessageId_[msg.id];
     if (navigation) {
-      navigation.handleEmojiToggled(bot, emoji, userId, this.logger_);
+      navigation.handleEmojiToggled(bot, emoji, userId, this.logger);
     }
   }
 }

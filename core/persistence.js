@@ -35,11 +35,17 @@ class Persistence {
     this.storage = new FPersist(persistenceDirectory);
     this.defaultPrefixes_ = defaultPrefixes;
     this.prefixesForServerId_ = {};
+    this.logger = logger.child({
+      component: 'Monochrome::Persistence',
+    });
 
     this.getGlobalData().then(data => {
       this.prefixesForServerId_ = data.prefixes || {};
     }).catch(err => {
-      logger.logFailure('PERSISTENCE', 'Error loading prefixes', err);
+      this.logger.error({
+        event: 'ERROR LOADING PREFIXES',
+        err,
+      });
     });
   }
 

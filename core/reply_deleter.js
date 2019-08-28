@@ -26,9 +26,21 @@ async function handleMessageDeleted(deletedMsg, logger) {
   if (responseMessageId) {
     try {
       await deletedMsg.channel.deleteMessage(responseMessageId, 'The message that invoked the command was deleted.');
-      logger.logSuccess(LOGGER_TITLE, 'Deleted bot message in response to user message deletion.');
+      logger.info({
+        event: 'DELETED MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
+        message: deletedMsg,
+        guild: deletedMsg.channel.guild,
+        channel: deletedMsg.channel,
+        user: deletedMsg.author,
+      });
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Failed to delete bot message in response to user message deletion', err);
+      logger.warn({
+        event: 'ERROR DELETING MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
+        message: deletedMsg,
+        guild: deletedMsg.channel.guild,
+        channel: deletedMsg.channel,
+        user: deletedMsg.author,
+      });
     }
   }
 }
@@ -38,9 +50,21 @@ async function handleReaction(msg, userId, emoji, logger) {
   if (ownerId && userId === ownerId && deletionEmoji[emoji.name]) {
     try {
       await msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with X to delete it.');
-      logger.logSuccess(LOGGER_TITLE, 'Deleted bot message in response to user ❌ reaction.');
+      logger.info({
+        event: 'DELETED MESSAGE IN RESPONSE TO USER ❌ REACTION',
+        message: deletedMsg,
+        guild: deletedMsg.channel.guild,
+        channel: deletedMsg.channel,
+        user: deletedMsg.author,
+      });
     } catch (err) {
-      logger.logFailure(LOGGER_TITLE, 'Failed to delete bot message in response to user ❌ reaction', err);
+      logger.warn({
+        event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER ❌ REACTION',
+        message: deletedMsg,
+        guild: deletedMsg.channel.guild,
+        channel: deletedMsg.channel,
+        user: deletedMsg.author,
+      });
     }
   }
 }

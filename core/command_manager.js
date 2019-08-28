@@ -12,7 +12,6 @@ const COMMAND_CATEGORY_NAME = 'Enabled commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail silently';
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
-const LOGGER_TITLE = 'COMMAND';
 
 function handleCommandError(msg, err, monochrome) {
   let errorToOutput = err;
@@ -23,7 +22,7 @@ function handleCommandError(msg, err, monochrome) {
     }
   }
 
-  return errorToOutput.output(LOGGER_TITLE, msg, false, monochrome);
+  return errorToOutput.output('COMMAND', msg, false, monochrome);
 }
 
 function getDuplicateAlias(command, otherCommands) {
@@ -107,6 +106,9 @@ class CommandManager {
     this.directory_ = directory;
     this.prefixes_ = prefixes;
     this.persistence_ = monochrome.getPersistence();
+    this.logger = monochrome.getLogger().child({
+      component: 'Monochrome::CommandManager',
+    });
   }
 
   /**
@@ -138,8 +140,12 @@ class CommandManager {
           }
 
           this.commands_.push(newCommand);
-        } catch (e) {
-          this.monochrome_.getLogger().logFailure(LOGGER_TITLE, `Failed to load command in file: ${commandFile}`, e);
+        } catch (err) {
+          this.logger.error({
+            event: 'FAILED TO LOAD COMMAND',
+            file: commandFile,
+            err,
+          });
         }
       }
     }
@@ -200,10 +206,14 @@ class CommandManager {
     }
     try {
       await commandToExecute.handle(bot, msg, suffix);
-      const logger = this.monochrome_.getLogger();
-      if (!logger.closed) {
-        logger.logInputReaction(LOGGER_TITLE, msg, '', true);
-      }
+      this.logger.info({
+        event: 'COMMAND EXECUTED',
+        command: commandToExecute.uniqueId,
+        message: msg,
+        guild: msg.channel.guild,
+        channel: msg.channel,
+        user: msg.author,
+      });
     } catch (err) {
       handleCommandError(msg, err, this.monochrome_);
     }

@@ -18,10 +18,12 @@ class MessageProcessorManager {
     this.monochrome_ = monochrome;
     this.processors_ = [];
     this.directory_ = directory;
+    this.logger = monochrome.getLogger().child({
+      component: 'Monochrome::MessageProcessorManager',
+    });
   }
 
   load() {
-    const loggerTitle = 'MESSAGE MANAGER';
     this.processors_ = [];
 
     if (this.directory_) {
@@ -32,14 +34,16 @@ class MessageProcessorManager {
           let processor = new MessageProcessor(processorInformation, this.monochrome_);
           this.processors_.push(processor);
         } catch (err) {
-          this.monochrome_.getLogger().logFailure(loggerTitle, `Failed to load message processor from file: ${processorFile}`, err);
+          this.logger.error({
+            event: 'FAILED TO LOAD MESSAGE PROCESSOR',
+            file: processorFile,
+          });
         }
       }
     }
   }
 
   processInput(bot, msg) {
-    const loggerTitle = 'MESSAGE';
     for (let processor of this.processors_) {
       try {
         let result = processor.handle(bot, msg);
@@ -48,8 +52,15 @@ class MessageProcessorManager {
             result.then(() => {}).catch(err => handleError(msg, err, this.monochrome_));
           }
 
-          if (!processor.suppressLogging) {
-            this.monochrome_.getLogger().logInputReaction(loggerTitle, msg, processor.name, true);
+          if (processor.logLevel !== 'none') {
+            this.logger[processor.logLevel]({
+              event: 'MESSAGE HANDLED',
+              messageHandler: processor.name,
+              msg,
+              user: msg.author,
+              guild: msg.channel.guild,
+              channel: msg.channel,
+            });
           }
 
           return true;

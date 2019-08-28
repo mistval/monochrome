@@ -350,12 +350,19 @@ class Settings {
   constructor(persistence, logger, settingsFilePath) {
     this.persistence_ = persistence;
     this.settingsTree_ = [];
+    this.logger = logger.child({
+      component: 'Monochrome::Settings',
+    });
 
     if (settingsFilePath) {
       try {
         this.settingsTree_ = reload(settingsFilePath);
       } catch (err) {
-        logger.logFailure('SETTINGS', `Failed to load settings from ${settingsFilePath}`, err);
+        this.logger.error({
+          event: 'FAILED TO LOAD SETTINGS FILE',
+          file: settingsFilePath,
+          err,
+        });
       }
     }
 
