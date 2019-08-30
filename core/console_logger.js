@@ -26,7 +26,7 @@ function buildLogString(header, eventName, detail, component, guild, channel, us
   const subDetailPart = detail ? ` (${chalk.magenta(detail)})` : '';
   const contextPart = createContextString(guild, channel, user);
   const messagePart = message ? ` ${message.content}` : '';
-  return `${timeStamp} ${header} ${componentPart} ${chalk.underline(eventName)}${contextPart}${messagePart}${subDetailPart}`;
+  return `${timeStamp} ${header}${componentPart} ${chalk.underline(eventName)}${contextPart}${messagePart}${subDetailPart}`;
 }
 
 class ConsoleLogger {
