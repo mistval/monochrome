@@ -1,7 +1,7 @@
 const reload = require('require-reload')(require);
 const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');
-const PublicError = require('./../core/public_error.js');
+const PublicError = require('./public_error.js');
 
 function handleError(msg, err, monochrome) {
   const loggerTitle = 'MESSAGE';
