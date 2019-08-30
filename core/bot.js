@@ -10,7 +10,7 @@ const CommandManager = require('./command_manager.js');
 const assert = require('assert');
 const onExit = require('async-on-exit');
 const TrackerStatsUpdater = require('./tracker_stats_updater.js');
-const NoopLogger = require('./noop_logger.js');
+const ConsoleLogger = require('./console_logger.js');
 const loggerSerializers = require('./logger_serializers.js');
 
 const USER_MENTION_REPLACE_REGEX = /<@user>/g;
@@ -65,7 +65,7 @@ function validateAndSanitizeOptions(options) {
   }
 
   if (options.logger === undefined) {
-    options.logger = new NoopLogger();
+    options.logger = new ConsoleLogger();
   }
 
   return options;
@@ -402,7 +402,7 @@ class Monochrome {
     });
 
     this.bot_.on('shardDisconnect', (err, shardId) => {
-      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err })
+      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err, msg: `Shard ${shardId} disconnected` });
     });
 
     this.bot_.on('shardResume', (shardId) => {
@@ -414,7 +414,7 @@ class Monochrome {
     });
 
     this.bot_.on('shardReady', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD READY', shardId });
+      this.coreLogger.info({ event: 'SHARD READY', shardId, msg: `Shard ${shardId} connected` });
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
