@@ -184,7 +184,10 @@ class Monochrome {
       options.botsOnDiscordDotXyzAPIKey,
     );
 
-    this.logger.addSerializers(loggerSerializers);
+    if (this.logger.addSerializers) {
+      this.logger.addSerializers(loggerSerializers);
+    }
+
     this.coreLogger = this.logger.child({
       component: 'Monochrome::Core',
     });

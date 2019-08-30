@@ -7,6 +7,8 @@
     "test": "test"
   },
   "scripts": {
+    "lint": "npx eslint .",
+    "lintfix": "npx eslint . --fix",
     "test": "nyc mocha",
     "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md"
   },
@@ -42,6 +44,9 @@
   },
   "devDependencies": {
     "docdash": "^1.0.0",
+    "eslint": "^6.2.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "jsdoc": "^3.6.3"
   }
 }

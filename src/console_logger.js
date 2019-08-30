@@ -1,8 +1,11 @@
 const chalk = require('chalk');
 const timestamp = require('time-stamp');
 
+// It's the console logger. It needs to use the console.
+/* eslint no-console: off */
+
 function createContextString(guild, channel, user) {
-  let parts = [];
+  const parts = [];
   if (guild) {
     parts.push(chalk.yellow(guild.name));
   }
@@ -34,50 +37,62 @@ class ConsoleLogger {
     this.component = component;
   }
 
-  fatal({ event, msg, err, guild, channel, user, message }) {
+  fatal({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.warn(buildLogString(chalk.yellow.bgRed.bold(' FATAL ERROR '), event, msg, this.component, guild, channel, user, message));
     if (err) {
       console.warn(err);
     }
   }
 
-  error({ event, msg, err, guild, channel, user, message }) {
+  error({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.warn(buildLogString(chalk.yellow.bgRed(' ERROR '), event, msg, this.component, guild, channel, user, message));
     if (err) {
       console.warn(err);
     }
   }
 
-  warn({ event, msg, err, guild, channel, user, message }) {
+  warn({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.log(buildLogString(chalk.black.bgYellow(' WARNING '), event, msg, this.component, guild, channel, user, message));
     if (err) {
-      console.log(err);
+      console.warn(err);
     }
   }
 
-  info({ event, msg, err, guild, channel, user, message }) {
+  info({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.log(buildLogString(chalk.white.bgBlue(' INFO '), event, msg, this.component, guild, channel, user, message));
     if (err) {
-      console.log(err);
+      console.warn(err);
     }
   }
 
-  debug({ event, msg, err, guild, channel, user, message }) {
+  debug({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.log(buildLogString(chalk.black.bgWhite(' DEBUG '), event, msg, this.component, guild, channel, user, message));
     if (err) {
-      console.log(err);
+      console.warn(err);
     }
   }
 
-  trace({ event, msg, err, guild, channel, user, message }) {
+  trace({
+    event, msg, err, guild, channel, user, message,
+  }) {
     console.log(buildLogString(chalk.black.bgWhite(' TRACE '), event, msg, this.component, guild, channel, user, message));
     if (err) {
-      console.log(err);
+      console.warn(err);
     }
   }
 
-  addSerializers() { }
-
+  // Function required by implicit interface contract (with bunyan)
+  // eslint-disable-next-line class-methods-use-this
   child({ component }) {
     return new ConsoleLogger(component);
   }
