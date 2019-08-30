@@ -26,10 +26,34 @@ function createContextString(guild, channel, user) {
 function buildLogString(header, eventName, detail, component, guild, channel, user, message) {
   const timeStamp = timestamp.utc('[MM/DD/YYYY HH:MM:ss]');
   const componentPart = chalk.black.bgWhite(` ${component} `);
-  const subDetailPart = detail ? ` (${chalk.magenta(detail)})` : '';
+  const subDetailPart = detail ? ` ${chalk.magenta(detail)}` : '';
   const contextPart = createContextString(guild, channel, user);
   const messagePart = message ? ` ${message.content}` : '';
-  return `${timeStamp} ${header}${componentPart} ${chalk.underline(eventName)}${contextPart}${messagePart}${subDetailPart}`;
+  const eventNamePart = eventName ? ` ${eventName}` : '';
+  return `${timeStamp} ${header}${componentPart}${eventNamePart}${contextPart}${messagePart}${subDetailPart}`;
+}
+
+function log(component, header, info, logToStderr, errToStderr) {
+  const coercedInfo = {};
+  if (typeof info === 'object') {
+    Object.assign(coercedInfo, info);
+  } else if (typeof info === 'string' || typeof info === 'number' || typeof info === 'boolean') {
+    coercedInfo.msg = info.toString();
+  } else {
+    throw new Error(`Invalid log input: ${info}`);
+  }
+
+  const printLog = logToStderr ? console.warn : console.log;
+  const printError = errToStderr ? console.warn : console.log;
+
+  const {
+    event, msg, guild, channel, user, message, err,
+  } = coercedInfo;
+
+  printLog(buildLogString(header, event, msg, component, guild, channel, user, message));
+  if (err) {
+    printError(err);
+  }
 }
 
 class ConsoleLogger {
@@ -37,58 +61,28 @@ class ConsoleLogger {
     this.component = component;
   }
 
-  fatal({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.warn(buildLogString(chalk.yellow.bgRed.bold(' FATAL ERROR '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  fatal(info) {
+    log(this.component, chalk.yellow.bgRed.bold(' FATAL ERROR '), info, true, true);
   }
 
-  error({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.warn(buildLogString(chalk.yellow.bgRed(' ERROR '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  error(info) {
+    log(this.component, chalk.yellow.bgRed(' ERROR '), info, true, true);
   }
 
-  warn({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.log(buildLogString(chalk.black.bgYellow(' WARNING '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  warn(info) {
+    log(this.component, chalk.black.bgYellow(' WARNING '), info, false, false);
   }
 
-  info({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.log(buildLogString(chalk.white.bgBlue(' INFO '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  info(info) {
+    log(this.component, chalk.white.bgBlue(' INFO '), info, false, false);
   }
 
-  debug({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.log(buildLogString(chalk.black.bgWhite(' DEBUG '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  debug(info) {
+    log(this.component, chalk.black.bgHex('#DEADED')(' DEBUG '), info, false, false);
   }
 
-  trace({
-    event, msg, err, guild, channel, user, message,
-  }) {
-    console.log(buildLogString(chalk.black.bgWhite(' TRACE '), event, msg, this.component, guild, channel, user, message));
-    if (err) {
-      console.warn(err);
-    }
+  trace(info) {
+    log(this.component, chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
   }
 
   // Function required by implicit interface contract (with bunyan)

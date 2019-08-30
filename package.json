@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "npx eslint .",
     "lintfix": "npx eslint . --fix",
-    "test": "nyc mocha",
+    "test": "npx mocha",
     "test_travis": "npm run lint",
     "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md"
   },
@@ -44,10 +44,12 @@
     "time-stamp": "^2.2.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "docdash": "^1.0.0",
     "eslint": "^6.2.2",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
-    "jsdoc": "^3.6.3"
+    "jsdoc": "^3.6.3",
+    "mocha": "^6.2.0"
   }
 }
