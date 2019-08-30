@@ -33,62 +33,64 @@ function buildLogString(header, eventName, detail, component, guild, channel, us
   return `${timeStamp} ${header}${componentPart}${eventNamePart}${contextPart}${messagePart}${subDetailPart}`;
 }
 
-function log(component, header, info, logToStderr, errToStderr) {
-  const coercedInfo = {};
-  if (typeof info === 'object') {
-    Object.assign(coercedInfo, info);
-  } else if (typeof info === 'string' || typeof info === 'number' || typeof info === 'boolean') {
-    coercedInfo.msg = info.toString();
-  } else {
-    throw new Error(`Invalid log input: ${info}`);
-  }
-
-  const printLog = logToStderr ? console.warn : console.log;
-  const printError = errToStderr ? console.warn : console.log;
-
-  const {
-    event, msg, guild, channel, user, message, err,
-  } = coercedInfo;
-
-  printLog(buildLogString(header, event, msg, component, guild, channel, user, message));
-  if (err) {
-    printError(err);
-  }
-}
-
 class ConsoleLogger {
-  constructor(component) {
+  constructor(component, logFunction = console.log, warnFunction = console.warn) {
     this.component = component;
+    this.logFunction = logFunction;
+    this.warnFunction = warnFunction;
+  }
+
+  log(header, info, logToStderr, errToStderr) {
+    const coercedInfo = {};
+    if (typeof info === 'object') {
+      Object.assign(coercedInfo, info);
+    } else if (typeof info === 'string' || typeof info === 'number' || typeof info === 'boolean') {
+      coercedInfo.msg = info.toString();
+    } else {
+      throw new Error(`Invalid log input: ${info}`);
+    }
+
+    const printLog = logToStderr ? this.warnFunction : this.logFunction;
+    const printError = errToStderr ? this.warnFunction : this.logFunction;
+
+    const {
+      event, msg, guild, channel, user, message, err,
+    } = coercedInfo;
+
+    printLog(buildLogString(header, event, msg, this.component, guild, channel, user, message));
+    if (err) {
+      printError(err);
+    }
   }
 
   fatal(info) {
-    log(this.component, chalk.yellow.bgRed.bold(' FATAL ERROR '), info, true, true);
+    this.log(chalk.yellow.bgRed.bold(' FATAL ERROR '), info, true, true);
   }
 
   error(info) {
-    log(this.component, chalk.yellow.bgRed(' ERROR '), info, true, true);
+    this.log(chalk.yellow.bgRed(' ERROR '), info, true, true);
   }
 
   warn(info) {
-    log(this.component, chalk.black.bgYellow(' WARNING '), info, false, false);
+    this.log(chalk.black.bgYellow(' WARNING '), info, false, false);
   }
 
   info(info) {
-    log(this.component, chalk.white.bgBlue(' INFO '), info, false, false);
+    this.log(chalk.white.bgBlue(' INFO '), info, false, false);
   }
 
   debug(info) {
-    log(this.component, chalk.black.bgHex('#DEADED')(' DEBUG '), info, false, false);
+    this.log(chalk.black.bgHex('#DEADED')(' DEBUG '), info, false, false);
   }
 
   trace(info) {
-    log(this.component, chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
+    this.log(chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
   }
 
   // Function required by implicit interface contract (with bunyan)
   // eslint-disable-next-line class-methods-use-this
   child({ component }) {
-    return new ConsoleLogger(component);
+    return new ConsoleLogger(component, this.logFunction, this.warnFunction);
   }
 }
 
