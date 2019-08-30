@@ -27,7 +27,7 @@ function assertThrows(logFn, info) {
 }
 
 function assertDoesNotThrow(logFn, info) {
-  it(`Does not throw input: ${JSON.stringify(info)}`, () => {
+  it(`Does not throw on input: ${JSON.stringify(info)}`, () => {
     const consoleLogger = new ConsoleLogger('Test::Core', noop, noop);
     assert.doesNotThrow(() => consoleLogger[logFn](info));
   });
