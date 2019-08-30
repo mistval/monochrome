@@ -11,7 +11,7 @@
     "lintfix": "npx eslint . --fix",
     "test": "nyc mocha",
     "test_travis": "npm run lint",
-    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md",
+    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md"
   },
   "repository": {
     "type": "git",
