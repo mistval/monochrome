@@ -12,6 +12,8 @@ function tryConvertFromPermissionError(error, missingPermissionsPublicMessage) {
       error,
     });
   }
+
+  return undefined;
 }
 
 function tryConvertToFulfillmentError(error, missingPermissionsPublicMessage) {
@@ -28,7 +30,7 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
     const missingPermissionsErrorMessage = monochrome.getMissingPermissionsErrorMessage();
     const genericErrorMessage = monochrome.getGenericErrorMessage();
 
-    let fulfillmentError = tryConvertToFulfillmentError(error, missingPermissionsErrorMessage);
+    const fulfillmentError = tryConvertToFulfillmentError(error, missingPermissionsErrorMessage);
     let publicMessage;
     let internalError;
     let logDescription;
