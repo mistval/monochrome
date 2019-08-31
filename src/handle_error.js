@@ -1,11 +1,10 @@
 const FulfillmentError = require('./fulfillment_error.js');
 const sendAndDelete = require('./util/send_and_delete.js');
 
-const MISSING_PERMS_DISCORD_ERROR_SUBSTR = 'Missing Permissions';
 const DELETION_TIME_MS = 10000;
 
 function tryConvertFromPermissionError(error, missingPermissionsPublicMessage) {
-  if (error.message.indexOf(MISSING_PERMS_DISCORD_ERROR_SUBSTR) !== -1) {
+  if (error.code === 50001 || error.code === 50013) {
     return new FulfillmentError({
       publicMessage: missingPermissionsPublicMessage,
       logDescription: 'Insufficient privileges',
@@ -38,13 +37,13 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
     let logLevel;
 
     if (fulfillmentError) {
-      publicMessage = silent ? fulfillmentError.publicMessage : '';
+      publicMessage = silent ? '' : fulfillmentError.publicMessage;
       internalError = fulfillmentError.error;
       logDescription = fulfillmentError.logDescription || 'Error';
       autoDeletePublicMessage = fulfillmentError.autoDeletePublicMessage || false;
-      logLevel = fulfillmentError.logLevel || 'warn';
+      logLevel = fulfillmentError.logLevel;
     } else {
-      publicMessage = silent ? genericErrorMessage : '';
+      publicMessage = silent ? '' : genericErrorMessage;
       internalError = error;
       logDescription = 'Error';
       autoDeletePublicMessage = false;
@@ -59,14 +58,22 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
     });
 
     if (publicMessage) {
-      if (autoDeletePublicMessage) {
-        await sendAndDelete(msg, publicMessage, logger, DELETION_TIME_MS);
-      } else {
-        await msg.channel.createMessage(publicMessage, null, msg);
+      try {
+        if (autoDeletePublicMessage) {
+          await sendAndDelete(msg, publicMessage, logger, DELETION_TIME_MS);
+        } else {
+          await msg.channel.createMessage(publicMessage, null, msg);
+        }
+      } catch (err) {
+        logger.warn({
+          event: 'ERROR SENDING ERROR',
+          err,
+          message: msg,
+        });
       }
     }
   } catch (err) {
-    logger.fatal({
+    logger.error({
       event: 'ERROR HANDLING ERROR',
       err,
       message: msg,

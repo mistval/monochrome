@@ -32,7 +32,7 @@ function keyForServerId(serverId) {
  */
 class Persistence {
   constructor(defaultPrefixes, logger, persistenceDirectory) {
-    this.storage = new FPersist(persistenceDirectory);
+    this.storage = new FPersist(persistenceDirectory || process.cwd());
     this.defaultPrefixes_ = defaultPrefixes;
     this.prefixesForServerId_ = {};
     this.logger = logger.child({
