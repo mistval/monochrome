@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+const Chalk = require('chalk');
 const timestamp = require('time-stamp');
 
 // It's the console logger. It needs to use the console.
@@ -7,13 +7,13 @@ const timestamp = require('time-stamp');
 function createContextString(guild, channel, user) {
   const parts = [];
   if (guild) {
-    parts.push(chalk.yellow(guild.name));
+    parts.push(Chalk.yellow(guild.name));
   }
   if (channel && channel.name) {
-    parts.push(chalk.yellow(channel.name));
+    parts.push(Chalk.yellow(channel.name));
   }
   if (user) {
-    parts.push(chalk.blue(`${user.username}#${user.discriminator}`));
+    parts.push(Chalk.blue(`${user.username}#${user.discriminator}`));
   }
 
   if (parts.length === 0) {
@@ -25,11 +25,11 @@ function createContextString(guild, channel, user) {
 
 function buildLogString(header, eventName, detail, component, guild, channel, user, message) {
   const timeStamp = timestamp.utc('[MM/DD/YYYY HH:mm:ss]');
-  const componentPart = chalk.black.bgWhite(` ${component} `);
-  const subDetailPart = detail ? ` ${chalk.magenta(detail)}` : '';
+  const componentPart = component ? Chalk.black.bgWhite(` ${component} `) : '';
+  const subDetailPart = detail ? ` ${Chalk.magenta(detail)}` : '';
   const contextPart = createContextString(guild, channel, user);
   const messagePart = message ? ` ${message.content}` : '';
-  const eventNamePart = eventName ? ` ${chalk.underline(eventName)}` : '';
+  const eventNamePart = eventName ? ` ${Chalk.underline(eventName)}` : '';
   return `${timeStamp} ${header}${componentPart}${eventNamePart}${contextPart}${messagePart}${subDetailPart}`;
 }
 
@@ -67,32 +67,32 @@ class ConsoleLogger {
 
     printLog(buildLogString(header, event, msg, this.component, guild, channel, user, message));
     if (err) {
-      printError(chalk.red(err.stack));
+      printError(Chalk.red(err.stack));
     }
   }
 
   fatal(info) {
-    this.log(chalk.yellow.bgRed.bold(' FATAL ERROR '), info, true, true);
+    this.log(Chalk.yellow.bgRed.bold(' FATAL ERROR '), info, true, true);
   }
 
   error(info) {
-    this.log(chalk.yellow.bgRed(' ERROR '), info, true, true);
+    this.log(Chalk.yellow.bgRed(' ERROR '), info, true, true);
   }
 
   warn(info) {
-    this.log(chalk.black.bgYellow(' WARNING '), info, false, false);
+    this.log(Chalk.black.bgYellow(' WARNING '), info, false, false);
   }
 
   info(info) {
-    this.log(chalk.white.bgBlue(' INFO '), info, false, false);
+    this.log(Chalk.white.bgBlue(' INFO '), info, false, false);
   }
 
   debug(info) {
-    this.log(chalk.black.bgHex('#DEADED')(' DEBUG '), info, false, false);
+    this.log(Chalk.black.bgHex('#DEADED')(' DEBUG '), info, false, false);
   }
 
   trace(info) {
-    this.log(chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
+    this.log(Chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
   }
 
   // Function required by implicit interface contract (with bunyan)
