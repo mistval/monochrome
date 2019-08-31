@@ -1,6 +1,15 @@
 const Chalk = require('chalk');
 const timestamp = require('time-stamp');
 
+const functionForBunyanIntLogLevel = {
+  60: 'fatal',
+  50: 'error',
+  40: 'warn',
+  30: 'info',
+  20: 'debug',
+  10: 'trace',
+};
+
 // It's the console logger. It needs to use the console.
 /* eslint no-console: off */
 
@@ -99,6 +108,27 @@ class ConsoleLogger {
   // eslint-disable-next-line class-methods-use-this
   child({ component }) {
     return new ConsoleLogger(component, this.logFunction, this.warnFunction);
+  }
+
+  streamWrite(data) {
+    const logFn = functionForBunyanIntLogLevel[data.level];
+    if (!logFn) {
+      this.warnFunction('Unknown log level:');
+      this.warnFunction(data);
+      return;
+    }
+
+    this[logFn](data);
+  }
+
+  createStream(logLevel) {
+    return {
+      level: logLevel || 'trace',
+      type: 'raw',
+      stream: {
+        write: this.streamWrite.bind(this),
+      },
+    };
   }
 }
 

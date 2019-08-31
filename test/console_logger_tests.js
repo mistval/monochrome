@@ -107,3 +107,11 @@ describe('Child logger', function() {
     childLogger.error('Test');
   });
 });
+
+describe('Stream interface', function() {
+  it('Does not throw', function() {
+    const logger = new ConsoleLogger('Test', noop, noop);
+    const stream = logger.createStream();
+    stream.stream.write({ test: 'test' });
+  });
+});

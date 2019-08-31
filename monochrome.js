@@ -6,3 +6,4 @@ module.exports.SettingsConverters = require('./src/settings_converters.js');
 module.exports.SettingsValidators = require('./src/settings_validators.js');
 module.exports.erisVersion = require('eris/package.json').version;
 module.exports.Permissions = require('./src/permissions.js').discordApiStringForPermission;
+module.exports.ConsoleLogger = require('./src/console_logger.js');
