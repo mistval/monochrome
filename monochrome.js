@@ -1,5 +1,5 @@
 module.exports = require('./src/bot.js');
-module.exports.PublicError = require('./src/public_error.js');
+module.exports.FulfillmentError = require('./src/fulfillment_error.js');
 module.exports.NavigationChapter = require('./src/navigation_chapter.js');
 module.exports.Navigation = require('./src/navigation.js');
 module.exports.SettingsConverters = require('./src/settings_converters.js');

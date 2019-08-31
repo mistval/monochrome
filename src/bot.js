@@ -397,7 +397,7 @@ class Monochrome {
     });
 
     this.bot_.on('error', (err, shardId) => {
-      this.coreLogger.error({ event: 'ERROR', shardId, err });
+      this.coreLogger.error({ event: 'ERROR', shardId, err: err.error });
     });
 
     this.bot_.on('disconnect', () => {
@@ -409,7 +409,7 @@ class Monochrome {
     });
 
     this.bot_.on('shardResume', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId });
+      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId, msg: `Shard ${shardId} reconnected` });
     });
 
     this.bot_.on('warn', message => {

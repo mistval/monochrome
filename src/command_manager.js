@@ -1,29 +1,17 @@
 const reload = require('require-reload')(require);
 const Command = require('./command.js');
 const FileSystemUtils = require('./util/file_system_utils.js');
-const PublicError = require('./public_error.js');
 const HelpCommandHelper = require('./help_command_helper.js');
 const Constants = require('./constants.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const assert = require('assert');
+const handleError = require('./handle_error.js');
 
 const COMMAND_CATEGORY_NAME = 'Enabled commands';
 const DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_NAME = 'Disabled commands fail silently';
 const PREFIXES_SETTING_NAME = 'Command prefixes';
 const PREFIXES_SETTING_UNIQUE_ID = 'prefixes';
-
-function handleCommandError(msg, err, monochrome) {
-  let errorToOutput = err;
-  if (!errorToOutput.output) {
-    errorToOutput = PublicError.createInsufficientPrivilegeError(err);
-    if (!errorToOutput) {
-      errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
-    }
-  }
-
-  return errorToOutput.output('COMMAND', msg, false, monochrome);
-}
 
 function getDuplicateAlias(command, otherCommands) {
   for (let alias of command.aliases) {
@@ -210,12 +198,9 @@ class CommandManager {
         event: 'COMMAND EXECUTED',
         command: commandToExecute.uniqueId,
         message: msg,
-        guild: msg.channel.guild,
-        channel: msg.channel,
-        user: msg.author,
       });
     } catch (err) {
-      handleCommandError(msg, err, this.monochrome_);
+      handleError(this.logger, 'COMMAND ERROR', this.monochrome_, msg, err, false);
     }
 
     return commandToExecute;

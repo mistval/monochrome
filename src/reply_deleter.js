@@ -29,17 +29,11 @@ async function handleMessageDeleted(deletedMsg, logger) {
       logger.info({
         event: 'DELETED MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
         message: deletedMsg,
-        guild: deletedMsg.channel.guild,
-        channel: deletedMsg.channel,
-        user: deletedMsg.author,
       });
     } catch (err) {
       logger.warn({
         event: 'ERROR DELETING MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
         message: deletedMsg,
-        guild: deletedMsg.channel.guild,
-        channel: deletedMsg.channel,
-        user: deletedMsg.author,
       });
     }
   }
@@ -53,17 +47,11 @@ async function handleReaction(msg, userId, emoji, logger) {
       logger.info({
         event: 'DELETED MESSAGE IN RESPONSE TO USER ❌ REACTION',
         message: deletedMsg,
-        guild: deletedMsg.channel.guild,
-        channel: deletedMsg.channel,
-        user: deletedMsg.author,
       });
     } catch (err) {
       logger.warn({
         event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER ❌ REACTION',
         message: deletedMsg,
-        guild: deletedMsg.channel.guild,
-        channel: deletedMsg.channel,
-        user: deletedMsg.author,
       });
     }
   }

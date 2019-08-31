@@ -1,17 +1,7 @@
 const reload = require('require-reload')(require);
 const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');
-const PublicError = require('./public_error.js');
-
-function handleError(msg, err, monochrome) {
-  const loggerTitle = 'MESSAGE';
-  let errorToOutput = err;
-  if (!errorToOutput.output) {
-    errorToOutput = PublicError.createWithGenericPublicMessage(false, '', err);
-  }
-
-  errorToOutput.output(loggerTitle, msg, true, monochrome);
-}
+const handleError = require('./handle_error.js');
 
 class MessageProcessorManager {
   constructor(directory, monochrome) {
@@ -66,7 +56,7 @@ class MessageProcessorManager {
           return true;
         }
       } catch (err) {
-        handleError(msg, err, this.monochrome_);
+        handleError(this.logger, 'MESSAGE PROCESSOR ERROR', this.monochrome_, msg, err, true);
         return true;
       }
     }

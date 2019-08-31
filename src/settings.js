@@ -361,6 +361,7 @@ class Settings {
         this.logger.error({
           event: 'FAILED TO LOAD SETTINGS FILE',
           file: settingsFilePath,
+          msg: settingsFilePath,
           err,
         });
       }

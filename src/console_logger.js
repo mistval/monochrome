@@ -24,12 +24,12 @@ function createContextString(guild, channel, user) {
 }
 
 function buildLogString(header, eventName, detail, component, guild, channel, user, message) {
-  const timeStamp = timestamp.utc('[MM/DD/YYYY HH:MM:ss]');
+  const timeStamp = timestamp.utc('[MM/DD/YYYY HH:mm:ss]');
   const componentPart = chalk.black.bgWhite(` ${component} `);
   const subDetailPart = detail ? ` ${chalk.magenta(detail)}` : '';
   const contextPart = createContextString(guild, channel, user);
   const messagePart = message ? ` ${message.content}` : '';
-  const eventNamePart = eventName ? ` ${eventName}` : '';
+  const eventNamePart = eventName ? ` ${chalk.underline(eventName)}` : '';
   return `${timeStamp} ${header}${componentPart}${eventNamePart}${contextPart}${messagePart}${subDetailPart}`;
 }
 
@@ -50,6 +50,14 @@ class ConsoleLogger {
       throw new Error(`Invalid log input: ${info}`);
     }
 
+    // If guild, channel, and/or user are not specified at the top level in info,
+    // get them from the message.
+    if (coercedInfo.message) {
+      coercedInfo.guild = coercedInfo.guild || coercedInfo.message.channel.guild;
+      coercedInfo.channel = coercedInfo.channel || coercedInfo.message.channel;
+      coercedInfo.user = coercedInfo.user || coercedInfo.message.author;
+    }
+
     const printLog = logToStderr ? this.warnFunction : this.logFunction;
     const printError = errToStderr ? this.warnFunction : this.logFunction;
 
@@ -59,7 +67,7 @@ class ConsoleLogger {
 
     printLog(buildLogString(header, event, msg, this.component, guild, channel, user, message));
     if (err) {
-      printError(err);
+      printError(chalk.red(err.stack));
     }
   }
 

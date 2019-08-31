@@ -1,4 +1,4 @@
-const PublicError = require('./public_error.js');
+const FulfillmentError = require('./fulfillment_error.js');
 
 const BLACKLIST_PERSISTENCE_KEY = 'blacklist';
 
@@ -53,7 +53,10 @@ class Blacklist {
   async blacklistUser(userId, reason) {
     await this.ready;
     if (this.botAdminIds_.indexOf(userId) !== -1) {
-      throw PublicError.createWithCustomPublicMessage(`<@${userId}> is a bot admin and can't be blacklisted.`, true, 'User is a bot admin');
+      throw new FulfillmentError({
+        publicMessage: `<@${userId}> is a bot admin and can't be blacklisted.`,
+        logDescription: 'User is a bot admin',
+      });
     }
 
     this.reasonForUserId_[userId] = reason;

@@ -1,4 +1,4 @@
-const PublicError = require('./public_error.js');
+const FulfillmentError = require('./fulfillment_error.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const Constants = require('./constants.js');
@@ -209,13 +209,21 @@ class Command {
 
   async handle(bot, msg, suffix) {
     if (this.usersCoolingDown_.indexOf(msg.author.id) !== -1) {
-      let publicErrorMessage = `${msg.author.username}, that command has a ${this.cooldown_} second cooldown.`;
-      throw PublicError.createWithCustomPublicMessage(publicErrorMessage, true, 'Not cooled down');
+      const publicMessage = `${msg.author.username}, that command has a ${this.cooldown_} second cooldown.`;
+      throw new FulfillmentError({
+        publicMessage,
+        autoDeletePublicMessage: true,
+        logDescription: 'Not cooled down',
+      });
     }
 
     let isBotAdmin = this.monochrome_.getBotAdminIds().indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
-      throw PublicError.createWithCustomPublicMessage('Only a bot admin can use that command.', true, 'User is not a bot admin');
+      throw new FulfillmentError({
+        publicMessage: 'Only a bot admin can use that command.',
+        autoDeletePublicMessage: true,
+        logDescription: 'User is not a bot admin',
+      });
     }
 
     if (msg.channel.permissionsOf) {
@@ -223,7 +231,11 @@ class Command {
       const missingBotPermissions = this.requiredBotPermissions_.filter(perm => !botPermissions[perm]);
       if (missingBotPermissions.length > 0) {
         const requiredPermissionsString = missingBotPermissions.map(perm => userStringForPermission[perm]).join(', ');
-        throw PublicError.createWithCustomPublicMessage(`I do not have the permissions I need to respond to that command. I need: **${requiredPermissionsString}**. A server admin can give me the permissions I need in the server settings.`, false, 'Missing permissions');
+        throw new FulfillmentError({
+          publicMessage: `I do not have the permissions I need to respond to that command. I need: **${requiredPermissionsString}**. A server admin can give me the permissions I need in the server settings.`,
+          autoDeletePublicMessage: false,
+          logDescription: 'Missing permissions',
+        });
       }
     }
 
@@ -246,7 +258,11 @@ class Command {
       if (!settingsMap[Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID]) {
         publicMessage = 'That command is disabled in this channel.';
       }
-      throw PublicError.createWithCustomPublicMessage(publicMessage, true, 'Command disabled');
+      throw new FulfillmentError({
+        publicMessage,
+        autoDeletePublicMessage: true,
+        logDescription: 'Command disabled',
+      });
     }
   }
 

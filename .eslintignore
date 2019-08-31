@@ -2,3 +2,6 @@ src/**
 docs/**
 test
 !src/console_logger.js
+!src/fulfillment_error.js
+!src/error_handler.js
+!src/util/send_and_delete.js
