@@ -4,3 +4,4 @@ server_settings.js
 .nyc_output/
 logs/
 persistence/
+.nyc_output

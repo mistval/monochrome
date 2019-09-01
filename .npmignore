@@ -2,3 +2,7 @@ documentation/
 test/
 .nyc-output/
 docs/
+.eslintignore
+.eslintrc.js
+.jsdoc.json
+.travis.yml
