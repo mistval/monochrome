@@ -32,9 +32,13 @@ function tryConvertToFulfillmentError(error, monochrome) {
     return error;
   }
 
-  const fulfillmentError =
-    tryConvertFromPermissionError(error, monochrome.getMissingPermissionsErrorMessage())
-    || tryConvertFromDiscordInternalError(error, monochrome.getDiscordInternalErrorMessage());
+  const fulfillmentError = tryConvertFromPermissionError(
+    error,
+    monochrome.getMissingPermissionsErrorMessage(),
+  ) || tryConvertFromDiscordInternalError(
+    error,
+    monochrome.getDiscordInternalErrorMessage(),
+  );
 
   return fulfillmentError;
 }
