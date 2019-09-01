@@ -1,6 +1,5 @@
 const sinon = require('sinon');
 const handleError = require('./../src/handle_error.js');
-const assert = require('chai').assert;
 const ConsoleLogger = require('./../src/console_logger.js');
 const FulfillmentError = require('./../src/fulfillment_error.js');
 const Monochrome = require('./../monochrome.js');
@@ -9,6 +8,7 @@ const monochrome = new Monochrome({
   botToken: 'test',
   genericErrorMessage: 'There was an error. Sorry!',
   missingPermissionsErrorMessage: 'Missing permissions, sorry.',
+  discordInternalErrorMessage: 'Discord is whack right now, sorry.',
 });
 
 function createMockChannel(messageToReturnFromCreateMessage) {
@@ -79,6 +79,17 @@ describe('Command/MP error handler', function() {
     error.code = 50001;
     handleError(logger, 'Test', monochrome, msg, error, false);
     sinon.assert.calledWith(msg.channel.createMessage, monochrome.getMissingPermissionsErrorMessage(), null, msg);
+    sinon.assert.called(logger.warn);
+  });
+  it('Sends Discord internal error message for Discord 500', function() {
+    const logger = createMockLogger();
+    const msg = createMockMessage();
+    const error = new Error();
+    error.code = 500;
+    error.name = 'DiscordHTTPError';
+    handleError(logger, 'Test', monochrome, msg, error, false);
+    sinon.assert.calledWith(msg.channel.createMessage, monochrome.getDiscordInternalErrorMessage(), null, msg);
+    sinon.assert.called(logger.warn);
   });
   it('Auto-deletes sent error message', async function() {
     const clock = sinon.useFakeTimers();

@@ -15,21 +15,35 @@ function tryConvertFromPermissionError(error, missingPermissionsPublicMessage) {
   return undefined;
 }
 
-function tryConvertToFulfillmentError(error, missingPermissionsPublicMessage) {
+function tryConvertFromDiscordInternalError(error, discordInternalErrorMessage) {
+  if (error.code === 500 && error.name === 'DiscordHTTPError') {
+    return new FulfillmentError({
+      publicMessage: discordInternalErrorMessage,
+      logDescription: 'Discord Internal Error',
+      error,
+    });
+  }
+
+  return undefined;
+}
+
+function tryConvertToFulfillmentError(error, monochrome) {
   if (error instanceof FulfillmentError) {
     return error;
   }
 
-  const fulfillmentError = tryConvertFromPermissionError(error, missingPermissionsPublicMessage);
+  const fulfillmentError =
+    tryConvertFromPermissionError(error, monochrome.getMissingPermissionsErrorMessage())
+    || tryConvertFromDiscordInternalError(error, monochrome.getDiscordInternalErrorMessage());
+
   return fulfillmentError;
 }
 
 async function handleError(logger, event, monochrome, msg, error, silent) {
   try {
-    const missingPermissionsErrorMessage = monochrome.getMissingPermissionsErrorMessage();
     const genericErrorMessage = monochrome.getGenericErrorMessage();
 
-    const fulfillmentError = tryConvertToFulfillmentError(error, missingPermissionsErrorMessage);
+    const fulfillmentError = tryConvertToFulfillmentError(error, monochrome);
     let publicMessage;
     let internalError;
     let logDescription;

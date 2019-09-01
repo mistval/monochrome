@@ -132,6 +132,7 @@ const bot = new Monochrome({
   settingsFilePath: path.join(__dirname, 'settings.js'),
   genericErrorMessage: 'Sorry, there was an error with that command. It has been logged and will be addressed.',
   missingPermissionsErrorMessage: 'I do not have permission to reply to that command in this channel.',
+  discordInternalErrorMessage: 'Discord told me something\'s wrong with it. Please try again!',
   genericDMReply: 'Say **<prefix>help** to see my commands!',
   genericMentionReply: 'Hi <@user>, say **<prefix>help** to see my commands!',
   inviteLinkDmReply: 'You can invite me to your server with this link! https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot',
@@ -263,6 +264,10 @@ class Monochrome {
 
   getGenericErrorMessage() {
     return this.options_.genericErrorMessage;
+  }
+
+  getDiscordInternalErrorMessage() {
+    return this.options_.discordInternalErrorMessage;
   }
 
   getMissingPermissionsErrorMessage() {
