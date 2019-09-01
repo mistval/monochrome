@@ -20,8 +20,8 @@ const reload = require('require-reload')(require);
  * @typedef {Object} MessageProcessor~MessageProcessorDefinition
  * @property {string} name - A name for the message processor. This can be anything, and will not be shown to users.
  *   It exists solely for logging purposes.
- * @property {boolean} [suppressLogging=false] - Don't log even when this message processor returns true.
  * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
+ * @property {String} [logLevel='info'] - The level to log events to, or 'none' for no logging. Bunyan levels are valid: 'trace', 'debug', 'info', etc.
  * @example
  * module.exports = {
    name: 'Palindrome',
@@ -60,6 +60,7 @@ class MessageProcessor {
     if (!processorData.name || typeof processorData.name !== typeof '') {
       throw new Error('Processor does not have a name , or it is not a string.');
     }
+
     if (processorData.initialize) {
       processorData.initialize(monochrome);
     }
@@ -67,7 +68,7 @@ class MessageProcessor {
     this.name = processorData.name;
     this.action_ = processorData.action;
     this.monochrome_ = monochrome;
-    this.suppressLogging = !!processorData.suppressLogging;
+    this.logLevel = processorData.logLevel || 'info';
   }
 
   handle(erisBot, msg) {

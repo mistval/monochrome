@@ -45,11 +45,9 @@ class MessageProcessorManager {
           if (processor.logLevel !== 'none') {
             this.logger[processor.logLevel]({
               event: 'MESSAGE HANDLED',
-              messageHandler: processor.name,
-              msg,
-              user: msg.author,
-              guild: msg.channel.guild,
-              channel: msg.channel,
+              processorName: processor.name,
+              message: msg,
+              detail: `[${processor.name}]`,
             });
           }
 

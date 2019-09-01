@@ -196,8 +196,9 @@ class CommandManager {
       await commandToExecute.handle(bot, msg, suffix);
       this.logger.info({
         event: 'COMMAND EXECUTED',
-        command: commandToExecute.uniqueId,
+        commandId: commandToExecute.uniqueId,
         message: msg,
+        detail: `[${commandToExecute.uniqueId}]`,
       });
     } catch (err) {
       handleError(this.logger, 'COMMAND ERROR', this.monochrome_, msg, err, false);
