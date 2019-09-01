@@ -1,4 +1,4 @@
-const reload = require('require-reload')(require);
+const assert = require('assert');
 
 /**
  * This function will be invoked with any message that the bot receives that is not
@@ -18,10 +18,12 @@ const reload = require('require-reload')(require);
  * be a module in your message processors directory (specified as a constructor option to {@link Monochrome}).
  * Each message processor definition file should export one message processor definition.
  * @typedef {Object} MessageProcessor~MessageProcessorDefinition
- * @property {string} name - A name for the message processor. This can be anything, and will not be shown to users.
+ * @property {String} name - A name for the message processor. This can be anything, and will not be shown to users.
  *   It exists solely for logging purposes.
  * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
  * @property {String} [logLevel='info'] - The level to log events to, or 'none' for no logging. Bunyan levels are valid: 'trace', 'debug', 'info', etc.
+ * @property {Number} [priority=0] - The priority of the message processor. Higher number means higher priority. Higher priority message
+ *   processors get a chance to process the message before lower priority message processors.
  * @example
  * module.exports = {
    name: 'Palindrome',
@@ -51,23 +53,16 @@ const reload = require('require-reload')(require);
  */
 class MessageProcessor {
   constructor(processorData, monochrome) {
-    if (!processorData) {
-      throw new Error('No processor data');
-    }
-    if (!processorData.action || typeof processorData.action !== 'function') {
-      throw new Error('Processor does not have an action, or it is not a function.');
-    }
-    if (!processorData.name || typeof processorData.name !== typeof '') {
-      throw new Error('Processor does not have a name , or it is not a string.');
-    }
-
-    if (processorData.initialize) {
-      processorData.initialize(monochrome);
-    }
+    assert(processorData, 'No processor data');
+    assert(typeof processorData.action === 'function', 'Processor does not have an \'action\' or it has one that is not a function.');
+    assert(typeof processorData.name === 'string', 'Processor does not have a \'name\' or it has one that is not a string.');
+    assert(!processorData.priority || typeof processorData.priority === 'number', 'Processor \'priority\' is not a number.');
+    assert(!processorData.logLevel || typeof processorData.logLevel === 'string', 'Processor \'logLevel\' is not a string.')
 
     this.name = processorData.name;
     this.action_ = processorData.action;
     this.monochrome_ = monochrome;
+    this.priority = processorData.priority || 0;
     this.logLevel = processorData.logLevel || 'info';
   }
 

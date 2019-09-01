@@ -30,6 +30,8 @@ class MessageProcessorManager {
           });
         }
       }
+
+      this.processors_.sort((a, b) => b.priority - a.priority);
     }
   }
 

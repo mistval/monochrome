@@ -2,7 +2,6 @@ const Eris = require('eris');
 const Persistence = require('./persistence.js');
 const NavigationManager = require('./navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
-const constants = require('./constants.js');
 const Blacklist = require('./blacklist.js');
 const MessageProcessorManager = require('./message_processor_manager.js');
 const Settings = require('./settings.js');
@@ -13,17 +12,10 @@ const TrackerStatsUpdater = require('./tracker_stats_updater.js');
 const ConsoleLogger = require('./console_logger.js');
 const loggerSerializers = require('./logger_serializers.js');
 
-const USER_MENTION_REPLACE_REGEX = /<@user>/g;
-const USER_NAME_REPLACE_REGEX = /<user>/g;
-
 function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
   bot.editStatus({name: nextStatus});
   queue.push(nextStatus);
-}
-
-function stringContainsInviteLink(str) {
-  return str.indexOf('discord.gg') !== -1;
 }
 
 function validateAndSanitizeOptions(options) {
@@ -133,9 +125,6 @@ const bot = new Monochrome({
   genericErrorMessage: 'Sorry, there was an error with that command. It has been logged and will be addressed.',
   missingPermissionsErrorMessage: 'I do not have permission to reply to that command in this channel.',
   discordInternalErrorMessage: 'Discord told me something\'s wrong with it. Please try again!',
-  genericDMReply: 'Say **<prefix>help** to see my commands!',
-  genericMentionReply: 'Hi <@user>, say **<prefix>help** to see my commands!',
-  inviteLinkDmReply: 'You can invite me to your server with this link! https://discordapp.com/oauth2/authorize?client_id=251239170058616833&scope=bot',
   statusRotation: ['cooking dinner', 'eating dinner', 'cleaning kitchen'],
   statusRotationIntervalInSeconds: 600,
   discordBotsDotOrgAPIKey: require('./my-gitignored-config-file.json').myDiscordBotsDotOrgAPIkey,
@@ -160,9 +149,6 @@ class Monochrome {
    * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel where the command was used. The exception is message processors. Errors caught from message processors will not be broadcast to the channel. This avoids the possibility of your message processor throwing on any input and spamming errors to the channel.
    * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send even plain text messages in the channel). If this is omitted, no message is sent to the channel.
    * @param {string} [options.discordInternalErrorMessage] - If the error handler catches a Discord internal error, the user will be shown this message (if Discord succeeds in sending it...). If this is omitted, no message is sent.
-   * @param {string} [options.genericDMReply] - If a user messages the bot, and that message is not processed by other code (commands, etc) the bot will send this response. If this is omitted, no message is sent.
-   * @param {string} [options.genericMentionReply] - If a user mentions the bot and the mention is the first thing in the message, the bot will respond with this message. If this is omitted, no message is sent.
-   * @param {string} [options.inviteLinkDmReply] - If a user DMs the bot a server invite link, the bot will reply with this message. Sometimes users DM bots with invite links to try to add the bot to a server. So you can use this to have your bot reply with the bot invite link and instructions for adding the bot to a server. If this is omitted, no message is sent.
    * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
    * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
@@ -382,7 +368,7 @@ class Monochrome {
 
     this.connected_ = true;
     this.bot_.on('ready', () => {
-      this.coreLogger.info({ event: 'ALL SHARDS CONNECTED' });
+      this.coreLogger.info({ event: 'ALL SHARDS CONNECTED', detail: 'We have liftoff' });
       this.rotateStatuses_();
       this.trackerStatsUpdater.startUpdateLoop();
     });
@@ -491,12 +477,6 @@ class Monochrome {
       if (this.messageProcessorManager_.processInput(this.bot_, msg)) {
         return;
       }
-      if (this.tryHandleDm_(msg)) {
-        return;
-      }
-      if (this.tryHandleMention_(msg)) {
-        return;
-      }
     } catch (err) {
       this.coreLogger.error({ event: 'TOP LEVEL ERROR', err }, 'Error caught at top level (probably a bug in monochrome)');
     }
@@ -519,108 +499,6 @@ class Monochrome {
           this.coreLogger.error({ event: 'ERROR ROTATING STATUS', err });
         }
       }, intervalInMs);
-    }
-  }
-
-  sendDmOrMentionReply_(toMsg, replyTemplate) {
-    return toMsg.channel.createMessage(this.createDMOrMentionReply_(replyTemplate, toMsg)).catch(err => {
-      this.coreLogger.error({
-        event: 'ERROR REPLYING TO DM OR MENTION',
-        err,
-        message: toMsg,
-        guild: toMsg.channel.guild,
-        channel: toMsg.channel,
-        user: toMsg.author,
-      });
-    });
-  }
-
-  tryHandleDm_(msg) {
-    try {
-      if (!msg.channel.guild) {
-        this.coreLogger.info({ event: 'DIRECT MESSAGE', message: msg, user: msg.author });
-        if (this.options_.inviteLinkDmReply && stringContainsInviteLink(msg.content)) {
-          this.sendDmOrMentionReply_(msg, this.options_.inviteLinkDmReply);
-        } else if (this.options_.genericDMReply) {
-          this.sendDmOrMentionReply_(msg, this.options_.genericDMReply);
-        }
-        return true;
-      }
-    } catch (err) {
-      this.coreLogger.error({ event: 'ERROR REPLYING TO DM', err, message: msg, user: msg.author });
-    }
-
-    return false;
-  }
-
-  isMention_(msg) {
-    if (!msg.content.startsWith('<')) {
-      return false;
-    }
-
-    const botId = this.bot_.user.id;
-
-    if (msg.content.startsWith(`<@${botId}>`)) {
-      return true;
-    }
-
-    if (msg.content.startsWith(`<@!${botId}>`)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  tryHandleMention_(msg) {
-    if (!this.bot_.user) {
-      return;
-    }
-
-    try {
-      if (this.isMention_(msg) && this.options_.genericMentionReply) {
-        this.sendDmOrMentionReply_(msg, this.options_.genericMentionReply);
-        this.coreLogger.info({
-          event: 'MENTION',
-          message: msg,
-          user: msg.user,
-          guild: msg.channel.guild,
-          channel: msg.channel,
-        });
-
-        return true;
-      }
-    } catch (err) {
-      this.coreLogger.error({
-        event: 'ERROR REPLYING TO MENTION',
-        message: msg,
-        err,
-        user: msg.user,
-        guild: msg.channel.guild,
-        channel: msg.channel,
-      });
-    }
-
-    return false;
-  }
-
-  createDMOrMentionReply_(configReply, msg) {
-    try {
-      let reply = configReply.replace(USER_MENTION_REPLACE_REGEX, msg.author.mention);
-      reply = reply.replace(USER_NAME_REPLACE_REGEX, msg.author.username);
-      const prefix = this.persistence_.getPrimaryPrefixForMessage(msg);
-      reply = reply.replace(constants.PREFIX_REPLACE_REGEX, prefix);
-      return reply;
-    } catch (err) {
-      this.coreLogger.error({
-        event: 'ERROR REPLYING TO DM OR MENTION',
-        err,
-        message: msg,
-        user: msg.author,
-        channel: msg.channel,
-        guild: msg.channel.guild,
-      });
-
-      return this.options_.genericErrorMessage;
     }
   }
 }
