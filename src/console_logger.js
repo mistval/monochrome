@@ -121,7 +121,7 @@ class ConsoleLogger {
     this[logFn](data);
   }
 
-  createStream(logLevel) {
+  stream(logLevel) {
     return {
       level: logLevel || 'trace',
       type: 'raw',
