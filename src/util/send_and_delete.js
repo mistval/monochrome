@@ -6,8 +6,9 @@ async function sendAndDelete(msg, messageToSend, logger, deleteAfterMs) {
         await sentMessage.delete('Auto delete error message');
       } catch (err) {
         logger.warn({
+          event: 'WARNING',
           message: msg,
-          msg: 'Error trying to automatically delete error message',
+          detail: 'Error trying to automatically delete error message',
           err,
         });
       }

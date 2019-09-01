@@ -54,7 +54,7 @@ class ConsoleLogger {
     if (typeof info === 'object') {
       Object.assign(coercedInfo, info);
     } else if (typeof info === 'string' || typeof info === 'number' || typeof info === 'boolean') {
-      coercedInfo.msg = info.toString();
+      coercedInfo.detail = info.toString();
     } else {
       throw new Error(`Invalid log input: ${info}`);
     }
@@ -71,10 +71,10 @@ class ConsoleLogger {
     const printError = errToStderr ? this.warnFunction : this.logFunction;
 
     const {
-      event, msg, guild, channel, user, message, err,
+      event, detail, guild, channel, user, message, err,
     } = coercedInfo;
 
-    printLog(buildLogString(header, event, msg, this.component, guild, channel, user, message));
+    printLog(buildLogString(header, event, detail, this.component, guild, channel, user, message));
     if (err) {
       printError(Chalk.red(err.stack));
     }

@@ -405,11 +405,11 @@ class Monochrome {
     });
 
     this.bot_.on('shardDisconnect', (err, shardId) => {
-      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err, msg: `Shard ${shardId} disconnected` });
+      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err, detail: `Shard ${shardId} disconnected` });
     });
 
     this.bot_.on('shardResume', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId, msg: `Shard ${shardId} reconnected` });
+      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId, detail: `Shard ${shardId} reconnected` });
     });
 
     this.bot_.on('warn', message => {
@@ -417,7 +417,7 @@ class Monochrome {
     });
 
     this.bot_.on('shardReady', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD READY', shardId, msg: `Shard ${shardId} connected` });
+      this.coreLogger.info({ event: 'SHARD READY', shardId, detail: `Shard ${shardId} connected` });
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {

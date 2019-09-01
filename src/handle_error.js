@@ -53,7 +53,7 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
     logger[logLevel]({
       event,
       err: internalError,
-      msg: logDescription,
+      detail: logDescription,
       message: msg,
     });
 
