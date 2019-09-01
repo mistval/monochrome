@@ -1,8 +1,9 @@
-module.exports = require('./core/bot.js');
-module.exports.PublicError = require('./core/public_error.js');
-module.exports.NavigationChapter = require('./core/navigation_chapter.js');
-module.exports.Navigation = require('./core/navigation.js');
-module.exports.SettingsConverters = require('./core/settings_converters.js');
-module.exports.SettingsValidators = require('./core/settings_validators.js');
+module.exports = require('./src/bot.js');
+module.exports.FulfillmentError = require('./src/fulfillment_error.js');
+module.exports.NavigationChapter = require('./src/navigation_chapter.js');
+module.exports.Navigation = require('./src/navigation.js');
+module.exports.SettingsConverters = require('./src/settings_converters.js');
+module.exports.SettingsValidators = require('./src/settings_validators.js');
 module.exports.erisVersion = require('eris/package.json').version;
-module.exports.Permissions = require('./core/permissions.js').discordApiStringForPermission;
+module.exports.Permissions = require('./src/permissions.js').discordApiStringForPermission;
+module.exports.ConsoleLogger = require('./src/console_logger.js');
