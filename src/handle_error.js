@@ -19,7 +19,7 @@ function tryConvertFromDiscordInternalError(error, discordInternalErrorMessage) 
   if (error.code === 500 && error.name === 'DiscordHTTPError') {
     return new FulfillmentError({
       publicMessage: discordInternalErrorMessage,
-      logDescription: 'Discord Internal Error',
+      logDescription: 'Discord internal error',
       error,
     });
   }
