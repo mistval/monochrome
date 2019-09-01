@@ -131,7 +131,7 @@ class CommandManager {
         } catch (err) {
           this.logger.error({
             event: 'FAILED TO LOAD COMMAND',
-            file: commandFile,
+            detail: commandFile,
             err,
           });
         }

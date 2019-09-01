@@ -397,7 +397,7 @@ class Monochrome {
     });
 
     this.bot_.on('error', (err, shardId) => {
-      this.coreLogger.error({ event: 'ERROR', shardId, err: err.error });
+      this.coreLogger.error({ event: 'ERROR', shardId, err: err.error || err });
     });
 
     this.bot_.on('disconnect', () => {
