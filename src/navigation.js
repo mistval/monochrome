@@ -8,7 +8,7 @@ async function sendReactions(msg, reactions, logger) {
     try {
       await msg.channel.addMessageReaction(msg.id, reaction);
     } catch (err) {
-      logger.error({
+      logger.warn({
         event: 'FAILED TO ADD REACTION BUTTONS',
         err,
       });
