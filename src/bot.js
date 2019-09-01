@@ -384,7 +384,7 @@ class Monochrome {
           this.coreLogger.info({ event: 'LEAVING BLACKLISTED GUILD', guild });
         }
       }).catch(err => {
-        this.coreLogger.error({ event: 'LEAVING BLACKLISTED GUILD', guild, err });
+        this.coreLogger.error({ event: 'ERROR LEAVING BLACKLISTED GUILD', guild, err });
       });
     });
 

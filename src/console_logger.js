@@ -35,7 +35,7 @@ function createContextString(guild, channel, user) {
 function buildLogString(header, eventName, detail, component, guild, channel, user, message) {
   const timeStamp = timestamp.utc('[MM/DD/YYYY HH:mm:ss]');
   const componentPart = component ? Chalk.black.bgWhite(` ${component} `) : '';
-  const subDetailPart = detail ? ` ${Chalk.magenta(detail)}` : '';
+  const subDetailPart = detail ? ` [${Chalk.magenta(detail)}]` : '';
   const contextPart = createContextString(guild, channel, user);
   const messagePart = message ? ` ${message.content}` : '';
   const eventNamePart = eventName ? ` ${Chalk.underline(eventName)}` : '';

@@ -1,7 +1,5 @@
 const Eris = require('eris');
 
-const LOGGER_TITLE = 'DELETE MESSAGE';
-
 const ownerIdForSentMessageId = {};
 const responseMessageIdForCommandMessageId = {};
 
@@ -26,13 +24,9 @@ async function handleMessageDeleted(deletedMsg, logger) {
   if (responseMessageId) {
     try {
       await deletedMsg.channel.deleteMessage(responseMessageId, 'The message that invoked the command was deleted.');
-      logger.info({
-        event: 'DELETED MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
-        message: deletedMsg,
-      });
     } catch (err) {
       logger.warn({
-        event: 'ERROR DELETING MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
+        event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
         message: deletedMsg,
       });
     }
@@ -44,10 +38,6 @@ async function handleReaction(msg, userId, emoji, logger) {
   if (ownerId && userId === ownerId && deletionEmoji[emoji.name]) {
     try {
       await msg.channel.deleteMessage(msg.id, 'User who invoked the command reacted with X to delete it.');
-      logger.info({
-        event: 'DELETED MESSAGE IN RESPONSE TO USER ❌ REACTION',
-        message: deletedMsg,
-      });
     } catch (err) {
       logger.warn({
         event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER ❌ REACTION',

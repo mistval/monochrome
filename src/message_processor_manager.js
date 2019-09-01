@@ -49,7 +49,7 @@ class MessageProcessorManager {
               event: 'MESSAGE HANDLED',
               processorName: processor.name,
               message: msg,
-              detail: `[${processor.name}]`,
+              detail: processor.name,
             });
           }
 

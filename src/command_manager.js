@@ -198,7 +198,7 @@ class CommandManager {
         event: 'COMMAND EXECUTED',
         commandId: commandToExecute.uniqueId,
         message: msg,
-        detail: `[${commandToExecute.uniqueId}]`,
+        detail: commandToExecute.uniqueId,
       });
     } catch (err) {
       handleError(this.logger, 'COMMAND ERROR', this.monochrome_, msg, err, false);
