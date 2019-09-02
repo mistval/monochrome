@@ -20,6 +20,10 @@ class Plugin {
   close() {
     return this.storage.close();
   }
+
+  clear() {
+    return this.storage.clear();
+  }
 }
 
 module.exports = Plugin;

@@ -6,3 +6,4 @@ script:
   - npm ci
   - cd ../..
   - npm run test_travis
+services: mongodb

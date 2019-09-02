@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix",
-    "test": "./node_modules/.bin/mocha",
+    "test": "./node_modules/.bin/mocha --exit",
     "coverage": "./node_modules/.bin/nyc npm test",
     "test_travis": "npm run lint && npm run coverage && ./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && ./node_modules/.bin/codecov",
     "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md"
