@@ -26,7 +26,7 @@ class Plugin {
     if (!this.client.isConnected) {
       await this.connect();
     }
-  
+
     const valueWrapper = await this.collection.findOne({ key });
     const value = valueWrapper ? valueWrapper.value : undefined;
     const updatedValue = await editFn(value);

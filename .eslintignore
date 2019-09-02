@@ -1,6 +1,7 @@
 src/**
 docs/**
 test
+node_modules
 !src/console_logger.js
 !src/fulfillment_error.js
 !src/handle_error.js
