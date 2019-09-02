@@ -1,6 +1,3 @@
-const path = require('path');
-const FPersist = require('fpersist');
-
 const USER_DATA_KEY_PREFIX = 'User';
 const SERVER_DATA_KEY_PREFIX = 'Server';
 const GLOBAL_DATA_KEY = 'Global';
@@ -31,8 +28,8 @@ function keyForServerId(serverId) {
  * @hideconstructor
  */
 class Persistence {
-  constructor(defaultPrefixes, logger, persistenceDirectory) {
-    this.storage = new FPersist(persistenceDirectory || process.cwd());
+  constructor(defaultPrefixes, logger, storagePlugin) {
+    this.storage = storagePlugin;
     this.defaultPrefixes_ = defaultPrefixes;
     this.prefixesForServerId_ = {};
     this.logger = logger.child({
@@ -56,7 +53,7 @@ class Persistence {
    * @async 
    */
   deleteData(key) {
-    return this.storage.deleteItem(key);
+    return this.storage.deleteKey(key);
   }
 
   /**
@@ -70,7 +67,7 @@ const data = await persistence.getData('some_key');
 console.log(JSON.stringify(data));
    */
   getData(key) {
-    return this.storage.getItem(key, {});
+    return this.storage.getValue(key, {});
   }
 
   /**
@@ -174,7 +171,7 @@ await persistence.editData('some_key', (data) => {
 });
    */
   editData(key, editFunction) {
-    return this.storage.editItem(key, editFunction, {});
+    return this.storage.editValue(key, editFunction, {});
   }
 
   /**

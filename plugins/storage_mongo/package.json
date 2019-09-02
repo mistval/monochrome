@@ -1,0 +1,31 @@
+{
+  "name": "@monochrome-bot/mongo-storage-plugin",
+  "version": "1.0.0",
+  "description": "A MongoDB storage plugin for monochrome-bot.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mistval/monochrome.git"
+  },
+  "keywords": [
+    "bot",
+    "discord",
+    "mongo",
+    "mongodb",
+    "storage",
+    "plugin",
+    "persistence"
+  ],
+  "author": "mistval",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mistval/monochrome/issues"
+  },
+  "homepage": "https://github.com/mistval/monochrome#readme",
+  "dependencies": {
+    "mongodb": "^3.3.2"
+  }
+}

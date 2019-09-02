@@ -11,6 +11,8 @@ const onExit = require('async-on-exit');
 const TrackerStatsUpdater = require('./tracker_stats_updater.js');
 const ConsoleLogger = require('./console_logger.js');
 const loggerSerializers = require('./logger_serializers.js');
+const FPersistPlugin = require('./storage_fpersist.js');
+const path = require('path');
 
 function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
@@ -58,6 +60,10 @@ function validateAndSanitizeOptions(options) {
 
   if (options.logger === undefined) {
     options.logger = new ConsoleLogger();
+  }
+
+  if (options.storage === undefined) {
+    options.storage = new FPersistPlugin(path.join(process.cwd(), 'storage'));
   }
 
   return options;
@@ -140,11 +146,11 @@ class Monochrome {
    * @param {string} options.botToken - Your bot's token.
    * @param {string[]} [options.botAdminIds=[]] - A list of IDs of users who are allowed to run bot admin commands.
    * @param {string[]} [options.prefixes=['']] - The bot's default command prefixes.
-   * @param {external:"bunyan.Logger"} [options.logger] - A bunyan logger, or something with the same interface. Monochrome will use addSerializers to add a 'user', 'guild', and 'channel' serializer to your logger.
+   * @param {external:"bunyan.Logger"} [options.logger=new Monochrome.ConsoleLogger()] - A bunyan logger, or something with the same interface. Monochrome will use addSerializers to add a 'user', 'guild', and 'channel' serializer to your logger.
+   * @param {StoragePlugin} [options.storage=new Monochrome.Plugins.FPersist(path.join(process.cwd(), 'storage'))] - A storage plugin.
    * @param {string} [options.commandsDirectoryPath] - The path of the directory (must exist) where your command modules exist. If this is omitted, no commands with be loaded.
    * @param {string} [options.messageProcessorsDirectoryPath] - The path of the directory (must exist) where your message processor modules exist. If this is omitted, no message processors will be loaded.
    * @param {string} [options.logDirectoryPath] - The path of the directory where logs should be stored (does not need to exist, but parent directories must exist). If this is omitted, logs will not be saved to disk.
-   * @param {string} [options.persistenceDirectoryPath=process.cwd()] - The path of the directory where persistent data should be stored (does not need to exist, but parent directories must exist).
    * @param {string} [options.settingsFilePath] - The path of the Javascript file in which an array of your settings definitions exists. If this is omitted, no settings will be loaded.
    * @param {string} [options.genericErrorMessage] - If your code throws an error that is caught by monochrome, this message will be sent to the channel where the command was used. The exception is message processors. Errors caught from message processors will not be broadcast to the channel. This avoids the possibility of your message processor throwing on any input and spamming errors to the channel.
    * @param {string} [options.missingPermissionsErrorMessage] - If the bot fails to send a message due to missing permissions, the bot will attempt to send this message to the channel (that may fail too, if the bot has no permission to send even plain text messages in the channel). If this is omitted, no message is sent to the channel.
@@ -161,7 +167,7 @@ class Monochrome {
 
     this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
     this.logger = options.logger;
-    this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.persistenceDirectoryPath);
+    this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.storage);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     this.navigationManager_ = new NavigationManager(this.logger);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
