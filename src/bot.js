@@ -411,7 +411,7 @@ class Monochrome {
     });
 
     this.bot_.on('warn', message => {
-      this.coreLogger.warn({ event: 'WARNING', message });
+      this.coreLogger.warn({ event: 'ERIS WARNING', msg: message });
     });
 
     this.bot_.on('shardReady', (shardId) => {
