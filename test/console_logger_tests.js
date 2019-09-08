@@ -90,6 +90,13 @@ const testCases = [
       err: new Error('Test error'),
     },
   },
+  {
+    testFn: assertDoesNotThrow,
+    testInput: {
+      user: testUser,
+      message: testMessage,
+    },
+  }
 ];
 
 logFunctions.forEach((logFn) => {
@@ -115,3 +122,5 @@ describe('Stream interface', function() {
     stream.stream.write({ test: 'test' });
   });
 });
+
+

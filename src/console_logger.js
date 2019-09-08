@@ -62,7 +62,10 @@ class ConsoleLogger {
     // If guild, channel, and/or user are not specified at the top level in info,
     // get them from the message.
     if (coercedInfo.message) {
-      coercedInfo.guild = coercedInfo.guild || coercedInfo.message.channel.guild;
+      if (coercedInfo.message.channel) {
+        coercedInfo.guild = coercedInfo.guild || coercedInfo.message.channel.guild;
+      }
+
       coercedInfo.channel = coercedInfo.channel || coercedInfo.message.channel;
       coercedInfo.user = coercedInfo.user || coercedInfo.message.author;
     }
