@@ -38,6 +38,7 @@ function serializeChannel(channel) {
   return {
     name: channel.name,
     id: channel.id,
+    guild: serializeGuild(channel.guild),
   };
 }
 
@@ -51,7 +52,6 @@ function serializeMessage(msg) {
     embeds: msg.embeds,
     id: msg.id,
     author: serializeUser(msg.author),
-    guild: serializeGuild(msg.channel.guild),
     channel: serializeChannel(msg.channel),
   };
 }
