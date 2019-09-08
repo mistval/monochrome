@@ -41,7 +41,7 @@ class MessageProcessorManager {
         let result = processor.handle(bot, msg);
         if (result) {
           if (result.then) {
-            result.then(() => {}).catch(err => handleError(msg, err, this.monochrome_));
+            result.then(() => {}).catch(err => handleError(this.logger, 'MESSAGE PROCESSOR ERROR', this.monochrome_, msg, err, true));
           }
 
           if (processor.logLevel !== 'none') {

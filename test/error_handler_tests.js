@@ -3,13 +3,18 @@ const handleError = require('./../src/handle_error.js');
 const ConsoleLogger = require('./../src/console_logger.js');
 const FulfillmentError = require('./../src/fulfillment_error.js');
 const Monochrome = require('./../monochrome.js');
+const assertThrows = require('assert').throws;
 
-const monochrome = new Monochrome({
-  botToken: 'test',
-  genericErrorMessage: 'There was an error. Sorry!',
-  missingPermissionsErrorMessage: 'Missing permissions, sorry.',
-  discordInternalErrorMessage: 'Discord is whack right now, sorry.',
-});
+function createMonochrome() {
+  return new Monochrome({
+    botToken: 'test',
+    genericErrorMessage: 'There was an error. Sorry!',
+    missingPermissionsErrorMessage: 'Missing permissions, sorry.',
+    discordInternalErrorMessage: 'Discord is whack right now, sorry.',
+  });
+}
+
+const monochrome = createMonochrome();
 
 function createMockChannel(messageToReturnFromCreateMessage) {
   return {
@@ -117,7 +122,7 @@ describe('Command/MP error handler', function() {
   });
   it('Errors if unexpected error occurs', function() {
     const logger = createMockLogger();
-    const mockMonochrome = { ...monochrome };
+    const mockMonochrome = createMonochrome();
     mockMonochrome.getGenericErrorMessage = sinon.stub().throws();
     const msg = createMockMessage();
     handleError(logger, 'Test', mockMonochrome, msg, new Error(), false);
@@ -129,6 +134,14 @@ describe('Command/MP error handler', function() {
     const error = new FulfillmentError({ publicMessage: 'hi', logLevel: 'trace' });
     handleError(logger, 'Test', monochrome, msg, error, false);
     sinon.assert.called(logger.trace);
+  });
+  it('Complains if you do not specify the silent argument', function(done) {
+    const logger = createMockLogger();
+    const msg = createMockMessage();
+    const error = new FulfillmentError({ publicMessage: 'hi', logLevel: 'trace' });
+    handleError(logger, 'Test', monochrome, msg, error)
+      .then(() => done(new Error('Did not throw')))
+      .catch(() => done());
   });
 });
 

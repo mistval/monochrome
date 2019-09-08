@@ -1,3 +1,4 @@
+const assert = require('assert');
 const FulfillmentError = require('./fulfillment_error.js');
 const sendAndDelete = require('./util/send_and_delete.js');
 
@@ -44,9 +45,17 @@ function tryConvertToFulfillmentError(error, monochrome) {
 }
 
 async function handleError(logger, event, monochrome, msg, error, silent) {
-  try {
-    const genericErrorMessage = monochrome.getGenericErrorMessage();
+  assert(logger.warn && logger.error, 'logger does not implement the expected API');
+  assert(
+    monochrome.getGenericErrorMessage
+    && monochrome.getMissingPermissionsErrorMessage
+    && monochrome.getDiscordInternalErrorMessage,
+    'monochrome does not implement the expected API',
+  );
+  assert(msg.channel && msg.channel.createMessage, 'msg does not implement the expected API');
+  assert(typeof silent === 'boolean', 'Must specify silent argument');
 
+  try {
     const fulfillmentError = tryConvertToFulfillmentError(error, monochrome);
     let publicMessage;
     let internalError;
@@ -61,7 +70,7 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
       autoDeletePublicMessage = fulfillmentError.autoDeletePublicMessage || false;
       logLevel = fulfillmentError.logLevel;
     } else {
-      publicMessage = silent ? '' : genericErrorMessage;
+      publicMessage = silent ? '' : monochrome.getGenericErrorMessage();
       internalError = error;
       logDescription = 'Error';
       autoDeletePublicMessage = false;
