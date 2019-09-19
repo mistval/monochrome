@@ -45,6 +45,7 @@ class TrackerStatsUpdater {
 
       this.logger.info({
         event: 'SENT STATS TO BOTS.ONDISCORD.XYZ',
+        detail: `${payload.guildCount} guilds`,
         guildCount: payload.guildCount,
       });
     } catch (err) {
@@ -79,6 +80,7 @@ class TrackerStatsUpdater {
 
       this.logger.info({
         event: 'SENT STATS TO DISCORDBOTS.ORG',
+        detail: `${payload.server_count} guilds, ${payload.shard_count} shards`,
         guildCount: payload.server_count,
         shardCount: payload.shard_count,
       });
@@ -114,6 +116,7 @@ class TrackerStatsUpdater {
 
       this.logger.info({
         event: 'SENT STATS TO BOTS.DISCORD.GG',
+        detail: `${payload.guildCount} guilds, ${payload.shardCount} shards`,
         guildCount: payload.guildCount,
         shardCount: payload.shardCount,
       });
