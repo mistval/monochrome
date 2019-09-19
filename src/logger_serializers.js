@@ -56,9 +56,19 @@ function serializeMessage(msg) {
   };
 }
 
+function serializeErr(err) {
+  return {
+    message: err.message,
+    code: err.code,
+    stack: err.stack,
+    asString: err.toString(),
+  };
+}
+
 module.exports = {
   user: serializeUser,
   guild: serializeGuild,
   channel: serializeChannel,
   message: serializeMessage,
+  err: serializeErr,
 };
