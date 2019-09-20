@@ -29,7 +29,7 @@ function createContextString(guild, channel, user) {
     return '';
   }
 
-  return ` ${parts.join(' >> ')} >>`;
+  return ` ${parts.join(' >> ')}`;
 }
 
 function buildLogString(header, eventName, detail, component, guild, channel, user, message) {
@@ -37,7 +37,7 @@ function buildLogString(header, eventName, detail, component, guild, channel, us
   const componentPart = component ? Chalk.black.bgWhite(` ${component} `) : '';
   const subDetailPart = detail ? ` [${Chalk.magenta(detail)}]` : '';
   const contextPart = createContextString(guild, channel, user);
-  const messagePart = message ? ` ${message.content}` : '';
+  const messagePart = message ? ` >> ${message.content}` : '';
   const eventNamePart = eventName ? ` ${Chalk.underline(eventName)}` : '';
   return `${timeStamp} ${header}${componentPart}${eventNamePart}${contextPart}${messagePart}${subDetailPart}`;
 }
@@ -107,8 +107,6 @@ class ConsoleLogger {
     this.log(Chalk.black.bgHex('#DEADED')(' TRACE '), info, false, false);
   }
 
-  // Function required by implicit interface contract (with bunyan)
-  // eslint-disable-next-line class-methods-use-this
   child({ component }) {
     return new ConsoleLogger(component, this.logFunction, this.warnFunction);
   }
