@@ -1,6 +1,6 @@
 const Eris = require('eris');
 const Persistence = require('./persistence.js');
-const NavigationManager = require('./navigation_manager.js');
+const NavigationManager = require('./navigation/navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const Blacklist = require('./blacklist.js');
 const MessageProcessorManager = require('./message_processor_manager.js');
