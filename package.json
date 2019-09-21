@@ -12,7 +12,7 @@
     "test": "./node_modules/.bin/mocha --exit",
     "coverage": "./node_modules/.bin/nyc npm test",
     "test_travis": "npm run lint && npm run coverage && ./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && ./node_modules/.bin/codecov",
-    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json ./core/ -d ./docs -R README.md"
+    "document": "./node_modules/.bin/jsdoc --configure .jsdoc.json -r ./src/ ./plugins/storage_mongo/index.js -d ./docs -R README.md"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "axios": "^0.19.0",
     "chalk": "^2.4.2",
     "eris": "^0.10.1",
-    "fpersist": "^1.0.1",
+    "fpersist": "^1.0.2",
     "require-reload": "0.2.2",
     "time-stamp": "^2.2.0"
   },

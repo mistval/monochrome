@@ -1,6 +1,19 @@
 const { MongoClient } = require('mongodb');
 
-class Plugin {
+/**
+ * A storage plugin backed by MongoDB.
+ * This plugin is not built into Monochrome, it must be installed separately.
+ * <code>npm install @monochrome-bot/mongodb-storage-plugin</code>
+ * @implements StoragePlugin
+ */
+class MongoDBStoragePlugin {
+  /**
+   * Instantiate a plugin. A collection called <code>monochrome</code> will be created in
+   * the specified database. All of monochrome's internal data will be stored there.
+   * @param {String} dbUri - A MongoDB connection URI, such as <code>mongodb://localhost</code>.
+   * @param {String} dbName - The name of the database to use or create,
+   *   such as <code>discord_bot</code>.
+   */
   constructor(dbUri, dbName) {
     this.client = new MongoClient(dbUri);
     this.dbName = dbName;
@@ -53,4 +66,4 @@ class Plugin {
   }
 }
 
-module.exports = Plugin;
+module.exports = MongoDBStoragePlugin;

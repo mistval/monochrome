@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/message_processor.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="FPersistStoragePlugin.html">FPersistStoragePlugin</a><ul class='methods'><li data-type='method'><a href="FPersistStoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#close">close</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#getValue">getValue</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="MongoDBStoragePlugin.html">MongoDBStoragePlugin</a><ul class='methods'><li data-type='method'><a href="MongoDBStoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#close">close</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#getValue">getValue</a></li></ul></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#stop">stop</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li><li data-type='method'><a href="Monochrome.html#waitForMessage">waitForMessage</a></li></ul></li><li><a href="Navigation.html">Navigation</a><ul class='methods'><li data-type='method'><a href="Navigation.html#.fromOneDimensionalContents">fromOneDimensionalContents</a></li><li data-type='method'><a href="Navigation.html#.fromOneNavigationChapter">fromOneNavigationChapter</a></li></ul></li><li><a href="NavigationChapter.html">NavigationChapter</a><ul class='methods'><li data-type='method'><a href="NavigationChapter.html#.fromContent">fromContent</a></li></ul></li><li><a href="NavigationManager.html">NavigationManager</a><ul class='methods'><li data-type='method'><a href="NavigationManager.html#show">show</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#deleteData">deleteData</a></li><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#stop">stop</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#resetServerAndChannelSettings">resetServerAndChannelSettings</a></li><li data-type='method'><a href="Settings.html#resetUserSettings">resetUserSettings</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_bunyan.Logger_.html">bunyan.Logger</a></li><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul><h3>Interfaces</h3><ul><li><a href="StoragePlugin.html">StoragePlugin</a><ul class='methods'><li data-type='method'><a href="StoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="StoragePlugin.html#close">close</a></li><li data-type='method'><a href="StoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="StoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="StoragePlugin.html#getValue">getValue</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/message_processor.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const assert = require('assert');
+
+/**
+ * This function will be invoked with any message that the bot receives that is not
+ * handled by a command or another message processor. This function examines the message
+ * and either ignores it or takes action on it.
+ * @callback MessageProcessor~action
+ * @param {external:"Eris.Client"} bot
+ * @param {external:"Eris.Message"} msg - The message to consider handling.
+ * @param {Monochrome} monochrome
+ * @returns {boolean|Promise} If the message processor will not handle this message, you should return false (not a promise that resolves to false).
+ *   If a promise is returned, the message processor is assumed to have accepted the message, and it will not be propogated further. True may also be returned.
+ *   If a promise is returned, it will be resolved, and if it rejects, the error will be handled and logged.
+ */
+
+/**
+ * A definition of one message processor. Each message processor definition should
+ * be a module in your message processors directory (specified as a constructor option to {@link Monochrome}).
+ * Each message processor definition file should export one message processor definition.
+ * @typedef {Object} MessageProcessor~MessageProcessorDefinition
+ * @property {String} name - A name for the message processor. This can be anything, and will not be shown to users.
+ *   It exists solely for logging purposes.
+ * @property {MessageProcessor~action} action - A function to examine the message, and decide whether to process it.
+ * @property {String} [logLevel='info'] - The level to log events to, or 'none' for no logging. Bunyan levels are valid: 'trace', 'debug', 'info', etc.
+ * @property {Number} [priority=0] - The priority of the message processor. Higher number means higher priority. Higher priority message
+ *   processors get a chance to process the message before lower priority message processors.
+ * @example
+ * module.exports = {
+   name: 'Palindrome',
+   action(bot, msg, monochrome) {
+     const text = msg.content;
+     if (!text || text.length &lt; 2) {
+       return false; // Since we are not interested in handling this message, return false.
+     }
+     const textBackwards = text.split('').reverse().join('');
+     if (text === textBackwards) {
+       return msg.channel.createMessage('That\'s a palindrome!'); // Since we are handling this message, return a promise (could also return true)
+     } else {
+       return false; // Since we are not interested in handling this message, return false.
+     }
+   }
+ };
+ */
+
+/**
+ * Represents a message processor. Message processors cannot be constructed directly.
+ * The constructor is shown here due to JSDoc limitations.
+ * Message processors are constructed by the MessageProcessorManager which reads the
+ * message processor definition modules in your message processors directory (specified as a constructor option to {@link Monochrome})
+ * and constructs message processors accordingly. For help constructing a message processor definition,
+ * and an example, see {@link MessageProcessor~MessageProcessorDefinition}.
+ * For a full working example of a message processor, see the [example palindrome command]{@link https://github.com/mistval/monochrome-demo/blob/master/message_processors/palindrome.js}.
+ */
+class MessageProcessor {
+  constructor(processorData, monochrome) {
+    assert(processorData, 'No processor data');
+    assert(typeof processorData.action === 'function', 'Processor does not have an \'action\' or it has one that is not a function.');
+    assert(typeof processorData.name === 'string', 'Processor does not have a \'name\' or it has one that is not a string.');
+    assert(!processorData.priority || typeof processorData.priority === 'number', 'Processor \'priority\' is not a number.');
+    assert(!processorData.logLevel || typeof processorData.logLevel === 'string', 'Processor \'logLevel\' is not a string.')
+
+    this.name = processorData.name;
+    this.action_ = processorData.action;
+    this.monochrome_ = monochrome;
+    this.priority = processorData.priority || 0;
+    this.logLevel = processorData.logLevel || 'info';
+  }
+
+  handle(erisBot, msg) {
+    return this.action_(erisBot, msg, this.monochrome_);
+  }
+}
+
+module.exports = MessageProcessor;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Sat Sep 21 2019 13:07:41 GMT-0400 (GMT-04:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

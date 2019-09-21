@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>storage_fpersist.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="FPersistStoragePlugin.html">FPersistStoragePlugin</a><ul class='methods'><li data-type='method'><a href="FPersistStoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#close">close</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#getValue">getValue</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#stop">stop</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li><li data-type='method'><a href="Monochrome.html#waitForMessage">waitForMessage</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#deleteData">deleteData</a></li><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#stop">stop</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#resetServerAndChannelSettings">resetServerAndChannelSettings</a></li><li data-type='method'><a href="Settings.html#resetUserSettings">resetUserSettings</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_bunyan.Logger_.html">bunyan.Logger</a></li><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul><h3>Interfaces</h3><ul><li><a href="StoragePlugin.html">StoragePlugin</a><ul class='methods'><li data-type='method'><a href="StoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="StoragePlugin.html#close">close</a></li><li data-type='method'><a href="StoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="StoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="StoragePlugin.html#getValue">getValue</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">storage_fpersist.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const FPersist = require('fpersist');
+
+/**
+ * A storage plugin backed by {@link https://www.npmjs.com/package/fpersist fpersist}.
+ * Offers safe, light key-value JSON persistence.
+ * Not appropriate for multi-process sharded bots.
+ * This plugin is built into Monochrome.
+ * @implements StoragePlugin
+ */
+class FPersistStoragePlugin {
+  /**
+   * @param {String} persistenceDir - A full path to the directory to store persistence files.
+   *   The directory doesn't have to exist, but its parents do. Don't put anything else in the
+   *   persistence directory. It should be used exclusively by fpersist.
+   * @example
+const FPersistPlugin = require('monochome-bot').Plugins.FPersist;
+const storage = new FPersistPlugin(path.join(__dirname, 'storage'));
+   */
+  constructor(persistenceDir) {
+    this.storage = new FPersist(persistenceDir);
+  }
+
+  getValue(key, defaultValue) {
+    return this.storage.getItem(key, defaultValue);
+  }
+
+  editValue(key, editFn, defaultValue) {
+    return this.storage.editItem(key, editFn, defaultValue);
+  }
+
+  deleteKey(key) {
+    return this.storage.deleteItem(key);
+  }
+
+  close() {
+    return this.storage.close();
+  }
+
+  clear() {
+    return this.storage.clear();
+  }
+}
+
+module.exports = FPersistStoragePlugin;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Sat Sep 21 2019 13:02:22 GMT-0400 (GMT-04:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>src/help_command_helper.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Blacklist.html">Blacklist</a><ul class='methods'><li data-type='method'><a href="Blacklist.html#blacklistUser">blacklistUser</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklisted">isUserBlacklisted</a></li><li data-type='method'><a href="Blacklist.html#isUserBlacklistedQuick">isUserBlacklistedQuick</a></li><li data-type='method'><a href="Blacklist.html#unblacklistUser">unblacklistUser</a></li></ul></li><li><a href="Command.html">Command</a></li><li><a href="CommandManager.html">CommandManager</a><ul class='methods'><li data-type='method'><a href="CommandManager.html#getHelpCommandHelper">getHelpCommandHelper</a></li></ul></li><li><a href="FPersistStoragePlugin.html">FPersistStoragePlugin</a><ul class='methods'><li data-type='method'><a href="FPersistStoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#close">close</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="FPersistStoragePlugin.html#getValue">getValue</a></li></ul></li><li><a href="HelpCommandHelper.html">HelpCommandHelper</a><ul class='methods'><li data-type='method'><a href="HelpCommandHelper.html#findCommand">findCommand</a></li><li data-type='method'><a href="HelpCommandHelper.html#getEnabledNonHiddenCommands">getEnabledNonHiddenCommands</a></li><li data-type='method'><a href="HelpCommandHelper.html#getNonHiddenCommands">getNonHiddenCommands</a></li></ul></li><li><a href="MessageProcessor.html">MessageProcessor</a></li><li><a href="MongoDBStoragePlugin.html">MongoDBStoragePlugin</a><ul class='methods'><li data-type='method'><a href="MongoDBStoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#close">close</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="MongoDBStoragePlugin.html#getValue">getValue</a></li></ul></li><li><a href="Monochrome.html">Monochrome</a><ul class='methods'><li data-type='method'><a href="Monochrome.html#connect">connect</a></li><li data-type='method'><a href="Monochrome.html#getBlacklist">getBlacklist</a></li><li data-type='method'><a href="Monochrome.html#getCommandManager">getCommandManager</a></li><li data-type='method'><a href="Monochrome.html#getErisBot">getErisBot</a></li><li data-type='method'><a href="Monochrome.html#getLogger">getLogger</a></li><li data-type='method'><a href="Monochrome.html#getNavigationManager">getNavigationManager</a></li><li data-type='method'><a href="Monochrome.html#getPersistence">getPersistence</a></li><li data-type='method'><a href="Monochrome.html#getSettings">getSettings</a></li><li data-type='method'><a href="Monochrome.html#reload">reload</a></li><li data-type='method'><a href="Monochrome.html#stop">stop</a></li><li data-type='method'><a href="Monochrome.html#userIsServerAdmin">userIsServerAdmin</a></li><li data-type='method'><a href="Monochrome.html#waitForMessage">waitForMessage</a></li></ul></li><li><a href="Navigation.html">Navigation</a><ul class='methods'><li data-type='method'><a href="Navigation.html#.fromOneDimensionalContents">fromOneDimensionalContents</a></li><li data-type='method'><a href="Navigation.html#.fromOneNavigationChapter">fromOneNavigationChapter</a></li></ul></li><li><a href="NavigationChapter.html">NavigationChapter</a><ul class='methods'><li data-type='method'><a href="NavigationChapter.html#.fromContent">fromContent</a></li></ul></li><li><a href="NavigationManager.html">NavigationManager</a><ul class='methods'><li data-type='method'><a href="NavigationManager.html#show">show</a></li></ul></li><li><a href="Persistence.html">Persistence</a><ul class='methods'><li data-type='method'><a href="Persistence.html#deleteData">deleteData</a></li><li data-type='method'><a href="Persistence.html#editData">editData</a></li><li data-type='method'><a href="Persistence.html#editDataForServer">editDataForServer</a></li><li data-type='method'><a href="Persistence.html#editDataForUser">editDataForUser</a></li><li data-type='method'><a href="Persistence.html#editGlobalData">editGlobalData</a></li><li data-type='method'><a href="Persistence.html#editPrefixesForServerId">editPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#getData">getData</a></li><li data-type='method'><a href="Persistence.html#getDataForServer">getDataForServer</a></li><li data-type='method'><a href="Persistence.html#getDataForUser">getDataForUser</a></li><li data-type='method'><a href="Persistence.html#getGlobalData">getGlobalData</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForMessage">getPrefixesForMessage</a></li><li data-type='method'><a href="Persistence.html#getPrefixesForServer">getPrefixesForServer</a></li><li data-type='method'><a href="Persistence.html#getPrimaryPrefixForMessage">getPrimaryPrefixForMessage</a></li><li data-type='method'><a href="Persistence.html#resetPrefixesForServerId">resetPrefixesForServerId</a></li><li data-type='method'><a href="Persistence.html#stop">stop</a></li></ul></li><li><a href="Settings.html">Settings</a><ul class='methods'><li data-type='method'><a href="Settings.html#getInternalSettingValue">getInternalSettingValue</a></li><li data-type='method'><a href="Settings.html#getRawSettingsTree">getRawSettingsTree</a></li><li data-type='method'><a href="Settings.html#getTreeNodeForUniqueId">getTreeNodeForUniqueId</a></li><li data-type='method'><a href="Settings.html#getUserFacingSettingValue">getUserFacingSettingValue</a></li><li data-type='method'><a href="Settings.html#resetServerAndChannelSettings">resetServerAndChannelSettings</a></li><li data-type='method'><a href="Settings.html#resetUserSettings">resetUserSettings</a></li><li data-type='method'><a href="Settings.html#setChannelSettingValue">setChannelSettingValue</a></li><li data-type='method'><a href="Settings.html#setServerWideSettingValue">setServerWideSettingValue</a></li><li data-type='method'><a href="Settings.html#setUserSettingValue">setUserSettingValue</a></li><li data-type='method'><a href="Settings.html#userFacingValueIsValidForSetting">userFacingValueIsValidForSetting</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-_bunyan.Logger_.html">bunyan.Logger</a></li><li><a href="external-_Eris.Client_.html">Eris.Client</a></li><li><a href="external-_Eris.Message_.html">Eris.Message</a></li><li><a href="external-_Eris.TextChannel_.html">Eris.TextChannel</a></li></ul><h3>Interfaces</h3><ul><li><a href="StoragePlugin.html">StoragePlugin</a><ul class='methods'><li data-type='method'><a href="StoragePlugin.html#clear">clear</a></li><li data-type='method'><a href="StoragePlugin.html#close">close</a></li><li data-type='method'><a href="StoragePlugin.html#deleteKey">deleteKey</a></li><li data-type='method'><a href="StoragePlugin.html#editValue">editValue</a></li><li data-type='method'><a href="StoragePlugin.html#getValue">getValue</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">src/help_command_helper.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Assists in creating a help command.
+ * The HelpCommandHelper can be
+ * accessed via {@link CommandManager#getHelpCommandHelper}.
+ * For an example of how to use the HelpCommandHelper, see the [monochrome demo help command]{@link https://github.com/mistval/monochrome-demo/blob/master/commands/help.js}
+ * You can use the demo help command in your bot. Just fill out the configuration section at the top.
+ * @hideconstructor
+ */
+class HelpCommandHelper {
+  constructor(commands, settings, persistence) {
+    this.settings_ = settings;
+    this.persistence_ = persistence;
+    this.nonHiddenCommands_ = commands.filter(command => !command.hidden);
+  }
+
+  /**
+   * Get all commands that do not have their hidden property set to true.
+   * @returns {Command[]}
+   */
+  getNonHiddenCommands() {
+    return this.nonHiddenCommands_;
+  }
+
+  /**
+   * Do a fuzzy search for a command that matches the provided search term. Returns
+   * undefined if no match is found.
+   * @param {string} searchTerm - The string to find a matching command for.
+   * @returns {Command|undefined}
+   */
+  findCommand(searchTerm, serverId) {
+    const prefix = this.persistence_.getPrefixesForServer(serverId)[0];
+    const commands = this.getNonHiddenCommands();
+
+    const exactMatch =
+      commands.find(command => command.aliases.indexOf(searchTerm) !== -1)
+      || commands.find(command => command.aliases.indexOf(`${prefix}${searchTerm}`) !== -1);
+
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    let currentCandidateCommand;
+    let currentCandidateAlias;
+    let prefixedCurrentCandidateAlias = '';
+    for (let newCandidateCommand of commands) {
+      for (let newCandidateAlias of newCandidateCommand.aliases) {
+        const prefixedNewCandidateAlias = `${prefix}${newCandidateAlias}`;
+        if (prefixedNewCandidateAlias.indexOf(searchTerm) !== -1) {
+          let update = false;
+          if (!currentCandidateCommand) {
+            update = true;
+          } else {
+            let currentStartsWithAlias = prefixedCurrentCandidateAlias.startsWith(searchTerm);
+            let newStartsWithAlias = prefixedNewCandidateAlias.startsWith(searchTerm);
+            let currentContainsAliasNotAtStart = !currentStartsWithAlias || prefixedCurrentCandidateAlias.replace(searchTerm, '').indexOf(searchTerm) !== -1;
+            let newContainsAliasNotAtStart = !newStartsWithAlias || prefixedNewCandidateAlias.replace(searchTerm, '').indexOf(searchTerm) !== -1;
+            let newIsShorter = prefixedNewCandidateAlias.length &lt; prefixedCurrentCandidateAlias.length;
+            if (currentStartsWithAlias &amp;&amp; newStartsWithAlias) {
+              // They both start with the alias.
+              if (currentContainsAliasNotAtStart &amp;&amp; newContainsAliasNotAtStart) {
+                // They both start with the alias and contain the alias not at start. Update if new is shorter.
+                update = newIsShorter;
+              } else if (newContainsAliasNotAtStart) {
+                // They both start with the alias, only the new one of them contains the alias not at start. Update.
+                update = true;
+              } else {
+                // They both start with the alias, only the old one of them contains the alias not at start. Don't update.
+              }
+            } else if (currentStartsWithAlias || newStartsWithAlias) {
+              // One of them starts with the alias, the other does not. Update if it's the old one.
+              update = currentStartsWithAlias;
+            } else {
+              // They both contain the alias, but not at the start. Update if new is shorter.
+              update = prefixedNewCandidateAlias.length &lt; prefixedCurrentCandidateAlias.length;
+            }
+          }
+
+          if (update) {
+            prefixedCurrentCandidateAlias = prefixedNewCandidateAlias;
+            currentCandidateCommand = newCandidateCommand;
+          }
+        }
+      }
+    }
+    return currentCandidateCommand;
+  }
+
+  /**
+   * Get all non-hidden commands that are enabled where the msg was sent.
+   * @param {external:"Eris.Message"} msg - The Eris message that caused the help command to be invoked.
+   * @returns {Command[]}
+   */
+  async getEnabledNonHiddenCommands(msg) {
+    const promises = this.nonHiddenCommands_.map(command => {
+      return this.settings_.getInternalSettingValue(
+        command.getEnabledSettingUniqueId(),
+        msg.channel.guild ? msg.channel.guild.id : msg.channel.id,
+        msg.channel.id,
+        msg.author.id,
+      );
+    });
+
+    const enabledArray = await Promise.all(promises);
+    return this.nonHiddenCommands_.filter((command, i) => enabledArray[i] === true || enabledArray[i] === undefined);
+  }
+}
+
+module.exports = HelpCommandHelper;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Sat Sep 21 2019 13:07:41 GMT-0400 (GMT-04:00) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
