@@ -1,5 +1,8 @@
 /**
- * A plugin providing read/write access to persistent storage.
+ * A plugin that provides read/write access to persistent storage.
+ * This is an interface. It is implemented by {@link FPersistStoragePlugin}
+ * and {@link MongoDBStoragePlugin}. You can use one of those or create
+ * your own plugin that implements this interface.
  * 
  * @interface
  */
@@ -22,6 +25,7 @@ StoragePlugin.prototype.getValue = async function(key, defaultValue) { }
  *   retrieved from storage for the given key) and returns the updated value.
  * @param {*} [defaultValue=undefined] - The default value to pass into the editFn
  *   if no value is present for that key.
+ * @returns {*} The updated value.
  * @async
  */
 StoragePlugin.prototype.editValue = async function(key, editFn, defaultValue) { }
