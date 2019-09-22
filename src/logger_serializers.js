@@ -57,6 +57,10 @@ function serializeMessage(msg) {
 }
 
 function serializeErr(err) {
+  if (!err) {
+    return 'None';
+  }
+
   return {
     message: err.message,
     code: err.code,
