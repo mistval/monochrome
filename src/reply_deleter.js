@@ -28,6 +28,7 @@ async function handleMessageDeleted(deletedMsg, logger) {
       logger.warn({
         event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER MESSAGE DELETION',
         message: deletedMsg,
+        err,
       });
     }
   }
@@ -42,6 +43,7 @@ async function handleReaction(msg, userId, emoji, logger) {
       logger.warn({
         event: 'FAILED TO DELETE MESSAGE IN RESPONSE TO USER ❌ REACTION',
         message: deletedMsg,
+        err,
       });
     }
   }
