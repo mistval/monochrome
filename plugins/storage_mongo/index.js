@@ -28,7 +28,13 @@ class MongoDBStoragePlugin {
 
   async connect() {
     if (!this.connectPromise) {
-      this.connectPromise = MongoClient.connect(this.dbUri, { useNewUrlParser: true, useUnifiedTopology: true });
+      this.connectPromise = MongoClient.connect(
+        this.dbUri,
+        {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        },
+      );
 
       this.client = await this.connectPromise;
       this.db = this.client.db(this.dbName);
