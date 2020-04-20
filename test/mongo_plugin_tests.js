@@ -5,7 +5,7 @@ let plugin;
 
 describe('Mongo storage plugin', function() {
   this.beforeEach(function() {
-    plugin = new MongoPlugin('mongodb://localhost', 'monochrome_persistence_test', 'monochrome_persistence_test');
+    plugin = MongoPlugin.createNewClient('mongodb://localhost', 'monochrome_persistence_test', 'monochrome_persistence_test');
   });
 
   afterEach(async function() {

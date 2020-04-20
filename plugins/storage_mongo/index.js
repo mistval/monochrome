@@ -1,45 +1,46 @@
 const { MongoClient } = require('mongodb');
 
-/**
- * A storage plugin backed by MongoDB.
- * This plugin is not built into Monochrome, it must be installed separately.
- * <code>npm install @monochrome-bot/mongodb-storage-plugin</code>
- * @implements StoragePlugin
- */
 class MongoDBStoragePlugin {
-  /**
-   * @param {String} dbUri - A MongoDB connection URI, such as <code>mongodb://localhost</code>.
-   * @param {String} dbName - The name of the database to use or create,
-   *   such as <code>discord_bot</code>.
-   */
-  constructor(dbUri, dbName, collectionName) {
-    if (!dbUri || !dbName || !collectionName) {
-      throw new Error('Invalid arguments. Must provide dbUri, dbName, and collectionName');
-    }
-
-    this.dbUri = dbUri;
+  constructor(clientPromise, dbName, collectionName) {
+    this.clientPromise = clientPromise;
     this.dbName = dbName;
     this.collectionName = collectionName;
   }
 
+  static createNewClient(dbUri, dbName, collectionName) {
+    if (!dbUri || !dbName || !collectionName) {
+      throw new Error('Invalid arguments. Must provide dbUri, dbName, and collectionName');
+    }
+
+    const clientPromise = MongoClient.connect(
+      dbUri,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      },
+    );
+
+    return new MongoDBStoragePlugin(clientPromise, dbName, collectionName);
+  }
+
+  static createWithClient(client, dbName, collectionName) {
+    return new MongoDBStoragePlugin(client, dbName, collectionName);
+  }
+
   getMongoClient() {
-    return this.client;
+    return this.clientPromise;
+  }
+
+  async doConnect() {
+    this.client = await this.clientPromise;
+    this.db = this.client.db(this.dbName);
+    this.collection = this.db.collection(this.collectionName);
+    await this.collection.createIndex({ key: 1 }, { unique: true });
   }
 
   async connect() {
     if (!this.connectPromise) {
-      this.connectPromise = MongoClient.connect(
-        this.dbUri,
-        {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        },
-      );
-
-      this.client = await this.connectPromise;
-      this.db = this.client.db(this.dbName);
-      this.collection = this.db.collection(this.collectionName);
-      await this.collection.createIndex({ key: 1 }, { unique: true });
+      this.connectPromise = this.doConnect();
     }
 
     await this.connectPromise;
