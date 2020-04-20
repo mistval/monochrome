@@ -8,24 +8,35 @@ const { MongoClient } = require('mongodb');
  */
 class MongoDBStoragePlugin {
   /**
-   * Instantiate a plugin. A collection called <code>monochrome</code> will be created in
-   * the specified database. All of monochrome's internal data will be stored there.
    * @param {String} dbUri - A MongoDB connection URI, such as <code>mongodb://localhost</code>.
    * @param {String} dbName - The name of the database to use or create,
    *   such as <code>discord_bot</code>.
    */
-  constructor(dbUri, dbName) {
-    this.client = new MongoClient(dbUri);
+  constructor(dbUri, dbName, collectionName) {
+    if (!dbUri || !dbName || !collectionName) {
+      throw new Error('Invalid arguments. Must provide dbUri, dbName, and collectionName');
+    }
+
+    this.dbUri = dbUri;
     this.dbName = dbName;
+    this.collectionName = collectionName;
+  }
+
+  getMongoClient() {
+    return this.client;
   }
 
   async connect() {
-    await this.client.connect();
-    if (!this.db) {
+    if (!this.connectPromise) {
+      this.connectPromise = MongoClient.connect(this.dbUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+      this.client = await this.connectPromise;
       this.db = this.client.db(this.dbName);
-      this.collection = this.db.collection('monochrome');
-      this.collection.createIndex({ key: 1 }, { unique: true });
+      this.collection = this.db.collection(this.collectionName);
+      await this.collection.createIndex({ key: 1 }, { unique: true });
     }
+
+    await this.connectPromise;
   }
 
   async getValue(key, defaultValue) {
@@ -35,11 +46,11 @@ class MongoDBStoragePlugin {
     return result === null ? defaultValue : result.value;
   }
 
-  async editValue(key, editFn) {
+  async editValue(key, editFn, defaultValue = undefined) {
     await this.connect();
 
     const valueWrapper = await this.collection.findOne({ key });
-    const value = valueWrapper ? valueWrapper.value : undefined;
+    const value = valueWrapper ? valueWrapper.value : defaultValue;
     const updatedValue = await editFn(value);
     await this.collection.updateOne(
       { key },

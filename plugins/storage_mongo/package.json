@@ -26,6 +26,6 @@
   },
   "homepage": "https://github.com/mistval/monochrome#readme",
   "dependencies": {
-    "mongodb": "^3.3.2"
+    "mongodb": "^3.5.6"
   }
 }
