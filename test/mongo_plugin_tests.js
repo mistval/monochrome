@@ -38,4 +38,13 @@ describe('Mongo storage plugin', function() {
     await plugin.clear();
     assert.isUndefined(await plugin.getValue('testKey3'));
   }).timeout(15000);
+  it('Upserts new value with setValue', async function() {
+    await plugin.setValue('testKey4', 'testing');
+    assert.equal(await plugin.getValue('testKey4'), 'testing');
+  });
+  it('Replaces old value with setValue', async function() {
+    await plugin.setValue('test__Key5', 'testing');
+    await plugin.setValue('test__Key5', 'testing2');
+    assert.equal(await plugin.getValue('test__Key5'), 'testing2');
+  });
 });

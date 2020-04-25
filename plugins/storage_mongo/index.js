@@ -35,7 +35,6 @@ class MongoDBStoragePlugin {
     this.client = await this.clientPromise;
     this.db = this.client.db(this.dbName);
     this.collection = this.db.collection(this.collectionName);
-    await this.collection.createIndex({ key: 1 }, { unique: true });
   }
 
   async connect() {
@@ -49,18 +48,18 @@ class MongoDBStoragePlugin {
   async getValue(key, defaultValue) {
     await this.connect();
 
-    const result = await this.collection.findOne({ key });
+    const result = await this.collection.findOne({ _id: key });
     return result === null ? defaultValue : result.value;
   }
 
   async editValue(key, editFn, defaultValue = undefined) {
     await this.connect();
 
-    const valueWrapper = await this.collection.findOne({ key });
+    const valueWrapper = await this.collection.findOne({ _id: key });
     const value = valueWrapper ? valueWrapper.value : defaultValue;
     const updatedValue = await editFn(value);
     await this.collection.updateOne(
-      { key },
+      { _id: key },
       { $set: { value: updatedValue } },
       { upsert: true },
     );
@@ -68,9 +67,19 @@ class MongoDBStoragePlugin {
     return updatedValue;
   }
 
+  async setValue(key, value) {
+    await this.connect();
+
+    await this.collection.updateOne(
+      { _id: key },
+      { $set: { value } },
+      { upsert: true },
+    );
+  }
+
   async deleteKey(key) {
     await this.connect();
-    await this.collection.deleteOne({ key });
+    await this.collection.deleteOne({ _id: key });
   }
 
   async close() {
