@@ -36,12 +36,12 @@
   },
   "homepage": "https://github.com/mistval/monochrome#readme",
   "dependencies": {
-    "async-on-exit": "0.1.0",
+    "async-on-exit": "^0.1.0",
     "axios": "^0.19.0",
     "chalk": "^2.4.2",
-    "eris": "^0.11.0",
+    "eris": "^0.13.1",
     "fpersist": "^1.0.4",
-    "require-reload": "0.2.2",
+    "require-reload": "^0.2.2",
     "time-stamp": "^2.2.0"
   },
   "devDependencies": {
