@@ -13,6 +13,7 @@ const ConsoleLogger = require('./console_logger.js');
 const loggerSerializers = require('./logger_serializers.js');
 const FPersistPlugin = require('./storage_fpersist.js');
 const path = require('path');
+const RESTUserUpdater = require('./rest_updaters/update_user.js');
 
 function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
@@ -27,6 +28,10 @@ function validateAndSanitizeOptions(options) {
 
   if (!options.botToken) {
     throw new Error('No botToken specified');
+  }
+
+  if (typeof options.updateUserFromRestBucketClearInterval !== 'number') {
+    options.updateUserFromRestBucketClearInterval = 0;
   }
 
   if (options.statusRotation) {
@@ -95,6 +100,12 @@ class MessageWaiter {
  * Represents a message received from the Discord API.
  * @external "Eris.Message"
  * @see {@link https://abal.moe/Eris/docs/Message}
+ */
+
+/**
+ * Represents a Discord user.
+ * @external "Eris.User"
+ * @see {@link https://abal.moe/Eris/docs/User}
  */
 
 /**
@@ -170,6 +181,7 @@ class Monochrome {
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.storage);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
     this.navigationManager_ = new NavigationManager(this.logger);
+    this.restUserUpdater_ = new RESTUserUpdater(options.updateUserFromRestBucketClearInterval);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,
       this.logger,
@@ -362,6 +374,22 @@ class Monochrome {
     }, timeoutMs);
 
     return messageWaiter.promise;
+  }
+
+  /**
+   * Fetches a user via the REST API and updates
+   * eris' cache with the received user data. This
+   * can be helpful for example if you don't have the
+   * presence update intent enabled, but you need to
+   * have a user's up-to-date username or avatar.
+   * @param {String} userId - The ID of the user to fetch.
+   * @returns {external:"Eris.User"} - The user's data
+   *   (or undefined if the user could not be found either
+   *   via the REST API or eris' cache)
+   * @async
+   */
+  updateUserFromREST(userId) {
+    return this.restUserUpdater_.update(this.getErisBot(), userId);
   }
 
   /**
