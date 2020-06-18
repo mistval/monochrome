@@ -388,8 +388,13 @@ class Monochrome {
    *   via the REST API or eris' cache)
    * @async
    */
-  updateUserFromREST(userId) {
-    return this.restUserUpdater_.update(this.getErisBot(), userId);
+  async updateUserFromREST(userId) {
+    try {
+      return await this.restUserUpdater_.update(this.getErisBot(), userId);
+    } catch (err) {
+      this.coreLogger.error({ event: 'ERROR UPDATING USER FROM REST', detail: userId, err });
+      throw err;
+    }
   }
 
   /**
