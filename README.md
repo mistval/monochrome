@@ -1,7 +1,9 @@
+**Don't use me**: monochrome version 2.x.x does not work with node 12.18.x+, and monochrome 3 is in alpha and not intended for use by anyone but me at this point.
+
 # Monochrome
 
 A flexible Discord bot core built on [Eris](https://abal.moe/Eris/).
-Node v8.10.0+ recommended.
+Node v12+ recommended.
 
 __Key features__:
 * Command framework
