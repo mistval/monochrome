@@ -44,6 +44,12 @@ class TrackerStatsUpdater {
         },
         data: payload,
       });
+
+      this.logger.info({
+        event: 'SENT STATS TO DISCORDBOTLIST.COM',
+        detail: `${payload.guilds} guilds, ${payload.users} users`,
+        guildCount: payload.guilds,
+      });
     } catch (err) {
       this.logger.warn({
         event: 'ERROR SENDING STATS TO DISCORDBOTLIST.COM',
@@ -168,6 +174,7 @@ class TrackerStatsUpdater {
       this.updateDiscordDotBotsDotGg();
       this.updateDiscordBotsDotOrg();
       this.updateBotsOnDiscordDotXyz();
+      this.updateDiscordBotListDotCom();
     } catch (err) {
       this.logger.warn({
         event: 'ERROR SENDING STATS',
