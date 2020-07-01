@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-const LOGGER_TITLE = 'STATS';
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
 const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
 
@@ -11,6 +10,7 @@ class TrackerStatsUpdater {
     discordBotsDotOrgAPIKey,
     discordDotBotsDotGgAPIKey,
     botsOnDiscordDotXyzAPIKey,
+    discordBotListDotComAPIKey,
   ) {
     this.bot = bot;
     this.logger = logger.child({
@@ -20,6 +20,36 @@ class TrackerStatsUpdater {
     this.discordBotsDotOrgAPIKey = discordBotsDotOrgAPIKey;
     this.discordDotBotsDotGgAPIKey = discordDotBotsDotGgAPIKey;
     this.botsOnDiscordDotXyzAPIKey = botsOnDiscordDotXyzAPIKey;
+    this.discordBotListDotComAPIKey = discordBotListDotComAPIKey;
+  }
+
+  async updateDiscordBotListDotCom() {
+    if (!this.discordBotListDotComAPIKey) {
+      return;
+    }
+
+    try {
+      const payload = {
+        users: this.bot.guilds.map(guild => guild.memberCount).reduce((x, y) => x + y, 0),
+        guilds: this.bot.guilds.size,
+      };
+
+      await axios({
+        method: 'POST',
+        url: `https://discordbotlist.com/api/v1/bots/${this.bot.user.id}/stats`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.discordBotListDotComAPIKey,
+          'Accept': 'application/json',
+        },
+        data: payload,
+      });
+    } catch (err) {
+      this.logger.warn({
+        event: 'ERROR SENDING STATS TO DISCORDBOTLIST.COM',
+        err,
+      });
+    }
   }
 
   async updateBotsOnDiscordDotXyz() {

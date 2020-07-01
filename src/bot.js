@@ -170,7 +170,8 @@ class Monochrome {
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
    * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
    * @param {string} [options.discordDotBotsDotGgAPIKey] - If you have an API key from {@link https://discord.bots.gg/} you can provide it here and your server count will be sent regularly.
-   * @param {string} [options.botsOnDiscordDotXyzAPIKey] - If you have an API key from {@link https://bots.ondiscord.xyz} you can provide it here and your server count will be sent regularly. 
+   * @param {string} [options.botsOnDiscordDotXyzAPIKey] - If you have an API key from {@link https://bots.ondiscord.xyz} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.discordBotListDotComAPIKey] - If you have an API key from {@link https://discordbotlist.com} you can provide it here and your server count will be sent regularly.
    * @param {Object} [options.erisOptions] - The options to pass directly to the Eris client. You can do things like set your shard count here. See the 'options' constructor parameter here: {@link https://abal.moe/Eris/docs/Client}
    */
   constructor(options) {
@@ -188,6 +189,7 @@ class Monochrome {
       options.discordBotsDotOrgAPIKey,
       options.discordDotBotsDotGgAPIKey,
       options.botsOnDiscordDotXyzAPIKey,
+      options.discordBotListDotComAPIKey,
     );
 
     if (this.logger.addSerializers) {
