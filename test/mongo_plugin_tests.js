@@ -34,6 +34,9 @@ describe('Mongo storage plugin', function() {
     await plugin.deleteKey('testKey2');
     assert.isUndefined(await plugin.getValue('testKey2'));
   }).timeout(15000);
+  it('Provides a given default value to my edit function', async function() {
+    await plugin.editValue('testKey', (v) => assert.strictEqual(v, 15), 15);
+  });
   it('Clears the database successfully', async function() {
     await plugin.editValue('testKey3', () => 'test');
     await plugin.clear();

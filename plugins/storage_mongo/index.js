@@ -14,19 +14,28 @@ class MongoDBStoragePlugin {
    * @param {String} dbName - The name of the database to use or create,
    *   such as <code>discord_bot</code>.
    */
-  constructor(dbUri, dbName) {
-    this.client = new MongoClient(dbUri);
-    this.dbName = dbName;
+  constructor(dbUri, dbName, collectionName) {
+    this.client = new MongoClient(dbUri, { useUnifiedTopology: true });
+    this.dbName = dbName || 'monochromepersistence';
+    this.collectionName = collectionName || 'monochromepersistence';
   }
 
   async connect() {
     if (!this.client.isConnected()) {
-      await this.client.connect();
+      if (!this.connectingPromise) {
+        this.connectingPromise = this.client.connect();
+      }
+
+      try {
+        await this.connectingPromise;
+      } finally {
+        this.connectingPromise = undefined;
+      }
     }
 
     if (!this.db) {
       this.db = this.client.db(this.dbName);
-      this.collection = this.db.collection('monochrome');
+      this.collection = this.db.collection(this.collectionName);
       await this.collection.createIndex({ key: 1 }, { unique: true });
     }
   }
@@ -38,11 +47,11 @@ class MongoDBStoragePlugin {
     return result === null ? defaultValue : result.value;
   }
 
-  async editValue(key, editFn) {
+  async editValue(key, editFn, defaultValue = undefined) {
     await this.connect();
 
     const valueWrapper = await this.collection.findOne({ key });
-    const value = valueWrapper ? valueWrapper.value : undefined;
+    const value = valueWrapper ? valueWrapper.value : defaultValue;
     const updatedValue = await editFn(value);
     await this.collection.updateOne(
       { key },
