@@ -1,6 +1,6 @@
 {
   "name": "monochrome-bot",
-  "version": "3.0.0-alpha.9",
+  "version": "3.0.0-alpha.10",
   "description": "A flexible Discord bot core based on Eris",
   "main": "monochrome.js",
   "directories": {
@@ -53,6 +53,7 @@
     "eslint-plugin-import": "^2.18.2",
     "jsdoc": "^3.6.3",
     "mocha": "^7.1.1",
+    "mongodb": "^3.5.9",
     "nyc": "^14.1.1",
     "sinon": "^7.4.1"
   }

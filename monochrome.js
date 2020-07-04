@@ -1,4 +1,5 @@
 const FPersist = require('./src/storage_fpersist.js');
+const MongoStorage = require('./plugins/storage_mongo/index.js');
 const getErisVersionSync = require('./src/util/get_eris_version_sync.js');
 
 module.exports = require('./src/bot.js');
@@ -13,4 +14,5 @@ module.exports.ConsoleLogger = require('./src/console_logger.js');
 
 module.exports.Plugins = {
   FPersist,
+  MongoStorage,
 };

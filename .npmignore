@@ -6,4 +6,3 @@ docs/
 .eslintrc.js
 .jsdoc.json
 .travis.yml
-plugins/

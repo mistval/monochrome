@@ -20,11 +20,14 @@ class MongoDBStoragePlugin {
   }
 
   async connect() {
-    await this.client.connect();
+    if (!this.client.isConnected()) {
+      await this.client.connect();
+    }
+
     if (!this.db) {
       this.db = this.client.db(this.dbName);
       this.collection = this.db.collection('monochrome');
-      this.collection.createIndex({ key: 1 }, { unique: true });
+      await this.collection.createIndex({ key: 1 }, { unique: true });
     }
   }
 
@@ -62,7 +65,7 @@ class MongoDBStoragePlugin {
 
   async clear() {
     await this.connect();
-    await this.db.dropDatabase();
+    await this.collection.deleteMany({});
   }
 }
 
