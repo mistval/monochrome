@@ -231,10 +231,15 @@ class Command {
       const missingBotPermissions = this.requiredBotPermissions_.filter(perm => !botPermissions[perm]);
       if (missingBotPermissions.length > 0) {
         const requiredPermissionsString = missingBotPermissions.map(perm => userStringForPermission[perm]).join(', ');
+
+        const publicMessage = missingBotPermissions.indexOf('sendMessages') === -1
+          ? `I do not have the permissions I need to respond to that command. I need: **${requiredPermissionsString}**. A server admin can give me the permissions I need in the server settings.`
+          : undefined;
+
         throw new FulfillmentError({
-          publicMessage: `I do not have the permissions I need to respond to that command. I need: **${requiredPermissionsString}**. A server admin can give me the permissions I need in the server settings.`,
+          publicMessage,
           autoDeletePublicMessage: false,
-          logDescription: 'Missing permissions',
+          logDescription: `Missing permissions (${requiredPermissionsString})`,
         });
       }
     }
