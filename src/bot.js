@@ -190,6 +190,7 @@ class Monochrome {
       options.discordDotBotsDotGgAPIKey,
       options.botsOnDiscordDotXyzAPIKey,
       options.discordBotListDotComAPIKey,
+      options.discordDotBoatsAPIKey,
     );
 
     if (this.logger.addSerializers) {

@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const UPDATE_STATS_INTERVAL_IN_MS = 7200000; // 2 hours
-const UPDATE_STATS_INITIAL_DELAY_IN_MS = 60000; // 1 minute
+const UPDATE_STATS_INITIAL_DELAY_IN_MS = 120000; // 2 minutes
 
 class TrackerStatsUpdater {
   constructor(
@@ -11,6 +11,7 @@ class TrackerStatsUpdater {
     discordDotBotsDotGgAPIKey,
     botsOnDiscordDotXyzAPIKey,
     discordBotListDotComAPIKey,
+    discordDotBoatsAPIKey,
   ) {
     this.bot = bot;
     this.logger = logger.child({
@@ -21,6 +22,7 @@ class TrackerStatsUpdater {
     this.discordDotBotsDotGgAPIKey = discordDotBotsDotGgAPIKey;
     this.botsOnDiscordDotXyzAPIKey = botsOnDiscordDotXyzAPIKey;
     this.discordBotListDotComAPIKey = discordBotListDotComAPIKey;
+    this.discordDotBoatsAPIKey = discordDotBoatsAPIKey;
   }
 
   async updateDiscordBotListDotCom() {
@@ -164,6 +166,40 @@ class TrackerStatsUpdater {
     }
   }
 
+  async updateDiscordDotBoats() {
+    if (!this.discordDotBoatsAPIKey) {
+      return;
+    }
+
+    const payload = {
+      server_count: this.bot.guilds.size,
+    };
+
+    try {
+      await axios({
+        method: 'POST',
+        url: `https://discord.boats/api/bot/${this.bot.user.id}`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.discordDotBoatsAPIKey,
+          'Accept': 'application/json',
+        },
+        data: payload,
+      });
+
+      this.logger.info({
+        event: 'SENT STATS TO DISCORD.BOATS',
+        detail: `${payload.server_count} guilds`,
+        guildCount: payload.server_count,
+      });
+    } catch (err) {
+      this.logger.warn({
+        event: 'ERROR SENDING STATS TO DISCORD.BOATS',
+        err,
+      });
+    }
+  }
+
   hasApiKey() {
     return Object.getOwnPropertyNames(this)
       .some(propertyName => propertyName.endsWith('APIKey') && this[propertyName]);
@@ -175,6 +211,7 @@ class TrackerStatsUpdater {
       this.updateDiscordBotsDotOrg();
       this.updateBotsOnDiscordDotXyz();
       this.updateDiscordBotListDotCom();
+      this.updateDiscordDotBoats();
     } catch (err) {
       this.logger.warn({
         event: 'ERROR SENDING STATS',
