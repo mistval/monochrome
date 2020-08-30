@@ -153,14 +153,14 @@ class TrackerStatsUpdater {
       });
 
       this.logger.info({
-        event: 'SENT STATS TO BOTS.DISCORD.GG',
+        event: 'SENT STATS TO DISCORD.BOTS.GG',
         detail: `${payload.guildCount} guilds, ${payload.shardCount} shards`,
         guildCount: payload.guildCount,
         shardCount: payload.shardCount,
       });
     } catch (err) {
       this.logger.warn({
-        event: 'ERROR SENDING STATS TO BOTS.DISCORD.GG',
+        event: 'ERROR SENDING STATS TO DISCORD.BOTS.GG',
         err,
       });
     }
