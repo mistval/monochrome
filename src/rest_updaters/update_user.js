@@ -14,20 +14,17 @@ class RESTUserUpdater {
     }
 
     const restUser = await erisBot.getRESTUser(userId);
-    const cacheUser = erisBot.users.get(userId);
-
-    if (cacheUser) {
-      Object.assign(cacheUser, restUser);
-    } else if (restUser) {
-      erisBot.users.add(restUser);
+    if (!restUser) {
+      throw new Error('Failed to get REST user.');
     }
 
-    const updatedUser = cacheUser || restUser;
-    if (this.bucket && updatedUser) {
+    erisBot.users.update(restUser, erisBot);
+
+    if (this.bucket) {
       this.bucket[userId] = true;
     }
 
-    return updatedUser;
+    return erisBot.users.get(userId);
   }
 }
 
