@@ -431,7 +431,11 @@ class Monochrome {
     });
 
     this.bot_.on('error', (err, shardId) => {
-      this.coreLogger.error({ event: 'ERROR', shardId, err: err.error || err });
+      if (err.code === 1006) {
+        this.coreLogger.warn({ event: 'CONNECTION RESET', shardId, err });
+      } else {
+        this.coreLogger.error({ event: 'ERROR', shardId, err: err.error || err });
+      }
     });
 
     this.bot_.on('disconnect', () => {
