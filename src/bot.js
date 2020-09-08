@@ -431,10 +431,14 @@ class Monochrome {
     });
 
     this.bot_.on('error', (err, shardId) => {
-      if (err.code === 1006) {
-        this.coreLogger.warn({ event: 'CONNECTION RESET', shardId, err });
+      const detail = shardId === undefined
+        ? undefined
+        : `Shard ${shardId}`;
+
+      if (err.code === 1006 || err.code === 1001) {
+        this.coreLogger.warn({ event: 'CONNECTION WARNING', shardId, detail });
       } else {
-        this.coreLogger.error({ event: 'ERROR', shardId, err: err.error || err });
+        this.coreLogger.error({ event: 'ERROR', shardId, detail, err: err.error || err });
       }
     });
 
