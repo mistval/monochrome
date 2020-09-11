@@ -219,11 +219,7 @@ class Command {
 
     let isBotAdmin = this.monochrome_.getBotAdminIds().indexOf(msg.author.id) !== -1;
     if (this.botAdminOnly_ && !isBotAdmin) {
-      throw new FulfillmentError({
-        publicMessage: 'Only a bot admin can use that command.',
-        autoDeletePublicMessage: true,
-        logDescription: 'User is not a bot admin',
-      });
+      throw new FulfillmentError({ logDescription: 'User is not a bot admin' });
     }
 
     if (msg.channel.permissionsOf) {
