@@ -1,6 +1,6 @@
 {
   "name": "monochrome-bot",
-  "version": "3.0.0-alpha.17",
+  "version": "3.0.0-alpha.18",
   "description": "A flexible Discord bot core based on Eris",
   "main": "monochrome.js",
   "directories": {
