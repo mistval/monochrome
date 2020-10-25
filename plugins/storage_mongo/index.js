@@ -2,17 +2,16 @@ const { MongoClient } = require('mongodb');
 
 /**
  * A storage plugin backed by MongoDB.
- * This plugin is not built into Monochrome, it must be installed separately.
- * <code>npm install @monochrome-bot/mongodb-storage-plugin</code>
  * @implements StoragePlugin
  */
 class MongoDBStoragePlugin {
   /**
-   * Instantiate a plugin. A collection called <code>monochrome</code> will be created in
-   * the specified database. All of monochrome's internal data will be stored there.
+   * Instantiate a plugin.
    * @param {String} dbUri - A MongoDB connection URI, such as <code>mongodb://localhost</code>.
-   * @param {String} dbName - The name of the database to use or create,
-   *   such as <code>discord_bot</code>.
+   * @param {String} [dbName] - The name of the database to use or create,
+   *   such as <code>monochromepersistence</code> (the default).
+   * @param {String} [collectionName] - The name of the collection to use or create,
+   *   such as <code>monochromepersistence</code> (the default).
    */
   constructor(dbUri, dbName, collectionName) {
     this.client = new MongoClient(dbUri, { useUnifiedTopology: true });
@@ -53,6 +52,7 @@ class MongoDBStoragePlugin {
     const valueWrapper = await this.collection.findOne({ key });
     const value = valueWrapper ? valueWrapper.value : defaultValue;
     const updatedValue = await editFn(value);
+
     await this.collection.updateOne(
       { key },
       { $set: { value: updatedValue } },
