@@ -181,7 +181,7 @@ class Monochrome {
     this.logger = options.logger;
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.storage);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
-    this.navigationManager_ = new NavigationManager(this.logger);
+    this.navigationManager_ = new NavigationManager(this);
     this.restUserUpdater_ = new RESTUserUpdater(options.updateUserFromRestBucketClearInterval);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,

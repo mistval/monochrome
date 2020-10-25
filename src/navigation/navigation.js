@@ -2,7 +2,16 @@ const NavigationChapter = require('./navigation_chapter.js');
 
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
-async function sendReactions(msg, reactions, logger) {
+async function sendReactions(msg, reactions, ownId, logger) {
+  const ownPermissions = msg.channel.permissionsOf(ownId);
+  const canReact = ownPermissions.has('addReactions') && ownPermissions.has('readMessageHistory');
+
+  if (!canReact) {
+    return logger.warn({
+      event: 'NO PERMISSION TO ADD REACTION BUTTONS',
+    });
+  }
+
   for (let i = 0; i < reactions.length; i += 1) {
     const reaction = reactions[i];
     try {
@@ -12,6 +21,7 @@ async function sendReactions(msg, reactions, logger) {
         event: 'FAILED TO ADD REACTION BUTTONS',
         err,
       });
+
       if (err.code === 50001 || err.code === 50013 || err.code === 10008) {
         return; // Missing permissions error or unknown message error (probably already deleted). Don't bother trying to send the other reactions.
       }
@@ -81,7 +91,7 @@ class Navigation {
     return Navigation.fromOneNavigationChapter(ownerId, chapter, contents.length > 1);
   }
 
-  async createMessage(channel, parentMsg, logger) {
+  async createMessage(channel, parentMsg, ownId, logger) {
     const chapter = this.getChapterForEmojiName_(this.currentEmojiName_);
     const navigationPage = await chapter.getCurrentPage(logger);
 
@@ -105,7 +115,7 @@ class Navigation {
       reactionsToSend.push('➡');
     }
 
-    sendReactions(sentMessage, reactionsToSend, logger);
+    sendReactions(sentMessage, reactionsToSend, ownId, logger);
     this.message_ = sentMessage;
     return sentMessage.id;
   }

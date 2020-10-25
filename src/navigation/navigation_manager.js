@@ -6,10 +6,12 @@
  * @hideconstructor
  */
 class NavigationManager {
-  constructor(logger) {
-    this.logger = logger.child({
+  constructor(monochrome) {
+    this.monochrome = monochrome;
+    this.logger = monochrome.getLogger().child({
       component: 'Monochrome::NavigationManager',
     });
+
     this.navigationForMessageId_ = {};
   }
 
@@ -26,7 +28,9 @@ class NavigationManager {
    *   behavior.
    */
   show(navigation, expirationTimeInMs, channel, parentMsg) {
-    return navigation.createMessage(channel, parentMsg, this.logger).then(messageId => {
+    const ownId = this.monochrome.getErisBot().user.id;
+
+    return navigation.createMessage(channel, parentMsg, ownId, this.logger).then(messageId => {
       this.navigationForMessageId_[messageId] = navigation;
       setTimeout(() => delete this.navigationForMessageId_[messageId], expirationTimeInMs);
     });
