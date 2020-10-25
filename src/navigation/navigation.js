@@ -2,11 +2,17 @@ const NavigationChapter = require('./navigation_chapter.js');
 
 const EDIT_DELAY_TIME_IN_MS = 1500;
 
-async function sendReactions(msg, reactions, ownId, logger) {
-  const ownPermissions = msg.channel.permissionsOf(ownId);
-  const canReact = ownPermissions.has('addReactions') && ownPermissions.has('readMessageHistory');
+function canReact(msg, ownId) {
+  if (!msg.channel.permissionsOf) {
+    return true;
+  }
 
-  if (!canReact) {
+  const ownPermissions = msg.channel.permissionsOf(ownId);
+  return ownPermissions.has('addReactions') && ownPermissions.has('readMessageHistory');
+}
+
+async function sendReactions(msg, reactions, ownId, logger) {
+  if (!canReact(msg, ownId)) {
     return logger.warn({
       event: 'NO PERMISSION TO ADD REACTION BUTTONS',
     });
