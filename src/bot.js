@@ -462,9 +462,9 @@ class Monochrome {
       this.coreLogger.info({ event: 'SHARD READY', shardId, detail: `Shard ${shardId} connected` });
     });
 
-    this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
-      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
-      replyDeleter.handleReaction(msg, userId, emoji, this.logger);
+    this.bot_.on('messageReactionAdd', (msg, emoji, member) => {
+      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, member.id);
+      replyDeleter.handleReaction(msg, member.id, emoji, this.logger);
     });
 
     this.bot_.on('messageDelete', msg => {
