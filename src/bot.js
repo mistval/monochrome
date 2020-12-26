@@ -318,7 +318,7 @@ class Monochrome {
       return false;
     }
 
-    let permission = msg.member.permission.json;
+    let permission = msg.member.permissions.json;
     if (permission.manageGuild || permission.administrator || permission.manageChannels) {
       return true;
     }
