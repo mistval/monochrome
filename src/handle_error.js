@@ -45,17 +45,17 @@ function tryConvertToFulfillmentError(error, monochrome) {
 }
 
 async function handleError(logger, event, monochrome, msg, error, silent) {
-  assert(logger.warn && logger.error, 'logger does not implement the expected API');
-  assert(
-    monochrome.getGenericErrorMessage
-    && monochrome.getMissingPermissionsErrorMessage
-    && monochrome.getDiscordInternalErrorMessage,
-    'monochrome does not implement the expected API',
-  );
-  assert(msg.channel && msg.channel.createMessage, 'msg does not implement the expected API');
-  assert(typeof silent === 'boolean', 'Must specify silent argument');
-
   try {
+    assert(logger.warn && logger.error, 'logger does not implement the expected API');
+    assert(
+      monochrome.getGenericErrorMessage
+      && monochrome.getMissingPermissionsErrorMessage
+      && monochrome.getDiscordInternalErrorMessage,
+      'monochrome does not implement the expected API',
+    );
+    assert(msg.channel && msg.channel.createMessage, 'msg does not implement the expected API');
+    assert(typeof silent === 'boolean', 'Must specify silent argument');
+
     const fulfillmentError = tryConvertToFulfillmentError(error, monochrome);
     let publicMessage;
     let internalError;
