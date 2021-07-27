@@ -66,6 +66,7 @@ function serializeErr(err) {
     code: err.code,
     stack: err.stack,
     asString: err.toString(),
+    innerErr: serializeErr(err.error),
   };
 }
 
