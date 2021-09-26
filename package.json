@@ -42,7 +42,8 @@
     "eris": "^0.15.1",
     "fpersist": "^1.0.4",
     "require-reload": "^0.2.2",
-    "time-stamp": "^2.2.0"
+    "time-stamp": "^2.2.0",
+    "mongodb": "^3.5.9"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -53,7 +54,6 @@
     "eslint-plugin-import": "^2.18.2",
     "jsdoc": "^3.6.7",
     "mocha": "^7.1.1",
-    "mongodb": "^3.5.9",
     "nyc": "^14.1.1",
     "sinon": "^7.4.1"
   }
