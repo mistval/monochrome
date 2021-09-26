@@ -20,17 +20,7 @@ class MongoDBStoragePlugin {
   }
 
   async connect() {
-    if (!this.client.isConnected()) {
-      if (!this.connectingPromise) {
-        this.connectingPromise = this.client.connect();
-      }
-
-      try {
-        await this.connectingPromise;
-      } finally {
-        this.connectingPromise = undefined;
-      }
-    }
+    await this.client.connect();
 
     if (!this.db) {
       this.db = this.client.db(this.dbName);
