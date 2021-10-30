@@ -48,7 +48,7 @@ function serializeMessage(msg) {
   }
 
   return {
-    content: msg.content,
+    content: '<REDACTED_MESSAGE_CONTENT>',
     embeds: msg.embeds,
     id: msg.id,
     author: serializeUser(msg.author),
