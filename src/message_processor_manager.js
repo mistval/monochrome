@@ -1,4 +1,3 @@
-const reload = require('require-reload')(require);
 const FileSystemUtils = require('./util/file_system_utils.js');
 const MessageProcessor = require('./message_processor.js');
 const handleError = require('./handle_error.js');
@@ -20,7 +19,7 @@ class MessageProcessorManager {
       const processorFiles = FileSystemUtils.getFilesInDirectory(this.directory_);
       for (let processorFile of processorFiles) {
         try {
-          let processorInformation = reload(processorFile);
+          let processorInformation = require(processorFile);
           let processor = new MessageProcessor(processorInformation, this.monochrome_);
           this.processors_.push(processor);
         } catch (err) {

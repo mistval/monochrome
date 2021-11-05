@@ -1,4 +1,3 @@
-const reload = require('require-reload')(require);
 const Command = require('./command.js');
 const FileSystemUtils = require('./util/file_system_utils.js');
 const HelpCommandHelper = require('./help_command_helper.js');
@@ -115,7 +114,7 @@ class CommandManager {
       const commandFiles = FileSystemUtils.getFilesInDirectory(this.directory_);
       for (let commandFile of commandFiles) {
         try {
-          let newCommandData = reload(commandFile);
+          let newCommandData = require(commandFile);
           let newCommand = new Command(newCommandData, this.monochrome_);
 
           if (this.commands_.find(existingCommand => existingCommand.uniqueId === newCommand.uniqueId)) {

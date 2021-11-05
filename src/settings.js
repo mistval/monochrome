@@ -1,4 +1,3 @@
-const reload = require('require-reload')(require);
 const assert = require('assert');
 
 /**
@@ -356,7 +355,7 @@ class Settings {
 
     if (settingsFilePath) {
       try {
-        this.settingsTree_ = reload(settingsFilePath);
+        this.settingsTree_ = require(settingsFilePath);
       } catch (err) {
         this.logger.error({
           event: 'FAILED TO LOAD SETTINGS FILE',
