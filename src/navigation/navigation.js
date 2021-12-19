@@ -21,7 +21,7 @@ async function sendReactions(msg, reactions, ownId, logger) {
   for (let i = 0; i < reactions.length; i += 1) {
     const reaction = reactions[i];
     try {
-      await msg.channel.addMessageReaction(msg.id, reaction);
+      await msg.addReaction(reaction);
     } catch (err) {
       logger.warn({
         event: 'FAILED TO ADD REACTION BUTTONS',
