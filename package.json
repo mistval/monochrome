@@ -1,6 +1,6 @@
 {
   "name": "monochrome-bot",
-  "version": "3.0.0-alpha.29",
+  "version": "3.0.0-alpha.30",
   "description": "A flexible Discord bot core based on Eris",
   "main": "monochrome.js",
   "directories": {
@@ -39,21 +39,16 @@
     "async-on-exit": "^0.1.0",
     "axios": "^0.21.1",
     "chalk": "^2.4.2",
-    "eris": "^0.15.1",
+    "eris": "^0.16.1",
     "fpersist": "^1.0.4",
     "mongodb": "^4.1.2",
     "time-stamp": "^2.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "codecov": "^3.5.0",
     "docdash": "^1.0.0",
-    "eslint": "^6.2.2",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
     "jsdoc": "^3.6.7",
-    "mocha": "^7.1.1",
-    "nyc": "^14.1.1",
     "sinon": "^7.4.1"
   }
 }
