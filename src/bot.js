@@ -518,6 +518,11 @@ class Monochrome {
       if (this.blacklist_.isUserBlacklistedQuick(msg.author.id)) {
         return;
       }
+
+      if (msg.channel && !msg.channel.createMessage) {
+        msg.channel.createMessage = (...args) => this.bot_.createMessage(msg.channel.id, ...args);
+      }
+
       if (this.tryGiveMessageToWaiter_(msg)) {
         return;
       }
