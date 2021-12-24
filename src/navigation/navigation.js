@@ -108,7 +108,7 @@ class Navigation {
       this.showPageArrows_ = navigationPage.showPageArrows;
     }
 
-    const sentMessage = await channel.createMessage(navigationPage, undefined, parentMsg);
+    const sentMessage = await channel.createMessage({ ...navigationPage }, undefined, parentMsg);
 
     const emojis = Object.keys(this.chapterForEmojiName_);
     const reactionsToSend = [];
@@ -156,8 +156,9 @@ class Navigation {
         }
 
         if (navigationPage && desiredEmojiName === this.currentEmojiName_) {
-          await this.message_.edit(navigationPage);
+          await this.message_.edit({ ...navigationPage });
         }
+
       } catch (err) {
         logger.error({
           event: 'ERROR NAVIGATING',
