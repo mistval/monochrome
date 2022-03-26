@@ -7,7 +7,7 @@ class TrackerStatsUpdater {
   constructor(
     bot,
     logger,
-    discordBotsDotOrgAPIKey,
+    topGgApiKey,
     discordDotBotsDotGgAPIKey,
     botsOnDiscordDotXyzAPIKey,
     discordBotListDotComAPIKey,
@@ -18,7 +18,7 @@ class TrackerStatsUpdater {
       component: 'Monochrome::StatsReporter',
     });
 
-    this.discordBotsDotOrgAPIKey = discordBotsDotOrgAPIKey;
+    this.topGgApiKey = topGgApiKey;
     this.discordDotBotsDotGgAPIKey = discordDotBotsDotGgAPIKey;
     this.botsOnDiscordDotXyzAPIKey = botsOnDiscordDotXyzAPIKey;
     this.discordBotListDotComAPIKey = discordBotListDotComAPIKey;
@@ -94,8 +94,8 @@ class TrackerStatsUpdater {
     }
   }
 
-  async updateDiscordBotsDotOrg() {
-    if (!this.discordBotsDotOrgAPIKey) {
+  async updateTopGg() {
+    if (!this.topGgApiKey) {
       return;
     }
 
@@ -107,17 +107,17 @@ class TrackerStatsUpdater {
     try {
       await axios({
         method: 'POST',
-        url: `https://discordbots.org/api/bots/${this.bot.user.id}/stats`,
+        url: `https://top.gg/api/bots/${this.bot.user.id}/stats`,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.discordBotsDotOrgAPIKey,
+          'Authorization': this.topGgApiKey,
           'Accept': 'application/json',
         },
         data: payload,
       });
 
       this.logger.info({
-        event: 'SENT STATS TO DISCORDBOTS.ORG',
+        event: 'SENT STATS TO TOP.GG',
         detail: `${payload.server_count} guilds, ${payload.shard_count} shards`,
         guildCount: payload.server_count,
         shardCount: payload.shard_count,
@@ -208,7 +208,7 @@ class TrackerStatsUpdater {
   updateStats() {
     try {
       this.updateDiscordDotBotsDotGg();
-      this.updateDiscordBotsDotOrg();
+      this.updateTopGg();
       this.updateBotsOnDiscordDotXyz();
       this.updateDiscordBotListDotCom();
       this.updateDiscordDotBoats();

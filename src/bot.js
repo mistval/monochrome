@@ -144,7 +144,7 @@ const bot = new Monochrome({
   discordInternalErrorMessage: 'Discord told me something\'s wrong with it. Please try again!',
   statusRotation: ['cooking dinner', 'eating dinner', 'cleaning kitchen'],
   statusRotationIntervalInSeconds: 600,
-  discordBotsDotOrgAPIKey: require('./my-gitignored-config-file.json').myDiscordBotsDotOrgAPIkey,
+  topGg: require('./my-gitignored-config-file.json').myTopGgAPIkey,
   discordDotBotsDotGgAPIKey: require('./my-gitignored-config-file.json').myDiscordDotBotsDotGgAPIKey,
   erisOptions: { maxShards: 'auto' },
 });
@@ -168,7 +168,7 @@ class Monochrome {
    * @param {string} [options.discordInternalErrorMessage] - If the error handler catches a Discord internal error, the user will be shown this message (if Discord succeeds in sending it...). If this is omitted, no message is sent.
    * @param {string[]} [options.statusRotation=[]] - An array of statuses that the bot should rotate through. The statusRotationIntervalInSeconds property is required to be set if this property is set.
    * @param {number} [options.statusRotationIntervalInSeconds] - The bot will change their status on this interval (if the statusRotation has more than one status).
-   * @param {string} [options.discordBotsDotOrgAPIKey] - If you have an API key from {@link https://discordbots.org/} you can provide it here and your server count will be sent regularly.
+   * @param {string} [options.topGgAPIKey] - If you have an API key from {@link https://top.gg/} you can provide it here and your server count will be sent regularly.
    * @param {string} [options.discordDotBotsDotGgAPIKey] - If you have an API key from {@link https://discord.bots.gg/} you can provide it here and your server count will be sent regularly.
    * @param {string} [options.botsOnDiscordDotXyzAPIKey] - If you have an API key from {@link https://bots.ondiscord.xyz} you can provide it here and your server count will be sent regularly.
    * @param {string} [options.discordBotListDotComAPIKey] - If you have an API key from {@link https://discordbotlist.com} you can provide it here and your server count will be sent regularly.
@@ -186,7 +186,7 @@ class Monochrome {
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,
       this.logger,
-      options.discordBotsDotOrgAPIKey,
+      options.topGgApiKey || options.discordBotsDotOrgAPIKey,
       options.discordDotBotsDotGgAPIKey,
       options.botsOnDiscordDotXyzAPIKey,
       options.discordBotListDotComAPIKey,
