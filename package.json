@@ -39,7 +39,7 @@
     "async-on-exit": "^0.1.0",
     "axios": "^0.21.1",
     "chalk": "^2.4.2",
-    "eris": "^0.17.0",
+    "eris": "^0.17.1",
     "fpersist": "^1.0.4",
     "mongodb": "^4.1.2",
     "time-stamp": "^2.2.0"
