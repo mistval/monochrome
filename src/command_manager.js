@@ -148,6 +148,67 @@ class CommandManager {
     }
   }
 
+  loadInteractions() {
+    const interations = this.commands_.map(command => command.createInteraction()).filter(Boolean);
+    if (interations.length > 0) {
+      const eris = this.monochrome_.getErisBot();
+      eris.bulkEditCommands(interations).catch((err) => {
+        this.logger.error({
+          event: 'FAILED TO LOAD INTERACTIONS',
+          err,
+        });
+      });
+    }
+  }
+
+  createFakeSuffix(interation) {
+    return interation.data.options?.map(op => {
+      if (op.type === 5) {
+        return op.value ? op.name : '';
+      }
+
+      return op.value;
+    }).filter(Boolean).join(' ') ?? '';
+  }
+
+  async processInteraction(bot, interaction) {
+    interaction.prefix = this.monochrome_.getPersistence().getPrimaryPrefixForMessage(interaction);
+    interaction.isInteraction = true;
+
+    const commandToExecute = this.commands_.find(
+      command => command.interaction && command.aliases[0] === interaction.data.name
+    );
+
+    const compatibilityMode = commandToExecute.compatibilityMode();
+    let suffix = undefined;
+
+    if (compatibilityMode) {
+      suffix = this.createFakeSuffix(interaction);
+      const eris = this.monochrome_.getErisBot();
+      let initialMessageSent = false;
+      interaction.channel.createMessage = (...args) => {
+        if (!initialMessageSent) {
+          initialMessageSent = true;
+          return interaction.editOriginalMessage(...args);
+        }
+        return eris.createMessage(interaction.channel.id, ...args);
+      };
+    }
+
+    try {
+      await interaction.acknowledge();
+      await commandToExecute.handle(bot, interaction, suffix);
+      this.logger.info({
+        event: 'INTERACTION EXECUTED',
+        commandId: commandToExecute.uniqueId,
+        message: interaction,
+        detail: commandToExecute.uniqueId,
+      });
+    } catch (err) {
+      handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, interaction, err, false);
+    }
+  }
+
   processInput(bot, msg) {
     let serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
     let prefixes = this.persistence_.getPrefixesForServer(serverId);

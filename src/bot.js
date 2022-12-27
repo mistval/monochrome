@@ -411,12 +411,23 @@ class Monochrome {
     this.connected_ = true;
     this.bot_.on('ready', () => {
       this.coreLogger.info({ event: 'ALL SHARDS CONNECTED', detail: 'We have liftoff' });
+      this.commandManager_.loadInteractions();
       this.rotateStatuses_();
       this.trackerStatsUpdater.startUpdateLoop();
     });
 
     this.bot_.on('messageCreate', msg => {
       this.onMessageCreate_(msg);
+    });
+
+    this.bot_.on('interactionCreate', interaction => {
+      interaction.author = interaction.user ?? interaction.member?.user;
+
+      if (this.blacklist_.isUserBlacklistedQuick(interaction.author.id)) {
+        return;
+      }
+
+      this.commandManager_.processInteraction(this.bot_, interaction);
     });
 
     this.bot_.on('guildCreate', guild => {

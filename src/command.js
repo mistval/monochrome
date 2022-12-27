@@ -172,6 +172,7 @@ class Command {
     this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
     this.hidden = !!commandData.hidden;
     this.requiredBotPermissions_ = commandData.requiredBotPermissions;
+    this.interaction = commandData.interaction;
     if (commandData.initialize) {
       commandData.initialize(this.monochrome_);
     }
@@ -286,6 +287,27 @@ class Command {
 
   getEnabledSettingUserFacingName_() {
     return this.aliases[0];
+  }
+
+  compatibilityMode() {
+    return this.interaction?.compatibilityMode ?? false;
+  }
+
+  createInteraction() {
+    if (!this.interaction) {
+      return undefined;
+    }
+
+    if (!this.shortDescription) {
+      throw new Error(`Command ${this.uniqueId} has an interaction but no short description.`);
+    }
+
+    return {
+      name: this.aliases[0],
+      type: 1,
+      description: this.interaction.description ?? this.shortDescription,
+      options: this.interaction.options ?? [],
+    };
   }
 }
 
