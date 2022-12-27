@@ -75,6 +75,9 @@ function sanitizeCommandData(commandData) {
   if (unknownPermission) {
     throw new Error(`Unknown bot permission: ${unknownPermission}. See https://abal.moe/Eris/docs/reference for allowed permissions. Voice permissions are not valid here.`);
   }
+  if (commandData.interaction && !commandData.shortDescription) {
+    throw new Error(`Command has an interaction but no short description.`);
+  }
   return commandData;
 }
 
@@ -296,10 +299,6 @@ class Command {
   createInteraction() {
     if (!this.interaction) {
       return undefined;
-    }
-
-    if (!this.shortDescription) {
-      throw new Error(`Command ${this.uniqueId} has an interaction but no short description.`);
     }
 
     return {

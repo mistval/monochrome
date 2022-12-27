@@ -172,30 +172,30 @@ class CommandManager {
   }
 
   async processInteraction(bot, interaction) {
-    interaction.prefix = this.monochrome_.getPersistence().getPrimaryPrefixForMessage(interaction);
-    interaction.isInteraction = true;
-
-    const commandToExecute = this.commands_.find(
-      command => command.interaction && command.aliases[0] === interaction.data.name
-    );
-
-    const compatibilityMode = commandToExecute.compatibilityMode();
-    let suffix = undefined;
-
-    if (compatibilityMode) {
-      suffix = this.createFakeSuffix(interaction);
-      const eris = this.monochrome_.getErisBot();
-      let initialMessageSent = false;
-      interaction.channel.createMessage = (...args) => {
-        if (!initialMessageSent) {
-          initialMessageSent = true;
-          return interaction.editOriginalMessage(...args);
-        }
-        return eris.createMessage(interaction.channel.id, ...args);
-      };
-    }
-
     try {
+      interaction.prefix = this.monochrome_.getPersistence().getPrimaryPrefixForMessage(interaction);
+      interaction.isInteraction = true;
+
+      const commandToExecute = this.commands_.find(
+        command => command.interaction && command.aliases[0] === interaction.data.name
+      );
+
+      const compatibilityMode = commandToExecute.compatibilityMode();
+      let suffix = undefined;
+
+      if (compatibilityMode) {
+        suffix = this.createFakeSuffix(interaction);
+        const eris = this.monochrome_.getErisBot();
+        let initialMessageSent = false;
+        interaction.channel.createMessage = (...args) => {
+          if (!initialMessageSent) {
+            initialMessageSent = true;
+            return interaction.editOriginalMessage(...args);
+          }
+          return eris.createMessage(interaction.channel.id, ...args);
+        };
+      }
+
       await interaction.acknowledge();
       await commandToExecute.handle(bot, interaction, suffix);
       this.logger.info({
