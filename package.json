@@ -48,7 +48,7 @@
     "chai": "^4.2.0",
     "docdash": "^1.0.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "jsdoc": "^3.6.7",
+    "jsdoc": "^4.0.2",
     "sinon": "^7.4.1"
   }
 }
