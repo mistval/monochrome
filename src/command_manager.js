@@ -149,10 +149,10 @@ class CommandManager {
   }
 
   loadInteractions() {
-    const interations = this.commands_.map(command => command.createInteraction()).filter(Boolean);
-    if (interations.length > 0) {
+    const interactions = this.commands_.map(command => command.createInteraction()).filter(Boolean);
+    if (interactions.length > 0) {
       const eris = this.monochrome_.getErisBot();
-      eris.bulkEditCommands(interations).catch((err) => {
+      eris.bulkEditCommands(interactions).catch((err) => {
         this.logger.error({
           event: 'FAILED TO LOAD INTERACTIONS',
           err,
