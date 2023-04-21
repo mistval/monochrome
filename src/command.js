@@ -78,6 +78,11 @@ function sanitizeCommandData(commandData) {
   if (commandData.interaction && !commandData.shortDescription) {
     throw new Error(`Command has an interaction but no short description.`);
   }
+  for (const option of commandData.interaction?.options ?? []) {
+    if (option.autocomplete && !option.performAutoComplete) {
+      throw new Error(`Command has an interaction option with autocomplete set to true but no performAutoComplete function.`);
+    }
+  }
   return commandData;
 }
 
@@ -292,8 +297,17 @@ class Command {
     return this.aliases[0];
   }
 
-  compatibilityMode() {
+  interactionCompatibilityMode() {
     return this.interaction?.compatibilityMode ?? false;
+  }
+
+  autoCompleteInteraction(bot, interaction, option) {
+    const autoCompleteOption = this.interaction.options.find(o => o.name === option.name);
+    if (!autoCompleteOption) {
+      throw new Error(`Option ${option.name} not found in command ${this.aliases[0]}`);
+    }
+
+    return autoCompleteOption.performAutoComplete(bot, interaction, option, this.monochrome_);
   }
 
   createInteraction() {

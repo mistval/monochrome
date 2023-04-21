@@ -180,30 +180,42 @@ class CommandManager {
         command => command.interaction && command.aliases[0] === interaction.data.name
       );
 
-      const compatibilityMode = commandToExecute.compatibilityMode();
+      const compatibilityMode = commandToExecute.interactionCompatibilityMode();
       let suffix = undefined;
+
+      const focusedOption = interaction.data.options.find(d => d.focused);
+      const isAutoCompleteInteraction = Boolean(focusedOption);
 
       if (compatibilityMode) {
         suffix = this.createFakeSuffix(interaction);
-        const eris = this.monochrome_.getErisBot();
         let initialMessageSent = false;
         interaction.channel.createMessage = (...args) => {
+          if (isAutoCompleteInteraction) {
+            return;
+          }
+
           if (!initialMessageSent) {
             initialMessageSent = true;
             return interaction.editOriginalMessage(...args);
           }
-          return eris.createMessage(interaction.channel.id, ...args);
+          return bot.createMessage(interaction.channel.id, ...args);
         };
       }
 
-      await interaction.acknowledge();
-      await commandToExecute.handle(bot, interaction, suffix);
-      this.logger.info({
-        event: 'INTERACTION EXECUTED',
-        commandId: commandToExecute.uniqueId,
-        message: interaction,
-        detail: commandToExecute.uniqueId,
-      });
+      if (isAutoCompleteInteraction) {
+        const choices = await commandToExecute.autoCompleteInteraction(bot, interaction, focusedOption);
+        await interaction.result(choices);
+      } else {
+        await interaction.acknowledge();
+        await commandToExecute.handle(bot, interaction, suffix);
+
+        this.logger.info({
+          event: 'INTERACTION EXECUTED',
+          commandId: commandToExecute.uniqueId,
+          message: interaction,
+          detail: commandToExecute.uniqueId,
+        });
+      }
     } catch (err) {
       handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, interaction, err, false);
     }
