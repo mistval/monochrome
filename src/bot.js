@@ -480,7 +480,7 @@ class Monochrome {
     });
 
     this.bot_.on('warn', message => {
-      if (message?.startsWith('Unhandled MESSAGE_CREATE type: {')) {
+      if (message?.startsWith?.('Unhandled MESSAGE_CREATE type: {')) {
         const detail = `Unhandled MESSAGE_CREATE ` + message.slice(35, 45);
         this.coreLogger.warn({ event: 'ERIS WARNING', detail });
         return;
