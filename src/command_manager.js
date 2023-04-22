@@ -226,7 +226,8 @@ class CommandManager {
         });
       }
     } catch (err) {
-      handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, interaction, err, false);
+      const silent = interaction.type === 4;
+      handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, interaction, err, silent);
     }
   }
 
