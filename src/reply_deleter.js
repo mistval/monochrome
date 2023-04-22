@@ -8,9 +8,9 @@ const deletionEmoji = {
   '❌': true,
 };
 
-const oldCreateMessageProtoype = Eris.TextChannel.prototype.createMessage;
+const oldChannelCreateMessageProtoype = Eris.TextChannel.prototype.createMessage;
 Eris.TextChannel.prototype.createMessage = function(content, file, messageInResponseTo) {
-  return oldCreateMessageProtoype.call(this, content, file).then(sentMessage => {
+  return oldChannelCreateMessageProtoype.call(this, content, file).then(sentMessage => {
     if (messageInResponseTo) {
       ownerIdForSentMessageId[sentMessage.id] = messageInResponseTo.author.id;
       responseMessageIdForCommandMessageId[messageInResponseTo.id] = sentMessage.id;
@@ -19,11 +19,22 @@ Eris.TextChannel.prototype.createMessage = function(content, file, messageInResp
   });
 };
 
-async function handleMessageDeleted(deletedMsg, logger) {
+const oldBotCreateMessageProtoype = Eris.Client.prototype.createMessage;
+Eris.Client.prototype.createMessage = function(channelId, content, file, messageInResponseTo) {
+  return oldBotCreateMessageProtoype.call(this, channelId, content, file).then(sentMessage => {
+    if (messageInResponseTo) {
+      ownerIdForSentMessageId[sentMessage.id] = messageInResponseTo.author.id;
+      responseMessageIdForCommandMessageId[messageInResponseTo.id] = sentMessage.id;
+    }
+    return sentMessage;
+  });
+};
+
+async function handleMessageDeleted(bot, deletedMsg, logger) {
   let responseMessageId = responseMessageIdForCommandMessageId[deletedMsg.id];
   if (responseMessageId) {
     try {
-      await deletedMsg.channel.deleteMessage(responseMessageId, 'The message that invoked the command was deleted.');
+      await bot.deleteMessage(deletedMsg.channel.id, responseMessageId, 'The message that invoked the command was deleted.');
     } catch (err) {
       if (err.code !== 10008) { // Ignore unknown message
         logger.warn({

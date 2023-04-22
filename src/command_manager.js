@@ -183,8 +183,8 @@ class CommandManager {
       const compatibilityMode = commandToExecute.interactionCompatibilityMode();
       let suffix = undefined;
 
-      const focusedOption = interaction.data.options.find(d => d.focused);
-      const isAutoCompleteInteraction = Boolean(focusedOption);
+      const focusedOption = interaction.data.options?.find(d => d.focused);
+      const isAutoCompleteInteraction = interaction.type === 4;
 
       if (compatibilityMode) {
         suffix = this.createFakeSuffix(interaction);

@@ -1,6 +1,5 @@
 const Eris = require('eris');
 const Persistence = require('./persistence.js');
-const NavigationManager = require('./navigation/navigation_manager.js');
 const replyDeleter = require('./reply_deleter.js');
 const Blacklist = require('./blacklist.js');
 const MessageProcessorManager = require('./message_processor_manager.js');
@@ -181,7 +180,6 @@ class Monochrome {
     this.logger = options.logger;
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.storage);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
-    this.navigationManager_ = new NavigationManager(this);
     this.restUserUpdater_ = new RESTUserUpdater(options.updateUserFromRestBucketClearInterval);
     this.trackerStatsUpdater = new TrackerStatsUpdater(
       this.bot_,
@@ -224,15 +222,6 @@ class Monochrome {
   getLogger() {
     assert(this.logger, 'Logger not available (probably a bug in monochrome)');
     return this.logger;
-  }
-
-  /**
-   * Get the NavigationManager, with which you can send navigations.
-   * @returns {NavigationManager}
-   */
-  getNavigationManager() {
-    assert(this.navigationManager_, 'NavigationManager not available (probably a bug in monochrome)');
-    return this.navigationManager_;
   }
 
   /**
@@ -474,16 +463,11 @@ class Monochrome {
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, member) => {
-      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, member.id);
       replyDeleter.handleReaction(msg, member.id, emoji, this.logger);
     });
 
     this.bot_.on('messageDelete', msg => {
-      replyDeleter.handleMessageDeleted(msg, this.logger);
-    });
-
-    this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
-      this.navigationManager_.handleEmojiToggled(this.bot_, msg, emoji, userId);
+      replyDeleter.handleMessageDeleted(this.bot_, msg, this.logger);
     });
 
     this.bot_.on('guildDelete', (guild, unavailable) => {
