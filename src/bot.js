@@ -13,6 +13,8 @@ const loggerSerializers = require('./logger_serializers.js');
 const FPersistPlugin = require('./storage_fpersist.js');
 const path = require('path');
 const RESTUserUpdater = require('./rest_updaters/update_user.js');
+const { PaginatedMessageStaticEvents } = require('./components/paginated_message.js');
+const { InteractiveMessage } = require('./components/interactive_message.js');
 
 function updateStatusFromQueue(bot, queue) {
   let nextStatus = queue.shift();
@@ -398,6 +400,14 @@ class Monochrome {
     }
 
     this.connected_ = true;
+
+    PaginatedMessageStaticEvents.on('error', err => {
+      this.coreLogger.error({
+        event: 'PAGINATED MESSAGE STATIC ERROR',
+        err,
+      });
+    });
+
     this.bot_.on('ready', () => {
       this.coreLogger.info({ event: 'ALL SHARDS CONNECTED', detail: 'We have liftoff' });
       this.commandManager_.loadInteractions();
@@ -416,7 +426,18 @@ class Monochrome {
         return;
       }
 
-      this.commandManager_.processInteraction(this.bot_, interaction);
+      if (interaction.type === 3) {
+        return InteractiveMessage.handleInteraction(interaction)
+          .catch((err) => {
+            monochrome.getLogger().error({
+              event: 'INTERACTION HANDLER ERROR',
+              err,
+              detail: `Server: ${interaction.guildID ?? 'DM'} - Interactive message ID: ${err.interactiveMessageId}`,
+            });
+          });
+      } else {
+        this.commandManager_.processInteraction(this.bot_, interaction);
+      }
     });
 
     this.bot_.on('guildCreate', guild => {

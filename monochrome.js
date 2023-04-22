@@ -9,6 +9,14 @@ module.exports.SettingsValidators = require('./src/settings_validators.js');
 module.exports.erisVersion = getErisVersionSync();
 module.exports.Permissions = require('./src/permissions.js').discordApiStringForPermission;
 module.exports.ConsoleLogger = require('./src/console_logger.js');
+module.exports.InteractiveMessage = require('./src/components/interactive_message.js').InteractiveMessage;
+
+Object.assign(
+  module.exports,
+  require('./src/components/message_components.js'),
+  require('./src/components/paginated_message.js'),
+  require('./src/components/interactive_message.js'),
+);
 
 module.exports.Plugins = {
   FPersist,
