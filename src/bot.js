@@ -519,8 +519,8 @@ class Monochrome {
           return;
         }
 
-        if (message?.startsWith?.('Unknown guild text channel type: ')) {
-          const detail = message.slice(0, 35);
+        if (message?.message?.startsWith?.('Unknown guild text channel type: ')) {
+          const detail = message.message.slice(0, 35);
           this.coreLogger.warn({ event: 'ERIS WARNING', detail });
           return;
         }
