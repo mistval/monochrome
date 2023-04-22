@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "docdash": "^1.0.0",
+    "docdash": "^2.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
     "jsdoc": "^4.0.2",
     "sinon": "^7.4.1"
