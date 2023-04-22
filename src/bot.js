@@ -519,6 +519,12 @@ class Monochrome {
           return;
         }
 
+        if (message?.startsWith?.('Unknown guild text channel type: ')) {
+          const detail = message.slice(0, 35);
+          this.coreLogger.warn({ event: 'ERIS WARNING', detail });
+          return;
+        }
+
         this.coreLogger.warn({ event: 'ERIS WARNING', detail: message });
       } catch (err) {
         console.warn('Monochrome Unhandled', err);
