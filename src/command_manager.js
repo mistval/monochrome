@@ -188,7 +188,7 @@ class CommandManager {
 
       if (isAutoCompleteInteraction) {
         const choices = await commandToExecute.autoCompleteInteraction(bot, interaction, focusedOption);
-        await interaction.result(choices);
+        await interaction.result(choices.length > 25 ? choices.slice(0, 25) : choices);
       } else {
         await interaction.acknowledge();
 
