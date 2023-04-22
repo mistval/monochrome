@@ -409,46 +409,62 @@ class Monochrome {
     });
 
     this.bot_.on('ready', () => {
-      this.coreLogger.info({ event: 'ALL SHARDS CONNECTED', detail: 'We have liftoff' });
-      this.commandManager_.loadInteractions();
-      this.rotateStatuses_();
-      this.trackerStatsUpdater.startUpdateLoop();
+      try {
+        this.coreLogger.info({ event: 'ALL SHARDS CONNECTED', detail: 'We have liftoff' });
+        this.commandManager_.loadInteractions();
+        this.rotateStatuses_();
+        this.trackerStatsUpdater.startUpdateLoop();
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('messageCreate', msg => {
-      this.onMessageCreate_(msg);
+      try {
+        this.onMessageCreate_(msg);
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('interactionCreate', interaction => {
-      interaction.author = interaction.user ?? interaction.member?.user;
+      try {
+        interaction.author = interaction.user ?? interaction.member?.user;
 
-      if (this.blacklist_.isUserBlacklistedQuick(interaction.author.id)) {
-        return;
-      }
+        if (this.blacklist_.isUserBlacklistedQuick(interaction.author.id)) {
+          return;
+        }
 
-      if (interaction.type === 3) {
-        return InteractiveMessage.handleInteraction(interaction)
-          .catch((err) => {
-            this.coreLogger.error({
-              event: 'INTERACTION HANDLER ERROR',
-              err,
-              detail: `Server: ${interaction.guildID ?? 'DM'} - Interactive message ID: ${err.interactiveMessageId}`,
+        if (interaction.type === 3) {
+          return InteractiveMessage.handleInteraction(interaction)
+            .catch((err) => {
+              this.coreLogger.error({
+                event: 'INTERACTION HANDLER ERROR',
+                err,
+                detail: `Server: ${interaction.guildID ?? 'DM'} - Interactive message ID: ${err.interactiveMessageId}`,
+              });
             });
-          });
-      } else {
-        this.commandManager_.processInteraction(this.bot_, interaction);
+        } else {
+          this.commandManager_.processInteraction(this.bot_, interaction);
+        }
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
       }
     });
 
     this.bot_.on('guildCreate', guild => {
-      this.coreLogger.info({ event: 'JOINED GUILD', guild });
-      this.blacklist_.leaveGuildIfBlacklisted(guild).then((left) => {
-        if (left) {
-          this.coreLogger.info({ event: 'LEAVING BLACKLISTED GUILD', guild });
-        }
-      }).catch(err => {
-        this.coreLogger.error({ event: 'ERROR LEAVING BLACKLISTED GUILD', guild, err });
-      });
+      try {
+        this.coreLogger.info({ event: 'JOINED GUILD', guild });
+        this.blacklist_.leaveGuildIfBlacklisted(guild).then((left) => {
+          if (left) {
+            this.coreLogger.info({ event: 'LEAVING BLACKLISTED GUILD', guild });
+          }
+        }).catch(err => {
+          this.coreLogger.error({ event: 'ERROR LEAVING BLACKLISTED GUILD', guild, err });
+        });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('error', (err, shardId) => {
@@ -467,20 +483,32 @@ class Monochrome {
           this.coreLogger.error({ event: 'ERROR', shardId, detail, err: err?.error || err });
         }
       } catch (err) {
-        console.warn(err);
+        console.warn('Monochrome Unhandled', err);
       }
     });
 
     this.bot_.on('disconnect', () => {
-      this.coreLogger.info({ event: 'ALL SHARDS DISCONNECTED' });
+      try {
+        this.coreLogger.info({ event: 'ALL SHARDS DISCONNECTED' });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('shardDisconnect', (err, shardId) => {
-      this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err, detail: `Shard ${shardId} disconnected` });
+      try {
+        this.coreLogger.info({ event: 'SHARD DISCONNECTED', shardId, err, detail: `Shard ${shardId} disconnected` });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('shardResume', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId, detail: `Shard ${shardId} reconnected` });
+      try {
+        this.coreLogger.info({ event: 'SHARD RECONNECTED', shardId, detail: `Shard ${shardId} reconnected` });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('warn', message => {
@@ -493,38 +521,52 @@ class Monochrome {
 
         this.coreLogger.warn({ event: 'ERIS WARNING', detail: message });
       } catch (err) {
-        console.warn(err);
+        console.warn('Monochrome Unhandled', err);
       }
     });
 
     this.bot_.on('shardReady', (shardId) => {
-      this.coreLogger.info({ event: 'SHARD READY', shardId, detail: `Shard ${shardId} connected` });
+      try {
+        this.coreLogger.info({ event: 'SHARD READY', shardId, detail: `Shard ${shardId} connected` });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, member) => {
-      replyDeleter.handleReaction(msg, member.id, emoji, this.logger);
+      try {
+        replyDeleter.handleReaction(msg, member.id, emoji, this.logger);
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('messageDelete', msg => {
-      replyDeleter.handleMessageDeleted(this.bot_, msg, this.logger);
+      try {
+        replyDeleter.handleMessageDeleted(this.bot_, msg, this.logger);
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
     this.bot_.on('guildDelete', (guild, unavailable) => {
-      if (!unavailable) {
-        this.coreLogger.info({ event: 'LEFT GUILD', guild });
-      }
-      this.persistence_.resetPrefixesForServerId(guild.id).catch(err => {
-        this.coreLogger.error({
-          event: 'ERROR RESETTING PREFIXES AFTER LEAVING GUILD',
-          guild,
-          err,
+      try {
+        if (!unavailable) {
+          this.coreLogger.info({ event: 'LEFT GUILD', guild });
+        }
+        this.persistence_.resetPrefixesForServerId(guild.id).catch(err => {
+          this.coreLogger.error({
+            event: 'ERROR RESETTING PREFIXES AFTER LEAVING GUILD',
+            guild,
+            err,
+          });
         });
-      });
+      } catch (err) {
+        console.warn('Monochrome Unhandled', err);
+      }
     });
 
-    this.bot_.connect().catch(err => {
-      this.coreLogger.error({ event: 'ERROR LOGGING IN', err });
-    });
+    return this.bot_.connect();
   }
 
   tryGiveMessageToWaiter_(msg) {
