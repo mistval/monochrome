@@ -186,28 +186,37 @@ class CommandManager {
       const focusedOption = interaction.data.options?.find(d => d.focused);
       const isAutoCompleteInteraction = interaction.type === 4;
 
-      if (compatibilityMode) {
-        suffix = this.createFakeSuffix(interaction);
-        let initialMessageSent = false;
-        interaction.channel.createMessage = (...args) => {
-          if (isAutoCompleteInteraction) {
-            return;
-          }
-
-          if (!initialMessageSent) {
-            initialMessageSent = true;
-            return interaction.editOriginalMessage(...args);
-          }
-          return bot.createMessage(interaction.channel.id, ...args);
-        };
-      }
-
       if (isAutoCompleteInteraction) {
         const choices = await commandToExecute.autoCompleteInteraction(bot, interaction, focusedOption);
         await interaction.result(choices);
       } else {
         await interaction.acknowledge();
-        await commandToExecute.handle(bot, interaction, suffix);
+
+        let commandInteraction = interaction;
+        if (compatibilityMode) {
+          suffix = this.createFakeSuffix(interaction);
+          let initialMessageSent = false;
+          commandInteraction = {
+            ...interaction,
+            channel: {
+              ...interaction.channel,
+              permissionsOf: interaction.channel.permissionsOf && ((...args) => interaction.channel.permissionsOf(...args)),
+              createMessage(...args) {
+                if (isAutoCompleteInteraction) {
+                  return;
+                }
+
+                if (!initialMessageSent) {
+                  initialMessageSent = true;
+                  return interaction.editOriginalMessage(...args);
+                }
+                return bot.createMessage(interaction.channel.id, ...args);
+              },
+            },
+          };
+        }
+
+        await commandToExecute.handle(bot, commandInteraction, suffix);
 
         this.logger.info({
           event: 'INTERACTION EXECUTED',
