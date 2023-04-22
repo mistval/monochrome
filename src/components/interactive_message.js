@@ -86,11 +86,14 @@ class InteractiveMessage extends EventEmitter {
   }
 
   async handleInteraction(interaction) {
-    if (this.handlingInteraction) {
-      return;
+    if ((interaction.member ?? interaction.user)?.id !== this.ownerId) {
+      return interaction.createMessage({
+        content: 'Only the owner of this message can interact it.',
+        flags: 64,
+      });
     }
 
-    if ((interaction.member ?? interaction.user)?.id !== this.ownerId) {
+    if (this.handlingInteraction) {
       return;
     }
 
@@ -122,7 +125,10 @@ class InteractiveMessage extends EventEmitter {
         sleep(ACKNOWLEDGE_TIMEOUT_MS),
       ]);
 
-      await interaction.acknowledge();
+      if (!interaction.acknowledged) {
+        await interaction.acknowledge();
+      }
+
       await handlePromise;
     } catch (err) {
       err.interactiveMessageId = interactiveMessage.id;
