@@ -452,18 +452,22 @@ class Monochrome {
     });
 
     this.bot_.on('error', (err, shardId) => {
-      const detail = shardId === undefined
-        ? undefined
-        : `Shard ${shardId}`;
+      try {
+        const detail = shardId === undefined
+          ? undefined
+          : `Shard ${shardId}`;
 
-      if (err?.code === 1006 || err?.code === 1001) {
-        this.coreLogger.warn({ event: 'CONNECTION WARNING', shardId, detail });
-      } else if (err.message?.includes(`(reading 'add')`)) {
-        this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading add' });
-      } else if (err.message?.includes(`(reading 'remove')`)) {
-        this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading remove' });
-      } else {
-        this.coreLogger.error({ event: 'ERROR', shardId, detail, err: err?.error || err });
+        if (err?.code === 1006 || err?.code === 1001) {
+          this.coreLogger.warn({ event: 'CONNECTION WARNING', shardId, detail });
+        } else if (err?.message?.includes(`(reading 'add')`)) {
+          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading add' });
+        } else if (err?.message?.includes(`(reading 'remove')`)) {
+          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading remove' });
+        } else {
+          this.coreLogger.error({ event: 'ERROR', shardId, detail, err: err?.error || err });
+        }
+      } catch (err) {
+        console.warn(err);
       }
     });
 
@@ -480,13 +484,17 @@ class Monochrome {
     });
 
     this.bot_.on('warn', message => {
-      if (message?.startsWith?.('Unhandled MESSAGE_CREATE type: {')) {
-        const detail = `Unhandled MESSAGE_CREATE ` + message.slice(35, 45);
-        this.coreLogger.warn({ event: 'ERIS WARNING', detail });
-        return;
-      }
+      try {
+        if (message?.startsWith?.('Unhandled MESSAGE_CREATE type: {')) {
+          const detail = `Unhandled MESSAGE_CREATE ` + message.slice(35, 45);
+          this.coreLogger.warn({ event: 'ERIS WARNING', detail });
+          return;
+        }
 
-      this.coreLogger.warn({ event: 'ERIS WARNING', detail: message });
+        this.coreLogger.warn({ event: 'ERIS WARNING', detail: message });
+      } catch (err) {
+        console.warn(err);
+      }
     });
 
     this.bot_.on('shardReady', (shardId) => {
