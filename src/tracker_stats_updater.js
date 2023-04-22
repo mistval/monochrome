@@ -124,7 +124,7 @@ class TrackerStatsUpdater {
       });
     } catch (err) {
       this.logger.warn({
-        event: 'ERROR SENDING STATS TO DISCORDBOTS.ORG',
+        event: 'ERROR SENDING STATS TO TOP.GG',
         err,
       });
     }
