@@ -429,7 +429,7 @@ class Monochrome {
       if (interaction.type === 3) {
         return InteractiveMessage.handleInteraction(interaction)
           .catch((err) => {
-            monochrome.getLogger().error({
+            this.coreLogger.error({
               event: 'INTERACTION HANDLER ERROR',
               err,
               detail: `Server: ${interaction.guildID ?? 'DM'} - Interactive message ID: ${err.interactiveMessageId}`,
