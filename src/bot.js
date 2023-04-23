@@ -476,9 +476,11 @@ class Monochrome {
         if (err?.code === 1006 || err?.code === 1001) {
           this.coreLogger.warn({ event: 'CONNECTION WARNING', shardId, detail });
         } else if (err?.message?.includes(`(reading 'add')`)) {
-          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading add' });
+          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading add, Shard' + shardId });
         } else if (err?.message?.includes(`(reading 'remove')`)) {
-          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading remove' });
+          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading remove, Shard' + shardId });
+        } else if (err?.message?.includes(`(reading 'get')`)) {
+          this.coreLogger.error({ event: 'ERROR', shardId, detail: 'Error reading get, Shard' + shardId });
         } else {
           this.coreLogger.error({ event: 'ERROR', shardId, detail, err: err?.error || err });
         }

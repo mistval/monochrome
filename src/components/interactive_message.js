@@ -78,7 +78,10 @@ class InteractiveMessage extends EventEmitter {
       try {
         await this.disableInteraction();
       } catch (err) {
-        this.emit('error', err);
+        if (err?.code !== 10008) {
+          // 10008 = Unknown Message. Already deleted.
+          this.emit('error', err);
+        }
       }
     }, AUTO_TIMEOUT_MS);
 
@@ -136,7 +139,6 @@ class InteractiveMessage extends EventEmitter {
     }
   }
 }
-
 
 module.exports = {
   InteractiveMessage,
