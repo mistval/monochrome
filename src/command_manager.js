@@ -172,6 +172,7 @@ class CommandManager {
   }
 
   async processInteraction(bot, interaction) {
+    let commandInteraction = interaction;
     try {
       interaction.prefix = this.monochrome_.getPersistence().getPrimaryPrefixForMessage(interaction);
       interaction.isInteraction = true;
@@ -192,7 +193,6 @@ class CommandManager {
       } else {
         await interaction.acknowledge();
 
-        let commandInteraction = interaction;
         if (compatibilityMode) {
           suffix = this.createFakeSuffix(interaction);
           let initialMessageSent = false;
@@ -227,7 +227,7 @@ class CommandManager {
       }
     } catch (err) {
       const silent = interaction.type === 4;
-      handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, interaction, err, silent);
+      handleError(this.logger, 'INTERACTION ERROR', this.monochrome_, commandInteraction, err, silent);
     }
   }
 
