@@ -44,7 +44,7 @@ function tryConvertToFulfillmentError(error, monochrome) {
   return fulfillmentError;
 }
 
-async function handleError(logger, event, monochrome, msg, error, silent) {
+async function handleError(logger, event, monochrome, msg, error, silent, additionalFields) {
   try {
     assert(logger.warn && logger.error, 'logger does not implement the expected API');
     assert(
@@ -82,6 +82,7 @@ async function handleError(logger, event, monochrome, msg, error, silent) {
       err: internalError,
       detail: logDescription,
       message: msg,
+      ...additionalFields,
     });
 
     if (publicMessage) {

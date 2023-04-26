@@ -283,7 +283,7 @@ class CommandManager {
         detail: commandToExecute.uniqueId,
       });
     } catch (err) {
-      handleError(this.logger, 'COMMAND ERROR', this.monochrome_, msg, err, false);
+      handleError(this.logger, 'COMMAND ERROR', this.monochrome_, msg, err, false, { commandId: commandToExecute.uniqueId, suffix });
     }
 
     return commandToExecute;
