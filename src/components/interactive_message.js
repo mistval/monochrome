@@ -91,7 +91,7 @@ class InteractiveMessage extends EventEmitter {
   async handleInteraction(interaction) {
     if ((interaction.member ?? interaction.user)?.id !== this.ownerId) {
       return interaction.createMessage({
-        content: 'Only the owner of this message can interact it.',
+        content: 'Only the owner of this message can interact with it.',
         flags: 64,
       });
     }
