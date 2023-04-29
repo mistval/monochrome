@@ -93,31 +93,15 @@ function createUpdateAcceptedResult(newUserFacingValue, newInternalValue, treeNo
 }
 
 function getUserSetting(userData, settingUniqueId) {
-  if (userData.settings && userData.settings.global) {
-    return userData.settings.global[settingUniqueId];
-  }
-
-  return undefined;
+  return userData?.settings?.global?.[settingUniqueId];
 }
 
 function getServerSetting(serverData, settingUniqueId) {
-  if (serverData.settings && serverData.settings.serverSettings) {
-    return serverData.settings.serverSettings[settingUniqueId];
-  }
-
-  return undefined;
+  return serverData?.settings?.serverSettings?.[settingUniqueId];
 }
 
 function getChannelSetting(serverData, channelId, settingUniqueId) {
-  if (
-    serverData.settings
-    && serverData.settings.channelSettings
-    && serverData.settings.channelSettings[channelId]
-  ) {
-    return serverData.settings.channelSettings[channelId][settingUniqueId];
-  }
-
-  return undefined;
+  return serverData?.settings?.channelSettings?.[channelId]?.[settingUniqueId];
 }
 
 function getTreeNodeForUniqueId(settingsTree, settingUniqueId) {
@@ -173,44 +157,75 @@ function defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serve
   });
 }
 
-function defaultUpdateSetting(persistence, settingUniqueId, serverId, channelId, userId, newInternalValue, settingScope) {
+function defaultUpdateSetting(
+  persistence,
+  settingUniqueId,
+  serverId,
+  channelId,
+  userId,
+  newInternalValue,
+  settingScope,
+) {
   assert(
     settingScope === SettingScope.SERVER
     || settingScope === SettingScope.CHANNEL
     || settingScope === SettingScope.USER);
 
   if (settingScope === SettingScope.SERVER) {
-    return defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serverId, newInternalValue);
+    return defaultUpdateServerWideSettingValue(
+      persistence,
+      settingUniqueId,
+      serverId,
+      newInternalValue,
+    );
   } else if (settingScope === SettingScope.CHANNEL) {
-    return defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId, channelId, newInternalValue);
+    return defaultUpdateChannelSettingValue(
+      persistence,
+      settingUniqueId,
+      serverId,
+      channelId,
+      newInternalValue,
+    );
   } else {
     return defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, newInternalValue);
   }
 }
 
-async function defaultGetInternalSettingValue(persistence, setting, serverId, channelId, userId) {
+async function defaultGetInternalSettingValue(persistence, setting, serverId, channels, userId) {
+  if (!Array.isArray(channels)) {
+    channels = [channels];
+  }
+
+  channels = channels.flatMap((c) => {
+    if (typeof c === 'string') {
+      return c;
+    }
+
+    // Thread channel
+    if (c.type === 11) {
+      return [c.id, c.parentID];
+    }
+
+    return c.id;
+  }).filter(Boolean);
+
   const [userData, serverData] = await Promise.all([
     persistence.getDataForUser(userId),
     persistence.getDataForServer(serverId),
   ]);
 
   const userSetting = getUserSetting(userData, setting.uniqueId);
-  const channelSetting = getChannelSetting(serverData, channelId, setting.uniqueId);
   const serverSetting = getServerSetting(serverData, setting.uniqueId);
+  const channelSetting = channels.map(
+    c => getChannelSetting(serverData, c, setting.uniqueId),
+  ).find(Boolean);
 
-  if (userSetting !== undefined) {
-    return userSetting;
-  }
-  if (channelSetting !== undefined) {
-    return channelSetting;
-  }
-  if (serverSetting !== undefined) {
-    return serverSetting;
-  }
-
-  const defaultUserFacingValue = setting.defaultUserFacingValue;
-  const defaultInternalValue = await setting.convertUserFacingValueToInternalValue(defaultUserFacingValue);
-  return defaultInternalValue;
+  return userSetting
+    ?? channelSetting
+    ?? serverSetting
+    ?? await setting.convertUserFacingValueToInternalValue(
+      setting.defaultUserFacingValue,
+    );
 }
 
 function sanitizeAndValidateSettingsLeaf(treeNode, parent, uniqueIdsEncountered, path) {
@@ -253,11 +268,14 @@ function sanitizeAndValidateSettingsLeaf(treeNode, parent, uniqueIdsEncountered,
     treeNode.requireConfirmation = false;
   }
 
-  treeNode.convertUserFacingValueToInternalValue = treeNode.convertUserFacingValueToInternalValue || (value => value);
-  treeNode.convertInternalValueToUserFacingValue = treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
+  treeNode.convertUserFacingValueToInternalValue =
+    treeNode.convertUserFacingValueToInternalValue || (value => value);
+  treeNode.convertInternalValueToUserFacingValue =
+    treeNode.convertInternalValueToUserFacingValue || (value => `${value}`);
   treeNode.validateInternalValue = treeNode.validateInternalValue || (() => true);
   treeNode.updateSetting = treeNode.updateSetting || defaultUpdateSetting;
-  treeNode.getInternalSettingValue = treeNode.getInternalSettingValue || defaultGetInternalSettingValue;
+  treeNode.getInternalSettingValue = treeNode.getInternalSettingValue
+    || defaultGetInternalSettingValue;
   treeNode.onServerSettingChanged = treeNode.onServerSettingChanged || (() => {});
   treeNode.onChannelSettingChanged = treeNode.onChannelSettingChanged || (() => {});
   treeNode.onUserSettingChanged = treeNode.onUserSettingChanged || (() => {});
@@ -277,7 +295,12 @@ function sanitizeAndValidateSettingsCategory(treeNode, parent, uniqueIdsEncounte
   sanitizeAndValidateSettingsTree(treeNode.children, treeNode, uniqueIdsEncountered, path);
 }
 
-function sanitizeAndValidateSettingsTree(settingsTree, parent, uniqueIdsEncountered = [], path = []) {
+function sanitizeAndValidateSettingsTree(
+  settingsTree,
+  parent,
+  uniqueIdsEncountered = [],
+  path = [],
+) {
   if (!Array.isArray(settingsTree)) {
     throw new Error('The settings, or a setting category\'s children property, is not an array');
   }
@@ -287,14 +310,31 @@ function sanitizeAndValidateSettingsTree(settingsTree, parent, uniqueIdsEncounte
     const childPath = path.slice();
     childPath.push(i);
     if (treeNode.children) {
-      sanitizeAndValidateSettingsCategory(treeNode, parent || settingsTree, uniqueIdsEncountered, childPath);
+      sanitizeAndValidateSettingsCategory(
+        treeNode,
+        parent || settingsTree,
+        uniqueIdsEncountered,
+        childPath,
+      );
     } else {
-      sanitizeAndValidateSettingsLeaf(treeNode, parent || settingsTree, uniqueIdsEncountered, childPath);
+      sanitizeAndValidateSettingsLeaf(
+        treeNode,
+        parent || settingsTree,
+        uniqueIdsEncountered,
+        childPath,
+      );
     }
   }
 }
 
-function onSettingChanged(treeNode, settingScope, serverId, channelId, userId, newSettingValidationResult) {
+function onSettingChanged(
+  treeNode,
+  settingScope,
+  serverId,
+  channelId,
+  userId,
+  newSettingValidationResult,
+) {
   if (settingScope === SettingScope.USER) {
     return treeNode.onUserSettingChanged(treeNode, userId, newSettingValidationResult);
   } else if (settingScope === SettingScope.CHANNEL) {
@@ -417,13 +457,15 @@ class Settings {
    * @param {string} userId - The ID of the user using the setting.
    * @returns {Object|undefined} The internal value of the setting, or undefined if no setting is found.
    */
-  getInternalSettingValue(settingUniqueId, serverId, channelId, userId) {
+  getInternalSettingValue(settingUniqueId, serverId, channels, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
-    if (!treeNode) {
-      return undefined;
-    }
-
-    return treeNode.getInternalSettingValue(this.persistence_, treeNode, serverId, channelId, userId);
+    return treeNode?.getInternalSettingValue(
+      this.persistence_,
+      treeNode,
+      serverId,
+      channels,
+      userId,
+    );
   }
 
   /**
@@ -437,13 +479,19 @@ class Settings {
    * @param {string} userId - The ID of the user using the setting.
    * @returns {string|undefined} The user facing value of the setting, or undefined if no setting is found.
    */
-  async getUserFacingSettingValue(settingUniqueId, serverId, channelId, userId) {
+  async getUserFacingSettingValue(settingUniqueId, serverId, channels, userId) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
     if (!treeNode) {
       return undefined;
     }
 
-    const internalValue = await this.getInternalSettingValue(settingUniqueId, serverId, channelId, userId);
+    const internalValue = await this.getInternalSettingValue(
+      settingUniqueId,
+      serverId,
+      channels,
+      userId,
+    );
+
     const userFacingValue = await treeNode.convertInternalValueToUserFacingValue(internalValue);
 
     return userFacingValue;
@@ -458,8 +506,21 @@ class Settings {
    * @param {boolean} userIsServerAdmin - Whether or not the user is a server admin.
    * @returns {Settings~SettingUpdateResult}
    */
-  async setServerWideSettingValue(settingUniqueId, serverId, newUserFacingValue, userIsServerAdmin) {
-    return this.setSettingValue_(settingUniqueId, serverId, undefined, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.SERVER);
+  async setServerWideSettingValue(
+    settingUniqueId,
+    serverId,
+    newUserFacingValue,
+    userIsServerAdmin,
+  ) {
+    return this.setSettingValue_(
+      settingUniqueId,
+      serverId,
+      undefined,
+      undefined,
+      newUserFacingValue,
+      userIsServerAdmin,
+      SettingScope.SERVER,
+    );
   }
 
   /**
@@ -471,8 +532,22 @@ class Settings {
    * @param {boolean} userIsServerAdmin - Whether or not the user is a server admin.
    * @returns {Settings~SettingUpdateResult} The result of the attempt to update the setting.
    */
-  async setChannelSettingValue(settingUniqueId, serverId, channelId, newUserFacingValue, userIsServerAdmin) {
-    return this.setSettingValue_(settingUniqueId, serverId, channelId, undefined, newUserFacingValue, userIsServerAdmin, SettingScope.CHANNEL);
+  async setChannelSettingValue(
+    settingUniqueId,
+    serverId,
+    channelId,
+    newUserFacingValue,
+    userIsServerAdmin,
+  ) {
+    return this.setSettingValue_(
+      settingUniqueId,
+      serverId,
+      channelId,
+      undefined,
+      newUserFacingValue,
+      userIsServerAdmin,
+      SettingScope.CHANNEL,
+    );
   }
 
   /**
@@ -505,12 +580,34 @@ class Settings {
    * @returns {Settings~SettingUpdateResult} The result of the attempt to update the setting.
    */
   async setUserSettingValue(settingUniqueId, userId, newUserFacingValue) {
-    return this.setSettingValue_(settingUniqueId, undefined, undefined, userId, newUserFacingValue, false, SettingScope.USER);
+    return this.setSettingValue_(
+      settingUniqueId,
+      undefined,
+      undefined,
+      userId,
+      newUserFacingValue,
+      false,
+      SettingScope.USER,
+    );
   }
 
-  async setSettingValue_(settingUniqueId, serverId, channelId, userId, newUserFacingValue, userIsServerAdmin, settingScope) {
+  async setSettingValue_(
+    settingUniqueId,
+    serverId,
+    channelId,
+    userId,
+    newUserFacingValue,
+    userIsServerAdmin,
+    settingScope,
+  ) {
     const treeNode = getTreeNodeForUniqueId(this.settingsTree_, settingUniqueId);
-    const newSettingValidationResult = await this.validateNewSetting_(settingUniqueId, newUserFacingValue, userIsServerAdmin, settingScope);
+    const newSettingValidationResult = await this.validateNewSetting_(
+      settingUniqueId,
+      newUserFacingValue,
+      userIsServerAdmin,
+      settingScope,
+    );
+
     if (newSettingValidationResult.accepted) {
       await treeNode.updateSetting(
         this.persistence_,
@@ -521,6 +618,7 @@ class Settings {
         newSettingValidationResult.newInternalValue,
         settingScope,
       );
+
       await onSettingChanged(
         treeNode,
         settingScope,

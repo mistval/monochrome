@@ -251,7 +251,12 @@ class Command {
 
     const settingsPromises = this.requiredSettings_.map(requiredSetting => {
       const serverId = msg.channel.guild ? msg.channel.guild.id : msg.channel.id;
-      return this.monochrome_.getSettings().getInternalSettingValue(requiredSetting, serverId, msg.channel.id, msg.author.id);
+      return this.monochrome_.getSettings().getInternalSettingValue(
+        requiredSetting,
+        serverId,
+        msg.channel,
+        msg.author.id
+      );
     });
 
     const settingsArray = await Promise.all(settingsPromises);

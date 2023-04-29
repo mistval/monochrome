@@ -95,7 +95,7 @@ class HelpCommandHelper {
       return this.settings_.getInternalSettingValue(
         command.getEnabledSettingUniqueId(),
         msg.channel.guild ? msg.channel.guild.id : msg.channel.id,
-        msg.channel.id,
+        msg.channel,
         msg.author.id,
       );
     });
