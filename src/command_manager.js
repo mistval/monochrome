@@ -26,7 +26,7 @@ function createSettingsForCommands(userCommands) {
     .filter(setting => !!setting);
 }
 
-function savePrefixes(persistence, settingUniqueId, serverId, channelId, userId, newInternalValue) {
+function savePrefixes(persistence, settingUniqueId, serverId, channelId, descendentChannelIds, userId, newInternalValue) {
   return persistence.editPrefixesForServerId(serverId, newInternalValue);
 }
 

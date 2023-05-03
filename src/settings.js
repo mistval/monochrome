@@ -120,6 +120,17 @@ function getTreeNodeForUniqueId(settingsTree, settingUniqueId) {
   return undefined;
 }
 
+function resetSettingForChannels(serverData, channelIds, settingUniqueId) {
+  for (const channelId of (channelIds ?? [])) {
+    delete serverData.settings.channelSettings[channelId]?.[settingUniqueId];
+  }
+}
+
+function resetSettingForAllChannels(serverData, settingUniqueId) {
+  const channelIds = Object.keys(serverData.settings.channelSettings ?? {});
+  resetSettingForChannels(serverData, channelIds, settingUniqueId);
+}
+
 function defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, newInternalValue) {
   assert(userId);
   return persistence.editDataForUser(userId, userData => {
@@ -130,7 +141,14 @@ function defaultUpdateUserSettingValue(persistence, settingUniqueId, userId, new
   });
 }
 
-function defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId, channelId, newInternalValue) {
+function defaultUpdateChannelSettingValue(
+  persistence,
+  settingUniqueId,
+  serverId,
+  channelId,
+  descendentChannelIds,
+  newInternalValue,
+) {
   assert(serverId);
   assert(channelId);
   return persistence.editDataForServer(serverId, serverData => {
@@ -138,6 +156,7 @@ function defaultUpdateChannelSettingValue(persistence, settingUniqueId, serverId
     serverData.settings.channelSettings = serverData.settings.channelSettings || {};
     serverData.settings.channelSettings[channelId] = serverData.settings.channelSettings[channelId] || {};
     serverData.settings.channelSettings[channelId][settingUniqueId] = newInternalValue;
+    resetSettingForChannels(serverData, descendentChannelIds, settingUniqueId);
     return serverData;
   });
 }
@@ -148,6 +167,7 @@ function defaultUpdateServerWideSettingValue(persistence, settingUniqueId, serve
     serverData.settings = serverData.settings || {};
     serverData.settings.serverSettings = serverData.settings.serverSettings || {};
     serverData.settings.serverSettings[settingUniqueId] = newInternalValue;
+    resetSettingForAllChannels(serverData, settingUniqueId);
 
     if (serverData.settings.channelSettings) {
       delete serverData.settings.channelSettings[settingUniqueId];
@@ -162,6 +182,7 @@ function defaultUpdateSetting(
   settingUniqueId,
   serverId,
   channelId,
+  descendentChannelIds,
   userId,
   newInternalValue,
   settingScope,
@@ -184,6 +205,7 @@ function defaultUpdateSetting(
       settingUniqueId,
       serverId,
       channelId,
+      descendentChannelIds,
       newInternalValue,
     );
   } else {
@@ -536,6 +558,7 @@ class Settings {
     settingUniqueId,
     serverId,
     channelId,
+    descendentChannelIds,
     newUserFacingValue,
     userIsServerAdmin,
   ) {
@@ -543,6 +566,7 @@ class Settings {
       settingUniqueId,
       serverId,
       channelId,
+      descendentChannelIds,
       undefined,
       newUserFacingValue,
       userIsServerAdmin,
@@ -584,6 +608,7 @@ class Settings {
       settingUniqueId,
       undefined,
       undefined,
+      undefined,
       userId,
       newUserFacingValue,
       false,
@@ -595,6 +620,7 @@ class Settings {
     settingUniqueId,
     serverId,
     channelId,
+    descendentChannelIds,
     userId,
     newUserFacingValue,
     userIsServerAdmin,
@@ -614,6 +640,7 @@ class Settings {
         settingUniqueId,
         serverId,
         channelId,
+        descendentChannelIds,
         userId,
         newSettingValidationResult.newInternalValue,
         settingScope,
