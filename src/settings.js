@@ -539,6 +539,7 @@ class Settings {
       serverId,
       undefined,
       undefined,
+      undefined,
       newUserFacingValue,
       userIsServerAdmin,
       SettingScope.SERVER,
