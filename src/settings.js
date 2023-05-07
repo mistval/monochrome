@@ -240,7 +240,7 @@ async function defaultGetInternalSettingValue(persistence, setting, serverId, ch
   const serverSetting = getServerSetting(serverData, setting.uniqueId);
   const channelSetting = channels.map(
     c => getChannelSetting(serverData, c, setting.uniqueId),
-  ).find(Boolean);
+  ).find(s => s !== undefined);
 
   return userSetting
     ?? channelSetting
