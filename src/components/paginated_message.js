@@ -30,6 +30,7 @@ class PaginatedMessage {
     const isSingleChapter = chaptersArg.length === 1;
     const chapters = chaptersArg.map((c) => {
       assert(c.pages || c.getPages, 'Chapter must have either pages array or getPages function');
+      assert(!c.pages || c.pages.length > 0, 'Chapter pages array must have at least one page');
       const pages = c.pages ? endArrayWithUndefined(c.pages) : [];
 
       return {
