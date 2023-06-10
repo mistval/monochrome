@@ -10,7 +10,7 @@ const logFunctions = [
   'trace',
 ];
 
-const testUser = { username: 'Test user', discriminator: '5432' };
+const testUser = { username: 'Test user' };
 const testGuild = { name: 'Test guild' };
 const testChannel = { name: 'Test channel' };
 const testMessage = { content: 'Beep boop' };

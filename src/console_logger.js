@@ -22,7 +22,7 @@ function createContextString(guild, channel, user) {
     parts.push(Chalk.yellow(channel.name));
   }
   if (user) {
-    parts.push(Chalk.blue(`${user.username}#${user.discriminator}`));
+    parts.push(Chalk.blue(user.username));
   }
 
   if (parts.length === 0) {
@@ -79,7 +79,7 @@ class ConsoleLogger {
 
     printLog(buildLogString(header, event, detail, this.component, guild, channel, user, message));
     if (err) {
-      printError(Chalk.red(err.stack));
+      printError(Chalk.red(util.inspect(err.stack)));
     }
   }
 

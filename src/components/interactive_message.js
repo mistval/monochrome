@@ -37,7 +37,7 @@ class InteractiveMessage extends EventEmitter {
 
   setComponents(componentGroup) {
     this.components = componentGroup;
-    this.componentForId = this.components && Object.fromEntries(
+    this.componentForId = Object.fromEntries(
       componentGroup.flatMap((group) => group.components)
         .map((component) => [component.custom_id, component]),
     );
@@ -54,8 +54,11 @@ class InteractiveMessage extends EventEmitter {
 
     const message = await this.messagePromise;
     interactiveMessageForMessageId.delete(message.id);
-    this.setComponents([]);
-    await this.sendOrUpdate();
+
+    if (this.components?.length > 0) {
+      this.setComponents([]);
+      await this.sendOrUpdate();
+    }
   }
 
   async sendOrUpdate(channel) {
@@ -78,8 +81,9 @@ class InteractiveMessage extends EventEmitter {
       try {
         await this.disableInteraction();
       } catch (err) {
-        if (err?.code !== 10008) {
+        if (![10008, 10003].includes(err?.code)) {
           // 10008 = Unknown Message. Already deleted.
+          // 10003 = Unknown Channel. Probably kicked from guild.
           this.emit('error', err);
         }
       }

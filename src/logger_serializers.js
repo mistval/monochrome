@@ -6,7 +6,6 @@ function serializeUser(user) {
   return {
     avatarUri: user.avatarURL,
     username: user.username,
-    discriminator: user.discriminator,
     id: user.id,
   };
 }
