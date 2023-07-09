@@ -137,7 +137,7 @@ function sanitizeCommandData(commandData) {
    canBeChannelRestricted: true,
    requiredSetting: ['unique_id_of_some_setting'],
    aliasesForHelp: ['ping'],
-   requiredBotPermissions: ['readMessages', 'sendMessages'],
+   requiredBotPermissions: ['viewChannel', 'sendMessages'],
    action(bot, msg, suffix, monochrome, requestedSettings) {
      return msg.channel.createMessage('Pong!', null, msg);
    },

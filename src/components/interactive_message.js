@@ -43,8 +43,8 @@ class InteractiveMessage extends EventEmitter {
     );
   }
 
-  setEmbed(embed) {
-    this.embed = embed;
+  setEmbeds(embeds) {
+    this.embeds = embeds;
   }
 
   async disableInteraction() {
@@ -64,13 +64,13 @@ class InteractiveMessage extends EventEmitter {
   async sendOrUpdate(channel) {
     if (this.messagePromise) {
       return retryPromise(async () => (await this.messagePromise).edit({
-        embed: this.embed,
+        embeds: this.embeds,
         components: this.components,
       }));
     }
 
     this.messagePromise = retryPromise(() => channel.createMessage({
-      embed: this.embed,
+      embeds: this.embeds,
       components: this.components,
     }, undefined, this.parentMessage));
 

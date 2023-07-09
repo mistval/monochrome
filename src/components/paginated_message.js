@@ -66,7 +66,7 @@ class PaginatedMessage {
         currentPage = currentChapter.pages[currentPageIndex];
       }
 
-      interactiveMessage.setEmbed(currentPage.embed);
+      interactiveMessage.setEmbeds(currentPage.embeds);
       const isOnFirstPage = currentPageIndex === 0;
       const isOnLastPage = currentChapter.pages.length === currentPageIndex + 2
         && !currentChapter.pages[currentPageIndex + 1];
