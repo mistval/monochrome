@@ -37,7 +37,7 @@
   "homepage": "https://github.com/mistval/monochrome#readme",
   "dependencies": {
     "async-on-exit": "^0.1.0",
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "chalk": "^2.4.2",
     "eris": "^0.17.2",
     "fpersist": "^1.0.4",
