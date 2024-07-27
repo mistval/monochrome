@@ -1,4 +1,4 @@
-const Eris = require('eris');
+const Eris = require('@projectdysnomia/dysnomia');
 
 const ownerIdForSentMessageId = {};
 const responseMessageIdForCommandMessageId = {};

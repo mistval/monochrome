@@ -1,4 +1,4 @@
-const Eris = require('eris');
+const { Client: DysnomiaClient} = require('@projectdysnomia/dysnomia');
 const Persistence = require('./persistence.js');
 const replyDeleter = require('./reply_deleter.js');
 const Blacklist = require('./blacklist.js');
@@ -178,7 +178,7 @@ class Monochrome {
   constructor(options) {
     this.options_ = validateAndSanitizeOptions(options, this.logger);
 
-    this.bot_ = new Eris(this.options_.botToken, this.options_.erisOptions);
+    this.bot_ = new DysnomiaClient(this.options_.botToken, this.options_.erisOptions);
     this.logger = options.logger;
     this.persistence_ = new Persistence(this.options_.prefixes, this.logger, this.options_.storage);
     this.blacklist_ = new Blacklist(this.bot_, this.persistence_, this.options_.botAdminIds);
