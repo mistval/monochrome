@@ -2,7 +2,7 @@ const assert = require('assert');
 const util = require('util');
 const EventEmitter = require('events');
 
-const AUTO_TIMEOUT_MS = 1000 * 60 * 60; // 1 hour
+const AUTO_TIMEOUT_MS = 1000 * 60 * 14; // 14 minutes
 const ACKNOWLEDGE_TIMEOUT_MS = 1000 * 2; // 2 seconds
 
 const interactiveMessageForMessageId = new Map();
