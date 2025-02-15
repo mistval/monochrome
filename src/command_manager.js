@@ -201,15 +201,18 @@ class CommandManager {
             channel: {
               ...interaction.channel,
               permissionsOf: interaction.channel.permissionsOf && ((...args) => interaction.channel.permissionsOf(...args)),
-              createMessage(...args) {
+              async createMessage(...args) {
                 if (isAutoCompleteInteraction) {
                   return;
                 }
 
                 if (!initialMessageSent) {
                   initialMessageSent = true;
-                  return interaction.editOriginalMessage(...args);
+                  const message = await interaction.editOriginalMessage(...args);
+                  message.edit = (...args) => interaction.editOriginalMessage(...args);
+                  return message;
                 }
+
                 return bot.createMessage(interaction.channel.id, ...args);
               },
             },

@@ -63,7 +63,8 @@ class InteractiveMessage extends EventEmitter {
 
   async sendOrUpdate(channel) {
     if (this.messagePromise) {
-      return retryPromise(async () => (await this.messagePromise).edit({
+      const message = await this.messagePromise;
+      return retryPromise(() => message.edit({
         embeds: this.embeds,
         components: this.components,
       }));

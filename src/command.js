@@ -2,7 +2,7 @@ const FulfillmentError = require('./fulfillment_error.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const Constants = require('./constants.js');
-const { userStringForPermission } = require('./permissions.js');
+const { userStringForPermission } = require('./enums.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
@@ -323,6 +323,8 @@ class Command {
     return {
       name: this.aliases[0],
       type: 1,
+      contexts: this.interaction.contexts,
+      integrationTypes: this.interaction.integrationTypes,
       description: this.interaction.description ?? this.shortDescription,
       options: this.interaction.options ?? [],
     };

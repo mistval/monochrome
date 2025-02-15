@@ -8,9 +8,11 @@ module.exports.SettingsConverters = require('./src/settings_converters.js');
 module.exports.SettingsValidators = require('./src/settings_validators.js');
 
 module.exports.erisVersion = getErisVersionSync();
-module.exports.Permissions = require('./src/permissions.js').discordApiStringForPermission;
+module.exports.Permissions = require('./src/enums.js').discordApiStringForPermission;
 module.exports.ConsoleLogger = require('./src/console_logger.js');
 module.exports.InteractiveMessage = require('./src/components/interactive_message.js').InteractiveMessage;
+module.exports.ApplicationContexts = require('./src/enums.js').applicationContexts;
+module.exports.ApplicationIntegrationTypes = require('./src/enums.js').integrationTypes;
 
 Object.assign(
   module.exports,

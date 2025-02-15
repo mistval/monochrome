@@ -1,4 +1,3 @@
-// For intellisense
 const discordApiStringForPermission = {
   createInstantInvite: 'createInstantInvite',
   kickMembers: 'kickMembers',
@@ -48,7 +47,20 @@ const userStringForPermission = {
   manageEmojis: 'Manage Emojis',
 };
 
+const applicationContexts = {
+  GUILD:           0,
+  BOT_DM:          1,
+  PRIVATE_CHANNEL: 2,
+}
+
+const integrationTypes = {
+  GUILD_INSTALL: 0,
+  USER_INSTALL: 1,
+}
+
 module.exports = {
   discordApiStringForPermission,
   userStringForPermission,
+  applicationContexts,
+  integrationTypes,
 };
