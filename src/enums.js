@@ -8,6 +8,7 @@ const discordApiStringForPermission = {
   addReactions: 'addReactions',
   viewChannel: 'viewChannel',
   sendMessages: 'sendMessages',
+  sendMessagesInThreads: 'sendMessagesInThreads',
   sendTTSMessages: 'sendTTSMessages',
   manageMessages: 'manageMessages',
   embedLinks: 'embedLinks',

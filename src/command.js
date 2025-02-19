@@ -2,7 +2,7 @@ const FulfillmentError = require('./fulfillment_error.js');
 const SettingsConverters = require('./settings_converters.js');
 const SettingsValidators = require('./settings_validators.js');
 const Constants = require('./constants.js');
-const { userStringForPermission } = require('./enums.js');
+const { userStringForPermission, discordApiStringForPermission } = require('./enums.js');
 
 function sanitizeCommandData(commandData) {
   if (!commandData) {
@@ -180,6 +180,14 @@ class Command {
     this.requiredSettings_.push(Constants.DISABLED_COMMANDS_FAIL_SILENTLY_SETTING_ID);
     this.hidden = !!commandData.hidden;
     this.requiredBotPermissions_ = commandData.requiredBotPermissions;
+
+    // https://github.com/mistval/kotoba/issues/379
+    this.requiredBotPermissionsInThreads_ = this.requiredBotPermissions_.map(
+      p => p === discordApiStringForPermission.sendMessages
+        ? discordApiStringForPermission.sendMessagesInThreads
+        : p
+    );
+
     this.interaction = commandData.interaction;
     if (commandData.initialize) {
       commandData.initialize(this.monochrome_);
@@ -233,7 +241,10 @@ class Command {
 
     if (msg.channel.permissionsOf) {
       const botPermissions = msg.channel.permissionsOf(bot.user.id).json;
-      const missingBotPermissions = this.requiredBotPermissions_.filter(perm => !botPermissions[perm]);
+      const isThreadChannel = msg.channel.type === 11;
+      const requiredPermissions = isThreadChannel ? this.requiredBotPermissionsInThreads_ : this.requiredBotPermissions_;
+      const missingBotPermissions = requiredPermissions.filter(perm => !botPermissions[perm]);
+
       if (missingBotPermissions.length > 0) {
         const requiredPermissionsString = missingBotPermissions.map(perm => userStringForPermission[perm]).join(', ');
 
